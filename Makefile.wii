@@ -34,7 +34,7 @@ LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with
 #---------------------------------------------------------------------------------
-LIBS	:=	 -L/mingw/lib -lSDL -lSDL_net -mwindows -lfat -lwiiuse -lm -lbte -logc -lwiikeyboard 
+LIBS	:=	 -L/mingw/lib -lSDL -lSDL_net -lfat -lwiiuse -lm -lbte -logc -lwiikeyboard 
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

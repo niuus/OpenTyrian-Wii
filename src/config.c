@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include <fat.h>
 #include "opentyr.h"
 #include "config.h"
 
@@ -37,7 +38,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 
 /* Configuration Load/Save handler */
 
@@ -659,17 +659,18 @@ void JE_decryptSaveTemp( void )
 	memcpy(&saveTemp, &s2, sizeof(s2));
 }
 
-#ifndef TARGET_MACOSX
-const char *get_user_directory( void )
+//#ifndef TARGET_MACOSX
+/*const char *get_user_directory( void )
 {
-	static char userdir[500] = "";
-#ifdef TARGET_UNIX
-	if (strlen(userdir) == 0 && getenv("HOME"))
-		snprintf(userdir, sizeof(userdir), "%s/.opentyrian/", getenv("HOME"));
-#endif /* TARGET_UNIX */
+	static char userdir[500];
+	sprintf(userdir, sizeof(userdir), "%s/tyrian", ROOTFATDIR);
+//#ifdef TARGET_UNIX
+//	if (strlen(userdir) == 0 && getenv("HOME"))
+//		snprintf(userdir, sizeof(userdir), "%s/.opentyrian/",);
+//#endif // TARGET_UNIX
 	return userdir;
 }
-#endif /* TARGET_MACOSX */
+#endif // TARGET_MACOSX */
 
 // for compatibility
 Uint8 joyButtonAssign[4] = {1, 4, 5, 5};
@@ -677,6 +678,7 @@ Uint8 inputDevice_ = 0, jConfigure = 0, midiPort = 1;
 
 void JE_loadConfiguration( void )
 {
+	fatInitDefault();
 	FILE *fi;
 	int z;
 	JE_byte *p;
@@ -684,8 +686,8 @@ void JE_loadConfiguration( void )
 
 	errorActive = true;
 
-	char cfgfile[1000];
-	snprintf(cfgfile, sizeof(cfgfile), "%s" "tyrian.cfg", get_user_directory());
+	char cfgfile[1000] = "tyrian.cfg";
+	//snprintf(cfgfile, sizeof(cfgfile), "%s/tyrian.cfg", get_user_directory());
 
 	fi = fopen_check(cfgfile, "rb");
 	if (fi && get_stream_size(fi) == 20 + sizeof(keySettings) + 2)
@@ -756,8 +758,8 @@ void JE_loadConfiguration( void )
 
 	set_volume(tyrMusicVolume, fxVolume);
 
-	char savfile[1000];
-	snprintf(savfile, sizeof(savfile), "%s" "tyrian.sav", get_user_directory());
+	char savfile[1000] = "tyrian.sav";
+	//snprintf(savfile, sizeof(savfile), "%s/tyrian.sav", get_user_directory());
 
 	fi = fopen_check(savfile, "rb");
 	if (fi)
@@ -869,14 +871,16 @@ void JE_loadConfiguration( void )
 
 void JE_saveConfiguration( void )
 {
-#ifdef TARGET_UNIX
-	if (getenv("HOME"))
-	{
-		char dir[1000];
-		snprintf(dir, sizeof(dir), "%s/.opentyrian", getenv("HOME"));
-		mkdir(dir, 0755);
-	}
-#endif /* HOME */
+//#ifdef TARGET_UNIX
+	//if (getenv("HOME"))
+	//{
+
+	char dir[1000] = "";
+	//sprintf(dir, sizeof(dir), "%s/tyrian", ROOTFATDIR);
+	//snprintf(dir, sizeof(dir), "%s/.opentyrian", getenv("HOME"));
+	//mkdir(dir, 0755);
+	//}
+//#endif /* HOME */
 
 	FILE *f;
 	JE_byte *p;
@@ -946,8 +950,8 @@ void JE_saveConfiguration( void )
 
 	JE_encryptSaveTemp();
 
-	char savfile[1000];
-	snprintf(savfile, sizeof(savfile), "%s" "tyrian.sav", get_user_directory());
+	char savfile[1000] = "tyrian.sav";
+	//snprintf(savfile, sizeof(savfile), "%s/tyrian.sav", get_user_directory());
 
 	f = fopen_check(savfile, "wb");
 	if (f)
@@ -960,8 +964,8 @@ void JE_saveConfiguration( void )
 	}
 	JE_decryptSaveTemp();
 
-	char cfgfile[1000];
-	snprintf(cfgfile, sizeof(cfgfile), "%s" "tyrian.cfg", get_user_directory());
+	char cfgfile[1000] = "tyrian.cfg";
+	//snprintf(cfgfile, sizeof(cfgfile), "%s/tyrian.cfg", get_user_directory());
 
 	f = fopen_check(cfgfile, "wb");
 	if (f)

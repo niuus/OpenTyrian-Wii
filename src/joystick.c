@@ -370,8 +370,8 @@ FILE *seek_joystick_assignments( int j, bool read_only )
 	for (i = 0; joystick_name[i] != '\0'; i++)
 		joystick_xor ^= joystick_name[i];
 
-	char cfg_file[1000];
-	snprintf(cfg_file, sizeof(cfg_file), "%s" "joystick.cfg", get_user_directory());
+	char cfg_file[1000] = "joystick.cfg";
+	//snprintf(cfg_file, sizeof(cfg_file), "%s/joystick.cfg", get_user_directory());
 
 	const int entry_size = 3 + 3 + COUNTOF(joystick->assignment) * COUNTOF(*joystick->assignment) * 3;
 
