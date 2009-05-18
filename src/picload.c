@@ -64,11 +64,7 @@ void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 	}
 
 	fseek(PCXfile, SDL_Swap32(pcxpos[PCXnumber]), SEEK_SET);
-	//printf("              Seeking Finished");
-	//sleep(5);
 	efread(buf, sizeof(JE_byte), pcxpos[PCXnumber + 1] - pcxpos[PCXnumber], PCXfile);
-	//printf("              Reading Finished");
-	//sleep(5);
 	fclose(PCXfile);
 
 
