@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -26,6 +26,7 @@
 #include "video.h"
 
 #include <string.h>
+#include <unistd.h>
 
 
 JE_boolean notyetloadedpcx;
@@ -62,9 +63,14 @@ void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 		pcxpos[PCX_NUM] = ftell(PCXfile);
 	}
 
-	fseek(PCXfile, pcxpos[PCXnumber], SEEK_SET);
+	fseek(PCXfile, SDL_Swap32(pcxpos[PCXnumber]), SEEK_SET);
+	//printf("              Seeking Finished");
+	//sleep(5);
 	efread(buf, sizeof(JE_byte), pcxpos[PCXnumber + 1] - pcxpos[PCXnumber], PCXfile);
+	//printf("              Reading Finished");
+	//sleep(5);
 	fclose(PCXfile);
+
 
 	p = (JE_byte *)buf;
 	for (i = 0; i < 320 * 200; )

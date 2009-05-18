@@ -25,6 +25,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
 
 JE_word randomcount;
 JE_char dir[500];
@@ -116,6 +117,7 @@ void JE_errorHand( const char *s )
 		printf("WARNING: Unable to find Tyrian data files.\n"
 		       "Stopped on file %s.\n"
 		       "OpenTyrian needs the Tyrian data files to run. Please read the README file.\n\n", s);
+
 		exit(1);
 	} else {
 		errorOccurred = 1;

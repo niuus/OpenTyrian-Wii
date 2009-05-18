@@ -46,6 +46,7 @@
 #include "video.h"
 #include "video_scale.h"
 
+
 #include "SDL.h"
 
 #include <assert.h>
@@ -75,7 +76,7 @@ char *strnztcpy( char *to, const char *from, size_t count )
 	return strncpy(to, from, count);
 }
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+//#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 /* endian-swapping fread */
 size_t efread( void *buffer, size_t size, size_t num, FILE *stream )
 {
@@ -151,7 +152,7 @@ size_t efwrite( void *buffer, size_t size, size_t num, FILE *stream )
 
 	return f;
 }
-#endif
+//#endif
 
 void opentyrian_menu( void )
 {
@@ -380,7 +381,6 @@ int main( int argc, char *argv[] )
 		}
 	}
 
-
 	/* Default Options */
 	youAreCheating = false;
 	smoothScroll = true;
@@ -415,7 +415,6 @@ int main( int argc, char *argv[] )
 
 	JE_loadHelpText();
 	/*debuginfo("Help text complete");*/
-
 	if (isNetworkGame)
 	{
 		if (network_init())
