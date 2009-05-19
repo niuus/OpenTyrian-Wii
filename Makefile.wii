@@ -25,9 +25,9 @@ INCLUDES 	:=  include src
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS  = 	-g -O3 -Wall $(MACHDEP) $(INCLUDE) \
+CFLAGS  = 	-g -O2 -Wall $(MACHDEP) $(INCLUDE) \
 			-fomit-frame-pointer -Wno-strict-aliasing \
-			-DWORDS_BIGENDIAN
+			-DWORDS_BIGENDIAN -std=gnu99 -fgnu89-inline
 CXXFLAGS	= $(CFLAGS)
 LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 
