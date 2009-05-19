@@ -128,7 +128,7 @@ size_t efwrite( void *buffer, size_t size, size_t num, FILE *stream )
 			swap_buffer = malloc(size * num);
 			for (i = 0; i < num; i++)
 			{
-				((Uint32 *)swap_buffer)[i] = SDL_SwapLE32(((Uint32 *)buffer)[i]);
+				((Uint32 *)swap_buffer)[i] = SDL_Swap32(((Uint32 *)buffer)[i]);
 			}
 			break;
 		case 8:

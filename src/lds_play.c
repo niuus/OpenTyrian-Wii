@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -90,7 +90,7 @@ Uint8 *read_pos;
 bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 {
 	SoundBank *sb;
-
+	
 	fseek(f, music_offset, SEEK_SET);
 
 	/* load header */
@@ -150,13 +150,13 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 		sb->middum1 = fgetc(f);
 		sb->middum2 = fgetc(f);
 	}
-
+	
 	/* load positions */
 	efread(&numposi, 2, 1, f);
-
+	
 	free(positions);
 	positions = malloc(sizeof(Position) * 9 * numposi);
-
+	
 	for (unsigned int i = 0; i < numposi; i++)
 	{
 		for (unsigned int j = 0; j < 9; j++)
@@ -172,20 +172,20 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 			positions[i * 9 + j].transpose = fgetc(f);
 		}
 	}
-
+	
 	/* load patterns */
 	fseek(f, 2, SEEK_CUR); /* ignore # of digital sounds (dunno what this is for) */
-
+	
 	unsigned int remaining = music_size - (ftell(f) - music_offset);
-
+	
 	free(patterns);
 	patterns = malloc(sizeof(Uint16) * (remaining / 2));
-
+	
 	for (unsigned int i = 0; i < remaining / 2; i++)
 		efread(&patterns[i], 2, 1, f);
-
+	
 	lds_rewind(-1);
-
+	
 	return true;
 }
 
@@ -193,10 +193,10 @@ void lds_free( void )
 {
 	free(soundbank);
 	soundbank = NULL;
-
+	
 	free(positions);
 	positions = NULL;
-
+	
 	free(patterns);
 	patterns = NULL;
 }
@@ -522,7 +522,7 @@ int lds_update( void )
 				c->arp_size = 1; c->arp_pos = 0;
 				arpreg = c->arp_tab[0] << 4;
 			}
-
+	
 			if(c->arp_count == c->arp_speed) {
 				c->arp_pos++;
 				if(c->arp_pos >= c->arp_size) c->arp_pos = 0;
@@ -530,7 +530,7 @@ int lds_update( void )
 			} else
 				c->arp_count++;
 		}
-
+	
 		/* glide & portamento */
 		if(c->lasttune && (c->lasttune != c->gototune)) {
 			if(c->lasttune > c->gototune) {
@@ -544,12 +544,12 @@ int lds_update( void )
 				else
 					c->lasttune += c->portspeed;
 			}
-
+	
 			if(arpreg >= 0x800)
 				arpreg = c->lasttune - (arpreg ^ 0xff0) - 16;
 			else
 				arpreg += c->lasttune;
-
+	
 			freq = frequency[arpreg % (12 * 16)];
 			octave = arpreg / (12 * 16) - 1;
 			lds_setregs(0xa0 + chan, freq & 0xff);
@@ -559,17 +559,17 @@ int lds_update( void )
 			if(!c->vibwait) {
 				if(c->vibrate) {
 					wibc = vibtab[c->vibcount & 0x3f] * c->vibrate;
-
+	
 					if((c->vibcount & 0x40) == 0)
 						tune = c->lasttune + (wibc >> 8);
 					else
 						tune = c->lasttune - (wibc >> 8);
-
+		
 					if(arpreg >= 0x800)
 						tune = tune - (arpreg ^ 0xff0) - 16;
 					else
 						tune += arpreg;
-
+		
 					freq = frequency[tune % (12 * 16)];
 					octave = tune / (12 * 16) - 1;
 					lds_setregs(0xa0 + chan, freq & 0xff);
@@ -580,7 +580,7 @@ int lds_update( void )
 						tune = c->lasttune - (arpreg ^ 0xff0) - 16;
 					else
 						tune = c->lasttune + arpreg;
-
+	
 					freq = frequency[tune % (12 * 16)];
 					octave = tune / (12 * 16) - 1;
 					lds_setregs(0xa0 + chan, freq & 0xff);
@@ -588,13 +588,13 @@ int lds_update( void )
 				}
 			} else {	/* no vibrato, just arpeggio */
 				c->vibwait--;
-
+	
 				if(c->arp_size != 0) {
 					if(arpreg >= 0x800)
 						tune = c->lasttune - (arpreg ^ 0xff0) - 16;
 					else
 						tune = c->lasttune + arpreg;
-
+	
 					freq = frequency[tune % (12 * 16)];
 					octave = tune / (12 * 16) - 1;
 					lds_setregs(0xa0 + chan, freq & 0xff);
@@ -602,7 +602,7 @@ int lds_update( void )
 				}
 			}
 		}
-
+	
 		/* tremolo (modulator) */
 		if(!c->trmwait) {
 			if(c->trmrate) {
@@ -611,12 +611,12 @@ int lds_update( void )
 					level = (c->volmod & 0x3f) - (tremc >> 8);
 				else
 					level = 0;
-
+				
 				if(allvolume != 0 && (fmchip[0xc0 + chan] & 1))
 					lds_setregs_adv(0x40 + regnum, 0xc0, ((level * allvolume) >> 8) ^ 0x3f);
 				else
 					lds_setregs_adv(0x40 + regnum, 0xc0, level ^ 0x3f);
-
+				
 				c->trmcount += c->trmspeed;
 			} else if(allvolume != 0 && (fmchip[0xc0 + chan] & 1))
 				lds_setregs_adv(0x40 + regnum, 0xc0, ((((c->volmod & 0x3f) * allvolume) >> 8) ^ 0x3f) & 0x3f);
@@ -627,7 +627,7 @@ int lds_update( void )
 			if(allvolume != 0 && (fmchip[0xc0 + chan] & 1))
 			lds_setregs_adv(0x40 + regnum, 0xc0, ((((c->volmod & 0x3f) * allvolume) >> 8) ^ 0x3f) & 0x3f);
 		}
-
+			
 		/* tremolo (carrier) */
 		if(!c->trcwait) {
 			if(c->trcrate) {
@@ -636,7 +636,7 @@ int lds_update( void )
 					level = (c->volcar & 0x3f) - (tremc >> 8);
 				else
 					level = 0;
-
+				
 				if(allvolume != 0)
 					lds_setregs_adv(0x43 + regnum, 0xc0, ((level * allvolume) >> 8) ^ 0x3f);
 				else
@@ -663,20 +663,20 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 	Uint32		regnum = op_table[channel_number];	/* channel's OPL2 register */
 	Uint8		volcalc, octave;
 	Uint16	freq;
-
+	
 	/* set fine tune */
 	tunehigh += ((i->finetune + c->finetune + 0x80) & 0xff) - 0x80;
-
+	
 	/* arpeggio handling */
 	if(!i->arpeggio) {
 		Uint16	arpcalc = i->arp_tab[0] << 4;
-
+	
 		if(arpcalc > 0x800)
 			tunehigh = tunehigh - (arpcalc ^ 0xff0) - 16;
 		else
 			tunehigh += arpcalc;
 	}
-
+	
 	/* glide handling */
 	if(c->glideto != 0) {
 		c->gototune = tunehigh;
@@ -684,7 +684,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->glideto = c->finetune = 0;
 		return;
 	}
-
+	
 	/* set modulator registers */
 	lds_setregs(0x20 + regnum, i->mod_misc);
 	volcalc = i->mod_vol;
@@ -692,7 +692,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->volmod = volcalc;
 	else
 		c->volmod = (volcalc & 0xc0) | ((((volcalc & 0x3f) * c->nextvol) >> 6));
-
+	
 	if((i->feedback & 1) == 1 && allvolume != 0)
 		lds_setregs(0x40 + regnum, ((c->volmod & 0xc0) | (((c->volmod & 0x3f) * allvolume) >> 8)) ^ 0x3f);
 	else
@@ -700,7 +700,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 	lds_setregs(0x60 + regnum, i->mod_ad);
 	lds_setregs(0x80 + regnum, i->mod_sr);
 	lds_setregs(0xe0 + regnum, i->mod_wave);
-
+	
 	/* Set carrier registers */
 	lds_setregs(0x23 + regnum, i->car_misc);
 	volcalc = i->car_vol;
@@ -708,7 +708,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->volcar = volcalc;
 	else
 		c->volcar = (volcalc & 0xc0) | ((((volcalc & 0x3f) * c->nextvol) >> 6));
-
+	
 	if(allvolume)
 		lds_setregs(0x43 + regnum, ((c->volcar & 0xc0) | (((c->volcar & 0x3f) * allvolume) >> 8)) ^ 0x3f);
 	else
@@ -718,7 +718,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 	lds_setregs(0xe3 + regnum, i->car_wave);
 	lds_setregs(0xc0 + channel_number, i->feedback);
 	lds_setregs_adv(0xb0 + channel_number, 0xdf, 0);		/* key off */
-
+	
 	freq = frequency[tunehigh % (12 * 16)];
 	octave = tunehigh / (12 * 16) - 1;
 	if(!i->glide) {
@@ -738,7 +738,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->gototune = tunehigh + ((i->glide + 0x80) & 0xff) - 0x80;	/* set destination */
 		c->portspeed = i->portamento;
 	}
-
+	
 	if(!i->vibrato)
 		c->vibwait = c->vibspeed = c->vibrate = 0;
 	else {
@@ -747,7 +747,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->vibspeed = (i->vibrato >> 4) + 2;
 		c->vibrate = (i->vibrato & 15) + 1;
 	}
-
+	
 	if(!(c->trmstay & 0xf0)) {
 		c->trmwait = (i->tremwait & 0xf0) >> 3;
 		/* PASCAL:    c->trmspeed = (i->mod_trem >> 4) & 15; */
@@ -755,7 +755,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->trmrate = i->mod_trem & 15;
 		c->trmcount = 0;
 	}
-
+	
 	if(!(c->trmstay & 0x0f)) {
 		c->trcwait = (i->tremwait & 15) << 1;
 		/* PASCAL:    c->trcspeed = (i->car_trem >> 4) & 15; */
@@ -763,7 +763,7 @@ void lds_playsound(int inst_number, int channel_number, int tunehigh)
 		c->trcrate = i->car_trem & 15;
 		c->trccount = 0;
 	}
-
+	
 	c->arp_size = i->arpeggio & 15;
 	c->arp_speed = i->arpeggio >> 4;
 	memcpy(c->arp_tab, i->arp_tab, 12);
