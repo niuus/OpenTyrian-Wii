@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <fat.h>
 #include "opentyr.h"
 #include "config.h"
 
@@ -38,6 +37,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 
 /* Configuration Load/Save handler */
 
@@ -227,7 +227,6 @@ JE_byte    fastPlay;
 JE_boolean pentiumMode;
 
 /* Savegame files */
-JE_boolean playerPasswordInput;
 JE_byte    gameSpeed;
 JE_byte    processorType;  /* 1=386 2=486 3=Pentium Hyper */
 
@@ -295,28 +294,19 @@ void JE_saveGame( JE_byte slot, char *name )
 	saveFiles[slot-1].gameHasRepeated = gameHasRepeated;
 	saveFiles[slot-1].level = saveLevel;
 
-	pItems[3-1] = superArcadeMode;
-	if (superArcadeMode == 0 && onePlayerAction)
-	{
-		pItems[3-1] = 255;
-	}
 	if (superTyrian)
-	{
-		pItems[3-1] = 254;
-	}
+		pItems[P_SUPERARCADE] = SA_SUPERTYRIAN;
+	else if (superArcadeMode == SA_NONE && onePlayerAction)
+		pItems[P_SUPERARCADE] = SA_ARCADE;
+	else
+		pItems[P_SUPERARCADE] = superArcadeMode;
 
 	memcpy(&saveFiles[slot-1].items, &pItems, sizeof(pItems));
 
-	if (superArcadeMode > 253)
-	{
-		pItems[3-1] = 0;
-	}
 	if (twoPlayerMode)
-	{
 		memcpy(&saveFiles[slot-1].lastItems, &pItemsPlayer2, sizeof(pItemsPlayer2));
-	} else {
+	else
 		memcpy(&saveFiles[slot-1].lastItems, &pItemsBack2, sizeof(pItemsBack2));
-	}
 
 	saveFiles[slot-1].score  = score;
 	saveFiles[slot-1].score2 = score2;
@@ -331,7 +321,9 @@ void JE_saveGame( JE_byte slot, char *name )
 			temp = 4; /* JE: {Episodemax is 4 for completion purposes} */
 		}
 		saveFiles[slot-1].episode = temp;
-	} else {
+	}
+	else
+	{
 		saveFiles[slot-1].episode = episodeNum;
 	}
 
@@ -365,35 +357,31 @@ void JE_loadGame( JE_byte slot )
 	twoPlayerMode     = (slot-1) > 10;
 	difficultyLevel   = saveFiles[slot-1].difficulty;
 	memcpy(&pItems, &saveFiles[slot-1].items, sizeof(pItems));
-	superArcadeMode   = pItems[3-1];
 
-	if (superArcadeMode == 255)
-	{
-		onePlayerAction = true;
-		superArcadeMode = 0;
-		pItems[3-1] = 0;
-	} else if (superArcadeMode == 254) {
-		onePlayerAction = true;
-		superArcadeMode = 0;
-		pItems[3-1] = 0;
+	superArcadeMode = pItems[P_SUPERARCADE];
+
+	if (superArcadeMode == SA_SUPERTYRIAN)
 		superTyrian = true;
-	} else if (superArcadeMode > 0) {
+	if (superArcadeMode != SA_NONE)
 		onePlayerAction = true;
-	}
+	if (superArcadeMode > SA_NORTSHIPZ)
+		superArcadeMode = SA_NONE;
 
 	if (twoPlayerMode)
 	{
 		memcpy(&pItemsPlayer2, &saveFiles[slot-1].lastItems, sizeof(pItemsPlayer2));
 		onePlayerAction = false;
-	} else {
+	}
+	else
+	{
 		memcpy(&pItemsBack2, &saveFiles[slot-1].lastItems, sizeof(pItemsBack2));
 	}
 
 	/* Compatibility with old version */
-	if (pItemsPlayer2[7-1] < 101)
+	if (pItemsPlayer2[P2_SIDEKICK_MODE] < 101)
 	{
-		pItemsPlayer2[7-1] = 101;
-		pItemsPlayer2[8-1] = pItemsPlayer2[4-1];
+		pItemsPlayer2[P2_SIDEKICK_MODE] = 101;
+		pItemsPlayer2[P2_SIDEKICK_TYPE] = pItemsPlayer2[P_LEFT_SIDEKICK];
 	}
 
 	score       = saveFiles[slot-1].score;
@@ -659,18 +647,17 @@ void JE_decryptSaveTemp( void )
 	memcpy(&saveTemp, &s2, sizeof(s2));
 }
 
-//#ifndef TARGET_MACOSX
-/*const char *get_user_directory( void )
+#ifndef TARGET_MACOSX
+const char *get_user_directory( void )
 {
-	static char userdir[500];
-	sprintf(userdir, sizeof(userdir), "%s/tyrian", ROOTFATDIR);
-//#ifdef TARGET_UNIX
-//	if (strlen(userdir) == 0 && getenv("HOME"))
-//		snprintf(userdir, sizeof(userdir), "%s/.opentyrian/",);
-//#endif // TARGET_UNIX
+	static char userdir[500] = "";
+#ifdef TARGET_UNIX
+	if (strlen(userdir) == 0 && getenv("HOME"))
+		snprintf(userdir, sizeof(userdir), "%s/.opentyrian/", getenv("HOME"));
+#endif /* TARGET_UNIX */
 	return userdir;
 }
-#endif // TARGET_MACOSX */
+#endif /* TARGET_MACOSX */
 
 // for compatibility
 Uint8 joyButtonAssign[4] = {1, 4, 5, 5};
@@ -678,7 +665,6 @@ Uint8 inputDevice_ = 0, jConfigure = 0, midiPort = 1;
 
 void JE_loadConfiguration( void )
 {
-	fatInitDefault();
 	FILE *fi;
 	int z;
 	JE_byte *p;
@@ -686,8 +672,8 @@ void JE_loadConfiguration( void )
 
 	errorActive = true;
 
-	char cfgfile[1000] = "tyrian.cfg";
-	//snprintf(cfgfile, sizeof(cfgfile), "%s/tyrian.cfg", get_user_directory());
+	char cfgfile[1000];
+	snprintf(cfgfile, sizeof(cfgfile), "%s" "tyrian.cfg", get_user_directory());
 
 	fi = fopen_check(cfgfile, "rb");
 	if (fi && get_stream_size(fi) == 20 + sizeof(keySettings) + 2)
@@ -758,8 +744,8 @@ void JE_loadConfiguration( void )
 
 	set_volume(tyrMusicVolume, fxVolume);
 
-	char savfile[1000] = "tyrian.sav";
-	//snprintf(savfile, sizeof(savfile), "%s/tyrian.sav", get_user_directory());
+	char savfile[1000];
+	snprintf(savfile, sizeof(savfile), "%s" "tyrian.sav", get_user_directory());
 
 	fi = fopen_check(savfile, "rb");
 	if (fi)
@@ -871,16 +857,14 @@ void JE_loadConfiguration( void )
 
 void JE_saveConfiguration( void )
 {
-//#ifdef TARGET_UNIX
-	//if (getenv("HOME"))
-	//{
-
-	char dir[1000] = "";
-	//sprintf(dir, sizeof(dir), "%s/tyrian", ROOTFATDIR);
-	//snprintf(dir, sizeof(dir), "%s/.opentyrian", getenv("HOME"));
-	//mkdir(dir, 0755);
-	//}
-//#endif /* HOME */
+#ifdef TARGET_UNIX
+	if (getenv("HOME"))
+	{
+		char dir[1000];
+		snprintf(dir, sizeof(dir), "%s/.opentyrian", getenv("HOME"));
+		mkdir(dir, 0755);
+	}
+#endif /* HOME */
 
 	FILE *f;
 	JE_byte *p;
@@ -950,8 +934,8 @@ void JE_saveConfiguration( void )
 
 	JE_encryptSaveTemp();
 
-	char savfile[1000] = "tyrian.sav";
-	//snprintf(savfile, sizeof(savfile), "%s/tyrian.sav", get_user_directory());
+	char savfile[1000];
+	snprintf(savfile, sizeof(savfile), "%s" "tyrian.sav", get_user_directory());
 
 	f = fopen_check(savfile, "wb");
 	if (f)
@@ -964,8 +948,8 @@ void JE_saveConfiguration( void )
 	}
 	JE_decryptSaveTemp();
 
-	char cfgfile[1000] = "tyrian.cfg";
-	//snprintf(cfgfile, sizeof(cfgfile), "%s/tyrian.cfg", get_user_directory());
+	char cfgfile[1000];
+	snprintf(cfgfile, sizeof(cfgfile), "%s" "tyrian.cfg", get_user_directory());
 
 	f = fopen_check(cfgfile, "wb");
 	if (f)

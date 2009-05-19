@@ -103,8 +103,7 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 	efread(&speed, 2, 1, f);
 	tempo = fgetc(f);
 	pattlen = fgetc(f);
-	unsigned int i;
-	for (i = 0; i < 9; i++)
+	for (unsigned int i = 0; i < 9; i++)
 		chandelay[i] = fgetc(f);
 	regbd = fgetc(f);
 
@@ -113,7 +112,8 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 
 	free(soundbank);
 	soundbank = malloc(sizeof(SoundBank) * numpatch);
-	for (i = 0; i < numpatch; i++)
+
+	for (unsigned int i = 0; i < numpatch; i++)
 	{
 		sb = &soundbank[i];
 		sb->mod_misc = fgetc(f);
@@ -137,8 +137,7 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 		sb->car_trem = fgetc(f);
 		sb->tremwait = fgetc(f);
 		sb->arpeggio = fgetc(f);
-		unsigned int j;
-		for (j = 0; j < 12; j++)
+		for (unsigned int j = 0; j < 12; j++)
 			sb->arp_tab[j] = fgetc(f);
 		efread(&sb->start, 2, 1, f);
 		efread(&sb->size, 2, 1, f);
@@ -157,10 +156,10 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 
 	free(positions);
 	positions = malloc(sizeof(Position) * 9 * numposi);
-	for (i = 0; i < numposi; i++)
+
+	for (unsigned int i = 0; i < numposi; i++)
 	{
-		unsigned int j;
-		for (j = 0; j < 9; j++)
+		for (unsigned int j = 0; j < 9; j++)
 		{
 			/*
 			* patnum is a pointer inside the pattern space, but patterns are 16bit
@@ -181,7 +180,8 @@ bool lds_load( FILE *f, unsigned int music_offset, unsigned int music_size )
 
 	free(patterns);
 	patterns = malloc(sizeof(Uint16) * (remaining / 2));
-	for (i = 0; i < remaining / 2; i++)
+
+	for (unsigned int i = 0; i < remaining / 2; i++)
 		efread(&patterns[i], 2, 1, f);
 
 	lds_rewind(-1);

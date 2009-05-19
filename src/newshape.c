@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -58,23 +58,23 @@ JE_byte mouseGrabShape[24 * 28];                 /* [1..24*28] */
 void JE_newLoadShapesB( JE_byte table, FILE *f )
 {
 	JE_word temp;
-
+	
 	efread(&temp, sizeof(JE_word), 1, f);
-
+	
 	maxShape[table] = temp;
-	int i;
-	for (i = 0; i < maxShape[table]; i++)
+	
+	for (int i = 0; i < maxShape[table]; i++)
 	{
 		shapeExist[table][i] = getc(f);
-
+		
 		if (shapeExist[table][i])
 		{
 			efread(&shapeX   [table][i], sizeof(JE_word), 1, f);
 			efread(&shapeY   [table][i], sizeof(JE_word), 1, f);
 			efread(&shapeSize[table][i], sizeof(JE_word), 1, f);
-
+			
 			shapeArray[table][i] = malloc(shapeX[table][i] * shapeY[table][i]);
-
+			
 			efread(shapeArray[table][i], sizeof(JE_byte), shapeSize[table][i], f);
 		}
 	}
@@ -83,29 +83,28 @@ void JE_newLoadShapesB( JE_byte table, FILE *f )
 void JE_newLoadShapes( JE_byte table, char *shapefile )
 {
 	FILE *f;
-
+	
 	JE_newPurgeShapes(table);
-
+	
 	JE_resetFile(&f, shapefile);
-
+	
 	JE_newLoadShapesB(table, f);
-
+	
 	fclose(f);
 }
 
 void JE_newPurgeShapes( JE_byte table )
 {
-	int i;
-	for (i = 0; i < maxShape[table]; i++)
+	for (int i = 0; i < maxShape[table]; i++)
 	{
 		if (shapeExist[table][i])
 		{
 			free(shapeArray[table][i]);
-
+			
 			shapeExist[table][i] = false;
 		}
 	}
-
+	
 	maxShape[table] = 0;
 }
 
@@ -117,16 +116,16 @@ void blit_shape( SDL_Surface *surface, int x, int y, unsigned int table, unsigne
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -135,21 +134,21 @@ void blit_shape( SDL_Surface *surface, int x, int y, unsigned int table, unsigne
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll)
 					*pixels = *data;
-
+				
 				pixels++;
 				x_offset++;
 				break;
@@ -170,16 +169,16 @@ void blit_shape_blend( SDL_Surface *surface, int x, int y, unsigned int table, u
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -188,21 +187,21 @@ void blit_shape_blend( SDL_Surface *surface, int x, int y, unsigned int table, u
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll)
 					*pixels = (*data & 0xf0) | (((*pixels & 0x0f) + (*data & 0x0f)) / 2);
-
+				
 				pixels++;
 				x_offset++;
 				break;
@@ -225,18 +224,18 @@ void blit_shape_hv_unsafe( SDL_Surface *surface, int x, int y, unsigned int tabl
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-
+	
 	hue <<= 4;
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -245,21 +244,21 @@ void blit_shape_hv_unsafe( SDL_Surface *surface, int x, int y, unsigned int tabl
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll)
 					*pixels = hue | ((*data & 0x0f) + value);
-
+				
 				pixels++;
 				x_offset++;
 				break;
@@ -280,18 +279,18 @@ void blit_shape_hv( SDL_Surface *surface, int x, int y, unsigned int table, unsi
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-
+	
 	hue <<= 4;
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -300,15 +299,15 @@ void blit_shape_hv( SDL_Surface *surface, int x, int y, unsigned int table, unsi
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
@@ -317,10 +316,10 @@ void blit_shape_hv( SDL_Surface *surface, int x, int y, unsigned int table, unsi
 					Uint8 temp_value = (*data & 0x0f) + value;
 					if (temp_value > 0xf)
 						temp_value = (temp_value >= 0x1f) ? 0x0 : 0xf;
-
+					
 					*pixels = hue | temp_value;
 				}
-
+				
 				pixels++;
 				x_offset++;
 				break;
@@ -341,18 +340,18 @@ void blit_shape_hv_blend( SDL_Surface *surface, int x, int y, unsigned int table
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-
+	
 	hue <<= 4;
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -361,15 +360,15 @@ void blit_shape_hv_blend( SDL_Surface *surface, int x, int y, unsigned int table
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
@@ -378,10 +377,10 @@ void blit_shape_hv_blend( SDL_Surface *surface, int x, int y, unsigned int table
 					Uint8 temp_value = (*data & 0x0f) + value;
 					if (temp_value > 0xf)
 						temp_value = (temp_value >= 0x1f) ? 0x0 : 0xf;
-
+					
 					*pixels = hue | (((*pixels & 0x0f) + temp_value) / 2);
 				}
-
+				
 				pixels++;
 				x_offset++;
 				break;
@@ -402,16 +401,16 @@ void blit_shape_dark( SDL_Surface *surface, int x, int y, unsigned int table, un
 		assert(false);
 		return;
 	}
-
+	
 	Uint8 *data = shapeArray[table][index];
 	unsigned int width = shapeX[table][index], height = shapeY[table][index];
-
+	
 	assert(surface->format->BitsPerPixel == 8);
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-	int x_offset, y_offset;
-	for (x_offset = 0, y_offset = 0; y_offset < height; data++)
+	
+	for (int x_offset = 0, y_offset = 0; y_offset < height; data++)
 	{
 		switch (*data)
 		{
@@ -420,21 +419,21 @@ void blit_shape_dark( SDL_Surface *surface, int x, int y, unsigned int table, un
 				pixels += *data;
 				x_offset += *data;
 				break;
-
+				
 			case 254:  // next pixel row
 				break;
-
+				
 			case 253:  // 1 transparent pixel
 				pixels++;
 				x_offset++;
 				break;
-
+				
 			default:  // set a pixel
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll)
 					*pixels = black ? 0x00 : ((*pixels & 0xf0) | ((*pixels & 0x0f) / 2));
-
+				
 				pixels++;
 				x_offset++;
 				break;

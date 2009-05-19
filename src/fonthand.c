@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -57,18 +57,18 @@ JE_shortint warningColChange;
 void JE_dString( JE_word x, JE_word y, const char *s, JE_byte font )
 {
 	int bright = 0;
-	int a;
-	for (a = 0; s[a] != 0; a++)
+	
+	for (int a = 0; s[a] != 0; a++)
 	{
 		char b = s[a];
-
+		
 		if ((b > 32) && (b < 126))
 		{
 			if (fontMap[b-33] != 255)
 			{
 				blit_shape_dark(tempScreenSeg, x + 2, y + 2, font, fontMap[b-33], false);
 				blit_shape_hv_unsafe(tempScreenSeg, x, y, font, fontMap[b-33], 0xf, defaultBrightness + bright);
-
+				
 				x += shapeX[font][fontMap[b-33]] + 1;
 			}
 		}
@@ -93,22 +93,21 @@ JE_word JE_textWidth( const char *s, JE_byte font )
 {
 	JE_byte a, b;
 	JE_word x = 0;
-
+	
 	for (a = 0; s[a] != 0; a++)
 	{
 		b = s[a];
-
+		
 		if ((b > 32) && (b < 126))
 		{
 			if (fontMap[b-33] != 255)
 			{
 				x += shapeX[font][fontMap[b-33]] + 1;
 			}
-		} else {
-			if (b == 32)
-			{
-				x += 6;
-			}
+		}
+		else if (b == 32)
+		{
+			x += 6;
 		}
 	}
 	return x;
@@ -142,18 +141,18 @@ void JE_outText( JE_word x, JE_word y, const char *s, JE_byte colorbank, JE_shor
 {
 	JE_byte a, b;
 	JE_byte bright = 0;
-
+	
 	for (a = 0; s[a] != 0; a++)
 	{
 		b = s[a];
-
+		
 		if ((b > 32) && (b < 169) && (fontMap[b-33] != 255) && (shapeArray[TINY_FONT][fontMap[b-33]] != NULL))
 		{
 			if (brightness >= 0)
 				blit_shape_hv_unsafe(tempScreenSeg, x, y, TINY_FONT, fontMap[b - 33], colorbank, brightness + bright);
 			else
 				blit_shape_dark(tempScreenSeg, x, y, TINY_FONT, fontMap[b-33], true);
-
+			
 			x += shapeX[TINY_FONT][fontMap[b-33]] + 1;
 		}
 		else if (b == 32)
@@ -174,15 +173,15 @@ void JE_outText( JE_word x, JE_word y, const char *s, JE_byte colorbank, JE_shor
 void JE_outTextModify( JE_word x, JE_word y, const char *s, JE_byte filter, JE_byte brightness, JE_byte font )
 {
 	JE_byte a, b;
-
+	
 	for (a = 0; s[a] != 0; a++)
 	{
 		b = s[a];
-
+		
 		if ((b > 32) && (b < 169) && (fontMap[b-33] != 255))
 		{
 			blit_shape_hv_blend(tempScreenSeg, x, y, font, fontMap[b-33], filter, brightness);
-
+			
 			x += shapeX[font][fontMap[b-33]] + 1;
 		}
 		else if (b == 32)
@@ -195,15 +194,15 @@ void JE_outTextModify( JE_word x, JE_word y, const char *s, JE_byte filter, JE_b
 void JE_outTextShade( JE_word x, JE_word y, const char *s, JE_byte font )
 {
 	JE_byte a, b;
-
+	
 	for (a = 0; s[a] != 0; a++)
 	{
 		b = s[a];
-
+		
 		if ((b > 32) && (b < 169) && (fontMap[b-33] != 255))
 		{
 			blit_shape_dark(tempScreenSeg, x, y, font, fontMap[b-33], false);
-
+			
 			x += shapeX[font][fontMap[b-33]] + 1;
 		}
 		else if (b == 32)
@@ -216,17 +215,17 @@ void JE_outTextShade( JE_word x, JE_word y, const char *s, JE_byte font )
 void JE_outTextAdjust( JE_word x, JE_word y, const char *s, JE_byte filter, JE_shortint brightness, JE_byte font, JE_boolean shadow )
 {
 	int bright = 0;
-	int a;
-	for (a = 0; s[a] != 0; a++)
+	
+	for (int a = 0; s[a] != 0; a++)
 	{
 		char b = s[a];
-
+		
 		if ((b > 32) && (b < 169) && (fontMap[b-33] != 255))
 		{
 			if (shadow)
 				blit_shape_dark(tempScreenSeg, x + 2, y + 2, font, fontMap[b - 33], false);
 			blit_shape_hv(tempScreenSeg, x, y, font, fontMap[b - 33], filter, brightness + bright);
-
+			
 			x += shapeX[font][fontMap[b-33]] + 1;
 		}
 		else if (b == 126)
@@ -243,16 +242,16 @@ void JE_outTextAdjust( JE_word x, JE_word y, const char *s, JE_byte filter, JE_s
 void JE_outTextAndDarken( JE_word x, JE_word y, const char *s, JE_byte colorbank, JE_byte brightness, JE_byte font )
 {
 	int bright = 0;
-	int a;
-	for (a = 0; s[a] != 0; a++)
+	
+	for (int a = 0; s[a] != 0; a++)
 	{
 		char b = s[a];
-
+		
 		if ((b > 32) && (b < 169) && (fontMap[b-33] != 255))
 		{
 			blit_shape_dark(tempScreenSeg, x + 1, y + 1, font, fontMap[b-33], false);
 			blit_shape_hv_unsafe(tempScreenSeg, x, y, font, fontMap[b-33], colorbank, brightness + bright);
-
+			
 			x += shapeX[font][fontMap[b-33]] + 1;
 		}
 		else if (b == 32)
@@ -270,7 +269,7 @@ void JE_updateWarning( void )
 {
 	if (delaycount2() == 0)
 	{ /*Update Color Bars*/
-
+		
 		warningCol += warningColChange;
 		if (warningCol > 14 * 16 + 10 || warningCol < 14 * 16 + 4)
 		{
@@ -279,9 +278,9 @@ void JE_updateWarning( void )
 		JE_bar(0, 0, 319, 5, warningCol);
 		JE_bar(0, 194, 319, 199, warningCol);
 		JE_showVGA();
-
+		
 		setjasondelay2(6);
-
+		
 		if (warningSoundDelay > 0)
 		{
 			warningSoundDelay--;
@@ -298,12 +297,12 @@ void JE_outTextGlow( JE_word x, JE_word y, const char *s )
 {
 	JE_integer z;
 	JE_byte c = 15;
-
+	
 	if (warningRed)
 	{
 		c = 7;
 	}
-
+	
 	tempScreenSeg = VGAScreenSeg; /* sega000 */
 	JE_outTextAdjust(x - 1, y,     s, 0, -12, textGlowFont, false);
 	JE_outTextAdjust(x,     y - 1, s, 0, -12, textGlowFont, false);
@@ -319,11 +318,11 @@ void JE_outTextGlow( JE_word x, JE_word y, const char *s )
 			{
 				frameCountMax = 0;
 			}
-
+			
 			NETWORK_KEEP_ALIVE();
-
+			
 			JE_showVGA();
-
+			
 			wait_delay();
 		}
 	for (z = (frameCountMax == 0) ? 6 : 12; z >= textGlowBrightness; z--)
@@ -335,11 +334,11 @@ void JE_outTextGlow( JE_word x, JE_word y, const char *s )
 		{
 			frameCountMax = 0;
 		}
-
+		
 		NETWORK_KEEP_ALIVE();
-
+		
 		JE_showVGA();
-
+		
 		wait_delay();
 	}
 	textGlowBrightness = 6;

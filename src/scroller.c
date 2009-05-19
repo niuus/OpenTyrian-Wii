@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -119,7 +119,7 @@ void scroller_sine( const struct about_text_type text[] )
 	int current_line = -visible_lines;
 	int y = 0;
 	bool fade_in = true;
-
+	
 	struct coin_type { int x, y, vel, type, cur_frame; bool backwards; } coins[MAX_COINS];
 	struct { int x, y, ay, vx, vy; } beer[MAX_BEER];
 
@@ -127,25 +127,24 @@ void scroller_sine( const struct about_text_type text[] )
 	{
 		memset(beer, 0, sizeof(beer));
 	} else {
-		int i;
-		for (i = 0; i < MAX_COINS; i++)
+		for (int i = 0; i < MAX_COINS; i++)
 		{
 			coins[i].x = mt_rand() % (vga_width - 12);
 			coins[i].y = mt_rand() % (vga_height - 20 - 14);
-
+			
 			coins[i].vel = (mt_rand() % 4) + 1;
 			coins[i].type = mt_rand() % COUNTOF(coin_defs);
 			coins[i].cur_frame = mt_rand() % coin_defs[coins[i].type].frame_count;
 			coins[i].backwards = false;
 		}
 	}
-
+	
 	JE_fadeBlack(10);
-
+	
 	wait_noinput(true, true, true);
-
+	
 	play_song(40); // BEER
-
+	
 	while (!JE_anyButton())
 	{
 		setdelay(3);
@@ -154,15 +153,14 @@ void scroller_sine( const struct about_text_type text[] )
 
 		if (!ale)
 		{
-			int i;
-			for (i = 0; i < MAX_COINS/2; i++)
+			for (int i = 0; i < MAX_COINS/2; i++)
 			{
 				struct coin_type *coin = &coins[i];
 				JE_drawShape2(coin->x, coin->y, coin_defs[coin->type].shape_num + coin->cur_frame, eShapes5);
 			}
 		}
-		int i;
-		for (i = 0; i < visible_lines; i++)
+
+		for (int i = 0; i < visible_lines; i++)
 		{
 			if (current_line + i >= 0)
 			{
@@ -170,22 +168,21 @@ void scroller_sine( const struct about_text_type text[] )
 				{
 					break;
 				}
-
+				
 				int line_x = JE_fontCenter(text[i + current_line].text, SMALL_FONT_SHAPES);
 				int line_y = i * LINE_HEIGHT - y;
-
+				
 				if (text[i + current_line].effect & 0x20)
 				{
 					JE_outTextAdjust(line_x + 1, line_y, text[i + current_line].text, text[i + current_line].effect & 0x0f, -10, SMALL_FONT_SHAPES, false);
 					JE_outTextAdjust(line_x - 1, line_y, text[i + current_line].text, text[i + current_line].effect & 0x0f, -10, SMALL_FONT_SHAPES, false);
 				}
-
+				
 				JE_outTextAdjust(line_x, line_y, text[i + current_line].text, text[i + current_line].effect & 0x0f, -4, SMALL_FONT_SHAPES, false);
-
+				
 				if (text[i + current_line].effect & 0x10)
 				{
-					int j;
-					for (j = 0; j < LINE_HEIGHT; j++)
+					for (int j = 0; j < LINE_HEIGHT; j++)
 					{
 						if (line_y + j >= 10 && line_y + j <= vga_height - 10)
 						{
@@ -213,8 +210,7 @@ void scroller_sine( const struct about_text_type text[] )
 
 		if (!ale)
 		{
-			int i;
-			for (i = MAX_COINS/2; i < MAX_COINS; i++)
+			for (int i = MAX_COINS/2; i < MAX_COINS; i++)
 			{
 				struct coin_type *coin = &coins[i];
 				JE_drawShape2(coin->x, coin->y, coin_defs[coin->type].shape_num + coin->cur_frame, eShapes5);
@@ -223,14 +219,13 @@ void scroller_sine( const struct about_text_type text[] )
 
 		JE_bar(0, 0, vga_width - 1, 14, 0);
 		JE_bar(0, vga_height - 14, vga_width - 1, vga_height - 1, 0);
-
+		
 		if (!ale)
 		{
-			int i;
-			for (i = 0; i < MAX_COINS; i++)
+			for (int i = 0; i < MAX_COINS; i++)
 			{
 				struct coin_type *coin = &coins[i];
-
+				
 				if (coin->backwards)
 				{
 					coin->cur_frame--;
@@ -252,38 +247,37 @@ void scroller_sine( const struct about_text_type text[] )
 					coin->cur_frame = 1;
 					coin->backwards = false;
 				}
-
+				
 				coin->y += coin->vel;
 				if (coin->y > vga_height - 14)
 				{
 					coin->x = mt_rand() % (vga_width - 12);
 					coin->y = 0;
-
+					
 					coin->vel = (mt_rand() % 4) + 1;
 					coin->type = mt_rand() % COUNTOF(coin_defs);
 					coin->cur_frame = mt_rand() % coin_defs[coin->type].frame_count;
 				}
 			}
 		} else {
-			int i;
-			for (i = 0; i < COUNTOF(beer); i++)
+			for (int i = 0; i < COUNTOF(beer); i++)
 			{
 				while (beer[i].vx == 0)
 				{
 					beer[i].x = mt_rand() % (vga_width - 24);
 					beer[i].y = mt_rand() % (vga_height - 28 - 50);
-
+					
 					beer[i].vx = (mt_rand() % 5) - 2;
 				}
-
+				
 				beer[i].vy++;
-
+				
 				if (beer[i].x + beer[i].vx > vga_width - 24 || beer[i].x + beer[i].vx < 0) // check if the beer hit the sides
 				{
 					beer[i].vx = -beer[i].vx;
 				}
 				beer[i].x += beer[i].vx;
-
+				
 				if (beer[i].y + beer[i].vy > vga_height - 28) // check if the beer hit the bottom
 				{
 					if ((beer[i].vy) < 8) // make sure the beer bounces!
@@ -293,27 +287,27 @@ void scroller_sine( const struct about_text_type text[] )
 						beer[i].vy = 16;
 					}
 					beer[i].vy = -beer[i].vy + (mt_rand() % 3 - 1);
-
+					
 					beer[i].x += (beer[i].vx > 0 ? 1 : -1) * (i % 2 ? 1 : -1);
 				}
 				beer[i].y += beer[i].vy;
-
+				
 				JE_drawShape2x2(beer[i].x, beer[i].y, BEER_SHAPE, eShapes5);
 			}
 		}
-
+		
 		JE_showVGA();
-
+		
 		if (fade_in)
 		{
 			fade_in = false;
 			JE_fadeColor(10);
 			JE_setPalette(254, 255, 255, 255);
 		}
-
+		
 		wait_delay();
 	}
-
+	
 	JE_fadeBlack(10);
 }
 

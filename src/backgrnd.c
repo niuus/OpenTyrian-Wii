@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -50,9 +50,9 @@ void JE_darkenBackground( JE_word neat )  /* wild detail level */
 {
 	Uint8 *s = VGAScreen->pixels; /* screen pointer, 8-bit specific */
 	int x, y;
-
+	
 	s += 24;
-
+	
 	for (y = 184; y; y--)
 	{
 		for (x = 264; x; x--)
@@ -70,8 +70,8 @@ void blit_background_row( SDL_Surface *surface, int x, int y, Uint8 **map )
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-
-	for (y = 0; y < 28; y++)
+	
+	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
 		if ((pixels + (12 * 24)) < pixels_ll)
@@ -79,32 +79,32 @@ void blit_background_row( SDL_Surface *surface, int x, int y, Uint8 **map )
 			pixels += surface->pitch;
 			continue;
 		}
-		int tile;
-		for (tile = 0; tile < 12; tile++)
+		
+		for (int tile = 0; tile < 12; tile++)
 		{
 			Uint8 *data = *(map + tile);
-
+			
 			// no tile; skip tile
 			if (data == NULL)
 			{
 				pixels += 24;
 				continue;
 			}
-
+			
 			data += y * 24;
-
-			for (x = 24; x; x--)
+			
+			for (int x = 24; x; x--)
 			{
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll && *data != 0)
 					*pixels = *data;
-
+				
 				pixels++;
 				data++;
 			}
 		}
-
+		
 		pixels += surface->pitch - 12 * 24;
 	}
 }
@@ -115,8 +115,8 @@ void blit_background_row_blend( SDL_Surface *surface, int x, int y, Uint8 **map 
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
-
-	for (y = 0; y < 28; y++)
+	
+	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
 		if ((pixels + (12 * 24)) < pixels_ll)
@@ -124,32 +124,32 @@ void blit_background_row_blend( SDL_Surface *surface, int x, int y, Uint8 **map 
 			pixels += surface->pitch;
 			continue;
 		}
-		int tile;
-		for (tile = 0; tile < 12; tile++)
+		
+		for (int tile = 0; tile < 12; tile++)
 		{
 			Uint8 *data = *(map + tile);
-
+			
 			// no tile; skip tile
 			if (data == NULL)
 			{
 				pixels += 24;
 				continue;
 			}
-
+			
 			data += y * 24;
-
-			for (x = 24; x; x--)
+			
+			for (int x = 24; x; x--)
 			{
 				if (pixels >= pixels_ul)
 					return;
 				if (pixels >= pixels_ll && *data != 0)
 					*pixels = (*data & 0xf0) | (((*pixels & 0x0f) + (*data & 0x0f)) / 2);
-
+				
 				pixels++;
 				data++;
 			}
 		}
-
+		
 		pixels += surface->pitch - 12 * 24;
 	}
 }
@@ -157,13 +157,13 @@ void blit_background_row_blend( SDL_Surface *surface, int x, int y, Uint8 **map 
 void draw_background_1( SDL_Surface *surface )
 {
 	SDL_FillRect(surface, NULL, 0);
-
+	
 	Uint8 **map = (Uint8 **)mapYPos + mapXbpPos - 12;
-	int i;
-	for (i = -1; i < 7; i++)
+	
+	for (int i = -1; i < 7; i++)
 	{
 		blit_background_row(surface, mapXPos, (i * 28) + backPos, map);
-
+		
 		map += 14;
 	}
 }
@@ -172,29 +172,29 @@ void draw_background_2( SDL_Surface *surface )
 {
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
-
+	
 	if (background2 != 0)
 	{
 		// water effect combines background 1 and 2 by syncronizing the x coordinate
 		int x = smoothies[1] ? mapXPos : mapX2Pos;
-
+		
 		Uint8 **map = (Uint8 **)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - 12;
-		int i;
-		for (i = -1; i < 7; i++)
+		
+		for (int i = -1; i < 7; i++)
 		{
 			blit_background_row(surface, x, (i * 28) + backPos2, map);
-
+			
 			map += 14;
 		}
 	}
-
+	
 	/*Set Movement of background*/
 	if (--map2YDelay == 0)
 	{
 		map2YDelay = map2YDelayMax;
-
+		
 		backPos2 += backMove2;
-
+		
 		if (backPos2 >  27)
 		{
 			backPos2 -= 28;
@@ -208,23 +208,23 @@ void draw_background_2_blend( SDL_Surface *surface )
 {
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
-
+	
 	Uint8 **map = (Uint8 **)mapY2Pos + mapX2bpPos - 12;
-	int i;
-	for (i = -1; i < 7; i++)
+	
+	for (int i = -1; i < 7; i++)
 	{
 		blit_background_row_blend(surface, mapX2Pos, (i * 28) + backPos2, map);
-
+		
 		map += 14;
 	}
-
+	
 	/*Set Movement of background*/
 	if (--map2YDelay == 0)
 	{
 		map2YDelay = map2YDelayMax;
-
+		
 		backPos2 += backMove2;
-
+		
 		if (backPos2 >  27)
 		{
 			backPos2 -= 28;
@@ -238,20 +238,20 @@ void draw_background_3( SDL_Surface *surface )
 {
 	/* Movement of background */
 	backPos3 += backMove3;
-
+	
 	if (backPos3 > 27)
 	{
 		backPos3 -= 28;
 		mapY3--;
 		mapY3Pos -= 15;   /*Map Width*/
 	}
-
+	
 	Uint8 **map = (Uint8 **)mapY3Pos + mapX3bpPos - 12;
-	int i;
-	for (i = -1; i < 7; i++)
+	
+	for (int i = -1; i < 7; i++)
 	{
 		blit_background_row(surface, mapX3Pos, (i * 28) + backPos3, map);
-
+		
 		map += 15;
 	}
 }
@@ -261,7 +261,7 @@ void JE_filterScreen( JE_shortint col, JE_shortint int_)
 	Uint8 *s = NULL; /* screen pointer, 8-bit specific */
 	int x, y;
 	unsigned int temp;
-
+	
 	if (filterFade)
 	{
 		levelBrightness += levelBrightnessChg;
@@ -277,14 +277,14 @@ void JE_filterScreen( JE_shortint col, JE_shortint int_)
 			levelBrightness = -99;
 		}
 	}
-
+	
 	if (col != -99 && filtrationAvail)
 	{
 		s = VGAScreen->pixels;
 		s += 24;
-
+		
 		col <<= 4;
-
+		
 		for (y = 184; y; y--)
 		{
 			for (x = 264; x; x--)
@@ -295,12 +295,12 @@ void JE_filterScreen( JE_shortint col, JE_shortint int_)
 			s += VGAScreen->pitch - 264;
 		}
 	}
-
+	
 	if (int_ != -99 && explosionTransparent)
 	{
 		s = VGAScreen->pixels;
 		s += 24;
-
+		
 		for (y = 184; y; y--)
 		{
 			for (x = 264; x; x--)
@@ -334,15 +334,15 @@ void JE_smoothies1( void ) /*Lava Effect*/
 	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
 	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
 	int i, j, temp;
-
+	
 	s += game_screen->pitch * 185 - 1;
 	src += game_screen->pitch * 185 - 1;
-
+	
 	for (i = 185 * game_screen->pitch; i; i -= 8)
 	{
 		temp = (((i - 1) >> 9) & 15) - 8;
 		temp = (temp < 0 ? -temp : temp) - 1;
-
+		
 		for (j = 8; j; j--)
 		{
 			Uint8 temp_s = (*(src + temp) & 0x0f) * 2;
@@ -369,7 +369,7 @@ void JE_smoothies2( void ) /*Water effect*/
 	{
 		temp = (((i - 1) >> 10) & 7) - 4;
 		temp = (temp < 0 ? -temp : temp) - 1;
-
+		
 		for (j = 8; j; j--)
 		{
 			if (*src & 0x30)
@@ -391,7 +391,7 @@ void JE_smoothies3( void ) /* iced motion blur */
 	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
 	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
 	int i;
-
+	
 	for (i = 184 * game_screen->pitch; i; i--)
 	{
 		*s = ((((*src & 0x0f) + (*s & 0x0f)) >> 1) & 0x0f) | 0x80;
@@ -406,7 +406,7 @@ void JE_smoothies4( void ) /* motion blur */
 	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
 	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
 	int i;
-
+	
 	for (i = 184 * game_screen->pitch; i; i--)
 	{
 		*s = ((((*src & 0x0f) + (*s & 0x0f)) >> 1) & 0x0f) | (*src & 0xf0);

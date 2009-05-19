@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -57,6 +57,10 @@
 #include <inttypes.h>
 
 void blit_enemy( SDL_Surface *surface, unsigned int i, signed int x_offset, signed int y_offset, signed int sprite_offset );
+
+void intro_logos( void );
+
+bool skip_intro_logos = false;
 
 int joystick_config = 0; // which joystick is being configured in menu
 
@@ -133,7 +137,7 @@ void JE_starShowVGA( void )
 	Uint8 *s = NULL; /* screen pointer, 8-bit specific */
 
 	int x, y, lightx, lighty, lightdist;
-
+	
 	if (!playerEndLevel && !skipStarShowVGA)
 	{
 
@@ -160,7 +164,7 @@ void JE_starShowVGA( void )
 		} else if (starShowVGASpecialCode == 2 && processorType >= 2) {
 			lighty = 172 - PY;
 			lightx = 281 - PX;
-
+			
 			for (y = 184; y; y--)
 			{
 				if (lighty > y)
@@ -234,16 +238,16 @@ void blit_enemy( SDL_Surface *surface, unsigned int i, signed int x_offset, sign
 	Uint8 *p; /* shape pointer */
 	Uint8 *s; /* screen pointer, 8-bit specific */
 	Uint8 *s_limit; /* buffer boundary */
-
+	
 	s = (Uint8 *)surface->pixels;
 	s += (enemy[i].ey + y_offset) * surface->pitch + (enemy[i].ex + x_offset) + tempMapXOfs;
-
+	
 	s_limit = (Uint8 *)surface->pixels;
 	s_limit += surface->h * surface->pitch;
-
+	
 	p = enemy[i].shapeseg;
 	p += SDL_SwapLE16(((Uint16 *)p)[enemy[i].egr[enemy[i].enemycycle - 1] + sprite_offset]);
-
+	
 	while (*p != 0x0f)
 	{
 		s += *p & 0x0f;
@@ -272,13 +276,13 @@ void blit_enemy( SDL_Surface *surface, unsigned int i, signed int x_offset, sign
 void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just drawing
 {
 	PX -= 25;
-	int i;
-	for (i = enemyOffset - 25; i < enemyOffset; i++)
+	
+	for (int i = enemyOffset - 25; i < enemyOffset; i++)
 	{
 		if (enemyAvail[i] != 1)
 		{
 			enemy[i].mapoffset = tempMapXOfs;
-
+			
 			if (enemy[i].xaccel && enemy[i].xaccel - 89 > mt_rand() % 11)
 			{
 				if (PX > enemy[i].ex)
@@ -292,7 +296,7 @@ void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just
 						enemy[i].exc--;
 				}
 			}
-
+			
 			if (enemy[i].yaccel && enemy[i].yaccel - 89 > mt_rand() % 11)
 			{
 				if (PY > enemy[i].ey)
@@ -306,22 +310,22 @@ void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just
 						enemy[i].eyc--;
 				}
 			}
-
+			
  			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < 300)
 			{
 				if (enemy[i].aniactive == 1)
 				{
 					enemy[i].enemycycle++;
-
+					
 					if (enemy[i].enemycycle == enemy[i].animax)
 						enemy[i].aniactive = enemy[i].aniwhenfire;
 					else if (enemy[i].enemycycle > enemy[i].ani)
 						enemy[i].enemycycle = enemy[i].animin;
 				}
-
+				
 				if (enemy[i].egr[enemy[i].enemycycle - 1] == 999)
 					goto enemy_gone;
-
+				
 				if (enemy[i].size == 1) // 2x2 enemy
 				{
 					if (enemy[i].ey > -13)
@@ -340,10 +344,10 @@ void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just
 					if (enemy[i].ey > -13)
 						blit_enemy(VGAScreen, i, 0, 0, -1);
 				}
-
+				
 				enemy[i].filter = 0;
 			}
-
+			
 			if (enemy[i].excc)
 			{
 				if (--enemy[i].exccw <= 0)
@@ -367,7 +371,7 @@ void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just
 					}
 				}
 			}
-
+			
 			if (enemy[i].eycc)
 			{
 				if (--enemy[i].eyccw <= 0)
@@ -391,34 +395,34 @@ void JE_drawEnemy( int enemyOffset ) // actually does a whole lot more than just
 					}
 				}
 			}
-
+			
 			enemy[i].ey += enemy[i].fixedmovey;
-
+			
 			enemy[i].ex += enemy[i].exc;
 			if (enemy[i].ex < -80 || enemy[i].ex > 340)
 				goto enemy_gone;
-
+			
 			enemy[i].ey += enemy[i].eyc;
 			if (enemy[i].ey < -112 || enemy[i].ey > 190)
 				goto enemy_gone;
-
+			
 			goto enemy_still_exists;
-
+			
 enemy_gone:
 			/* enemy[i].egr[10] &= 0x00ff; <MXD> madness? */
 			enemyAvail[i] = 1;
 			goto draw_enemy_end;
-
+			
 enemy_still_exists:
-
+			
 			/*X bounce*/
 			if (enemy[i].ex <= enemy[i].xminbounce || enemy[i].ex >= enemy[i].xmaxbounce)
 				enemy[i].exc = -enemy[i].exc;
-
+			
 			/*Y bounce*/
 			if (enemy[i].ey <= enemy[i].yminbounce || enemy[i].ey >= enemy[i].ymaxbounce)
 				enemy[i].eyc = -enemy[i].eyc;
-
+			
 			/* Evalue != 0 - score item at boundary */
 			if (enemy[i].scoreitem)
 			{
@@ -427,23 +431,23 @@ enemy_still_exists:
 				if (enemy[i].ex > 245)
 					enemy[i].ex--;
 			}
-
+			
 			enemy[i].ey += tempBackMove;
-
+			
 			if (enemy[i].ex <= -24 || enemy[i].ex >= 296)
 				goto draw_enemy_end;
-
+			
 			tempX = enemy[i].ex;
 			tempY = enemy[i].ey;
-
+			
 			temp = enemy[i].enemytype;
-
+			
 			/* Enemy Shots */
 			if (enemy[i].edamaged == 1)
 				goto draw_enemy_end;
-
+			
 			enemyOnScreen++;
-
+			
 			if (enemy[i].iced)
 			{
 				enemy[i].iced--;
@@ -453,13 +457,13 @@ enemy_still_exists:
 				}
 				goto draw_enemy_end;
 			}
-			int j;
-			for (j = 3; j > 0; j--)
+			
+			for (int j = 3; j > 0; j--)
 			{
 				if (enemy[i].freq[j-1])
 				{
 					temp3 = enemy[i].tur[j-1];
-
+					
 					if (--enemy[i].eshotwait[j-1] == 0 && temp3)
 					{
 						enemy[i].eshotwait[j-1] = enemy[i].freq[j-1];
@@ -469,10 +473,10 @@ enemy_still_exists:
 							if (difficultyLevel > 7)
 								enemy[i].eshotwait[j-1] = (enemy[i].eshotwait[j-1] / 2) + 1;
 						}
-
+						
 						if (galagaMode && (enemy[i].eyc == 0 || (mt_rand() % 400) >= galagaShotFreq))
 							goto draw_enemy_end;
-
+						
 						switch (temp3)
 						{
 							case 252: /* Savara Boss DualMissile */
@@ -544,9 +548,9 @@ enemy_still_exists:
 									}
 									if (b == ENEMY_SHOT_MAX)
 										goto draw_enemy_end;
-
+									
 									enemyShotAvail[b]--;
-
+									
 									if (weapons[temp3].sound > 0)
 									{
 										do
@@ -554,20 +558,20 @@ enemy_still_exists:
 										while (temp == 3);
 										soundQueue[temp] = weapons[temp3].sound;
 									}
-
+									
 									tempPos = weapons[temp3].max;
-
+									
 									if (enemy[i].aniactive == 2)
 										enemy[i].aniactive = 1;
-
+									
 									if (++enemy[i].eshotmultipos[j-1] > tempPos)
 										enemy[i].eshotmultipos[j-1] = 1;
-
+									
 									tempPos = enemy[i].eshotmultipos[j-1];
-
+									
 									if (j == 1)
 										temp2 = 4;
-
+									
 									enemyShot[b].sx = tempX + weapons[temp3].bx[tempPos-1] + tempMapXOfs;
 									enemyShot[b].sy = tempY + weapons[temp3].by[tempPos-1];
 									enemyShot[b].sdmg = weapons[temp3].attack[tempPos-1];
@@ -576,46 +580,46 @@ enemy_still_exists:
 									enemyShot[b].duration = weapons[temp3].del[tempPos-1];
 									enemyShot[b].animate = 0;
 									enemyShot[b].animax = weapons[temp3].weapani;
-
+									
 									enemyShot[b].sgr = weapons[temp3].sg[tempPos-1];
 									switch (j)
 									{
 										case 1:
 											enemyShot[b].syc = weapons[temp3].acceleration;
 											enemyShot[b].sxc = weapons[temp3].accelerationx;
-
+											
 											enemyShot[b].sxm = weapons[temp3].sx[tempPos-1];
 											enemyShot[b].sym = weapons[temp3].sy[tempPos-1];
 											break;
 										case 3:
 											enemyShot[b].sxc = -weapons[temp3].acceleration;
 											enemyShot[b].syc = weapons[temp3].accelerationx;
-
+											
 											enemyShot[b].sxm = -weapons[temp3].sy[tempPos-1];
 											enemyShot[b].sym = -weapons[temp3].sx[tempPos-1];
 											break;
 										case 2:
 											enemyShot[b].sxc = weapons[temp3].acceleration;
 											enemyShot[b].syc = -weapons[temp3].acceleration;
-
+											
 											enemyShot[b].sxm = weapons[temp3].sy[tempPos-1];
 											enemyShot[b].sym = -weapons[temp3].sx[tempPos-1];
 											break;
 									}
-
+									
 									if (weapons[temp3].aim > 0)
 									{
 										temp4 = weapons[temp3].aim;
-
+										
 										/*DIF*/
 										if (difficultyLevel > 2)
 										{
 											temp4 += difficultyLevel - 2;
 										}
-
+										
 										tempX2 = PX;
 										tempY2 = PY;
-
+											
 										if (twoPlayerMode)
 										{
 											if (playerAliveB && !playerAlive)
@@ -624,14 +628,14 @@ enemy_still_exists:
 												temp = 0;
 											else
 												temp = mt_rand() % 2;
-
+											
 											if (temp == 1)
 											{
 												tempX2 = PXB - 25;
 												tempY2 = PYB;
 											}
 										}
-
+										
 										tempI = (tempX2 + 25) - tempX - tempMapXOfs - 4;
 										if (tempI == 0)
 											tempI++;
@@ -651,32 +655,32 @@ enemy_still_exists:
 					}
 				}
 			}
-
+			
 			/* Enemy Launch Routine */
 			if (enemy[i].launchfreq)
 			{
 				if (--enemy[i].launchwait == 0)
 				{
 					enemy[i].launchwait = enemy[i].launchfreq;
-
+					
 					if (enemy[i].launchspecial != 0)
 					{
 						/*Type  1 : Must be inline with player*/
 						if (abs(enemy[i].ey - PY) > 5)
 							goto draw_enemy_end;
 					}
-
+					
 					if (enemy[i].aniactive == 2)
 					{
 						enemy[i].aniactive = 1;
 					}
-
+					
 					if (enemy[i].launchtype == 0)
 						goto draw_enemy_end;
-
+					
 					tempW = enemy[i].launchtype;
 					JE_newEnemy(enemyOffset == 50 ? 75 : enemyOffset - 25);
-
+					
 					/*Launch Enemy Placement*/
 					if (b > 0)
 					{
@@ -689,7 +693,7 @@ enemy_still_exists:
 						}
 						if (enemy[b-1].launchtype > 0 && enemy[b-1].launchfreq == 0)
 						{
-
+							
 							if (enemy[b-1].launchtype > 90)
 							{
 								tempI += mt_rand() % ((enemy[b-1].launchtype - 90) * 4) - (enemy[b-1].launchtype - 90) * 2;
@@ -710,18 +714,18 @@ enemy_still_exists:
 								enemy[b-1].eyc = round(((float)tempI5 / tempI3) * enemy[b-1].launchtype);
 							}
 						}
-
+						
 						do
 							temp = mt_rand() % 8;
 						while (temp == 3);
 						soundQueue[temp] = randomEnemyLaunchSounds[(mt_rand() % 3)];
-
+						
 						if (enemy[i].launchspecial == 1
 							&& enemy[i].linknum < 100)
 						{
 							enemy[b-1].linknum = enemy[i].linknum;
 						}
-
+						
 						enemy[b-1].ex = tempI;
 						enemy[b-1].ey = tempI2;
 					}
@@ -775,15 +779,12 @@ void JE_main( void )
 	   the loadmap function. */
 
 start_level:
-
+	
 	if (galagaMode)
 		twoPlayerMode = false;
-
-	if (playDemo)
-		stop_song();
-
+	
 	JE_clearKeyboard();
-
+	
 	if (eShapes1 != NULL)
 	{
 		free(eShapes1);
@@ -814,20 +815,26 @@ start_level:
 		JE_setTimerInt();
 	}
 
-	if (recordDemo || playDemo)
+	if (play_demo || record_demo)
 	{
-		fclose(recordFile);
-		if (playDemo)
+		if (demo_file)
 		{
-			JE_fadeBlack(10);
-			/* JE_wipekey();*/
+			fclose(demo_file);
+			demo_file = NULL;
+		}
+		
+		if (play_demo)
+		{
+			stop_song();
+			fade_black(10);
+			
 			wait_noinput(true, true, true);
 		}
 	}
 
 	difficultyLevel = oldDifficultyLevel;   /*Return difficulty to normal*/
 
-	if (!playDemo)
+	if (!play_demo)
 	{
 		if (((playerAlive || (twoPlayerMode && playerAliveB))
 		   || normalBonusLevelCurrent || bonusLevelCurrent)
@@ -835,26 +842,20 @@ start_level:
 		{
 			mainLevel = nextLevel;
 			JE_endLevelAni();
-
+			
 			fade_song();
 		}
 		else
 		{
 			fade_song();
-
-			JE_fadeBlack(10);
-			if (twoPlayerMode)
-			{
-				temp = 22;
-			} else {
-				temp = 11;
-			}
-			JE_loadGame(temp);
+			fade_black(10);
+			
+			JE_loadGame(twoPlayerMode ? 22 : 11);
 			if (doNotSaveBackup)
 			{
 				superTyrian = false;
 				onePlayerAction = false;
-				pItems[2] = 0;
+				pItems[P_SUPERARCADE] = SA_NONE;
 			}
 			if (bonusLevelCurrent && !playerEndLevel)
 			{
@@ -865,9 +866,9 @@ start_level:
 	doNotSaveBackup = false;
 
 start_level_first:
-
+	
 	set_volume(tyrMusicVolume, fxVolume);
-
+	
 	JE_loadCompShapes(&shapes6, &shapes6Size, '1');  /* Items */
 
 	endLevel = false;
@@ -879,9 +880,9 @@ start_level_first:
 
 	doNotSaveBackup = false;
 	JE_loadMap();
-
+	
 	fade_song();
-
+	
 	playerAlive = true;
 	playerAliveB = true;
 	oldDifficultyLevel = difficultyLevel;
@@ -991,7 +992,7 @@ start_level_first:
 	playerInvulnerable1 = 100;
 	playerInvulnerable2 = 100;
 
-	newkey = false;
+	newkey = newmouse = false;
 
 	/* Initialize Level Data and Debug Mode */
 	levelEnd = 255;
@@ -1056,10 +1057,10 @@ start_level_first:
 
 	/* Setup Armor/Shield Data */
 	shieldWait = 1;
-	shield     = shields[pItems[10-1]].mpwr;
-	shieldT    = shields[pItems[10-1]].tpwr * 20;
+	shield     = shields[pItems[P_SHIELD]].mpwr;
+	shieldT    = shields[pItems[P_SHIELD]].tpwr * 20;
 	shieldMax  = shield * 2;
-	shield2    = shields[pItemsPlayer2[10-1]].mpwr;
+	shield2    = shields[pItemsPlayer2[P_SHIELD]].mpwr;
 	shieldMax2 = shield * 2;
 	JE_drawShield();
 	JE_drawArmor();
@@ -1101,41 +1102,40 @@ start_level_first:
 	/* JE_setVol(tyrMusicVolume, fxPlayVol >> 2); NOTE: MXD killed this because it was broken */
 
 	/*Save backup game*/
-	if (!playDemo && !doNotSaveBackup)
+	if (!play_demo && !doNotSaveBackup)
 	{
 		temp = twoPlayerMode ? 22 : 11;
 		JE_saveGame(temp, "LAST LEVEL    ");
 	}
-
-	memset(lastKey, 0, sizeof(lastKey));
-	if (recordDemo && !playDemo)
+	
+	if (!play_demo && record_demo)
 	{
-		dont_die = true;
+		Uint8 new_demo_num = 0;
+		
+		dont_die = true; // for JE_find
 		do
 		{
-			sprintf(tempStr, "demorec.%d", recordFileNum);
-			tempb = JE_find(tempStr);
-			if (tempb)
-			{
-				recordFileNum++;
-			}
-		} while (tempb);
+			sprintf(tempStr, "demorec.%d", new_demo_num++);
+		}
+		while (JE_find(tempStr)); // until file doesn't exist
 		dont_die = false;
-
-		recordFile = fopen_check(tempStr, "wb");
-		if (!recordFile)
+		
+		demo_file = fopen_check(tempStr, "wb");
+		if (!demo_file)
 		{
+			printf("error: failed to open '%s' (mode '%s')\n", tempStr, "wb");
 			exit(1);
 		}
-
-		efwrite(&episodeNum, 1, 1, recordFile);
-		efwrite(levelName, 1, 10, recordFile);
-		efwrite(&lvlFileNum, 1, 1, recordFile);
-		efwrite(pItems, 1, 12, recordFile);
-		efwrite(portPower, 1, 5, recordFile);
-		efwrite(&levelSong, 1, 1, recordFile);
-
-		lastMoveWait = 0;
+		
+		efwrite(&episodeNum, 1,  1, demo_file);
+		efwrite(levelName,   1, 10, demo_file);
+		efwrite(&lvlFileNum, 1,  1, demo_file);
+		efwrite(pItems,      1, 12, demo_file);
+		efwrite(portPower,   1,  5, demo_file);
+		efwrite(&levelSong,  1,  1, demo_file);
+		
+		demo_keys = 0;
+		demo_keys_wait = 0;
 	}
 
 	twoPlayerLinked = false;
@@ -1179,20 +1179,20 @@ start_level_first:
 	memset(enemyAvail,       1, sizeof(enemyAvail));
 	for (i = 0; i < COUNTOF(enemyShotAvail); i++)
 		enemyShotAvail[i] = 1;
-
+	
 	/*Initialize Shots*/
 	memset(playerShotData,   0, sizeof(playerShotData));
 	memset(shotAvail,        0, sizeof(shotAvail));
 	memset(shotMultiPos,     0, sizeof(shotMultiPos));
 	memset(shotRepeat,       1, sizeof(shotRepeat));
-
+	
 	memset(button,           0, sizeof(button));
-
+	
 	memset(globalFlags,      0, sizeof(globalFlags));
-
+	
 	memset(explosions,       0, sizeof(explosions));
 	memset(rep_explosions,   0, sizeof(rep_explosions));
-
+	
 	/* --- Clear Sound Queue --- */
 	memset(soundQueue,       0, sizeof(soundQueue));
 	soundQueue[3] = V_GOOD_LUCK;
@@ -1300,30 +1300,30 @@ level_loop:
 	if (!endLevel) // draw HUD
 	{
 		VGAScreen = VGAScreenSeg; /* side-effect of game_screen */
-
+		
 		/*-----------------------Message Bar------------------------*/
 		if (textErase > 0 && --textErase == 0)
 			blit_shape(VGAScreenSeg, 16, 189, OPTION_SHAPES, 36);  // in-game message area
-
+		
 		/*------------------------Shield Gen-------------------------*/
 		if (galagaMode)
 		{
 			shield = 0;
 			shield2 = 0;
-
+			
 			if (portPower[2-1] == 0 || armorLevel2 == 0)
 				twoPlayerMode = false;
-
+			
 			if (score >= galagaLife)
 			{
-				soundQueue[6] = 11;
-				soundQueue[7] = 21;
-
+				soundQueue[6] = S_EXPLOSION_11;
+				soundQueue[7] = S_SOUL_OF_ZINGLON;
+				
 				if (portPower[1-1] < 11)
 					portPower[1-1]++;
 				else
 					score += 1000;
-
+				
 				if (galagaLife == 10000)
 					galagaLife = 20000;
 				else
@@ -1337,12 +1337,12 @@ level_loop:
 				if (--shieldWait == 0)
 				{
 					shieldWait = 20 - shieldSet;
-
+					
 					if (shield < shieldMax && playerAlive)
 						shield++;
 					if (shield2 < shieldMax2 && playerAliveB)
 						shield2++;
-
+					
 					JE_drawShield();
 				}
 			}
@@ -1351,22 +1351,22 @@ level_loop:
 				if (--shieldWait == 0)
 				{
 					shieldWait = 20 - shieldSet;
-
+					
 					power -= shieldT;
 					shield++;
 					if (shield2 < shieldMax)
 						shield2++;
-
+					
 					JE_drawShield();
 				}
 			}
 		}
-
+		
 		/*---------------------Weapon Display-------------------------*/
 		if (lastPortPower[1-1] != portPower[1-1])
 		{
 			lastPortPower[1-1] = portPower[1-1];
-
+			
 			if (twoPlayerMode)
 			{
 				tempW2 = 6;
@@ -1377,20 +1377,20 @@ level_loop:
 				tempW2 = 17;
 				tempW = 289;
 			}
-
+			
 			JE_c_bar(tempW, tempW2, tempW + 1 + 10 * 2, tempW2 + 2, 0);
-
+			
 			for (temp = 1; temp <= portPower[1-1]; temp++)
 			{
 				JE_rectangle(tempW, tempW2, tempW + 1, tempW2 + 2, 115 + temp); /* <MXD> SEGa000 */
 				tempW += 2;
 			}
 		}
-
+		
 		if (lastPortPower[2-1] != portPower[2-1])
 		{
 			lastPortPower[2-1] = portPower[2-1];
-
+			
 			if (twoPlayerMode)
 			{
 				tempW2 = 100;
@@ -1401,16 +1401,16 @@ level_loop:
 				tempW2 = 38;
 				tempW = 289;
 			}
-
+			
 			JE_c_bar(tempW, tempW2, tempW + 1 + 10 * 2, tempW2 + 2, 0);
-
+			
 			for (temp = 1; temp <= portPower[2-1]; temp++)
 			{
 				JE_rectangle(tempW, tempW2, tempW + 1, tempW2 + 2, 115 + temp); /* <MXD> SEGa000 */
 				tempW += 2;
 			}
 		}
-
+		
 		/*------------------------Power Bar-------------------------*/
 		if (twoPlayerMode || onePlayerAction)
 		{
@@ -1421,9 +1421,9 @@ level_loop:
 			power = power + powerAdd;
 			if (power > 900)
 				power = 900;
-
+			
 			temp = power / 10;
-
+			
 			if (temp != lastPower)
 			{
 				if (temp > lastPower)
@@ -1431,7 +1431,7 @@ level_loop:
 				else
 					JE_c_bar(269, 113 - 11 - lastPower, 276, 114 - 11 - temp, 0);
 			}
-
+			
 			lastPower = temp;
 		}
 
@@ -1439,38 +1439,38 @@ level_loop:
 
 		enemyOnScreen = 0;
 	}
-
+	
 	/* use game_screen for all the generic drawing functions */
 	VGAScreen = game_screen;
-
+	
 	/*---------------------------EVENTS-------------------------*/
 	while (eventRec[eventLoc-1].eventtime <= curLoc && eventLoc <= maxEvent)
 		JE_eventSystem();
-
+	
 	if (isNetworkGame && reallyEndLevel)
 		goto start_level;
-
-
+	
+	
 	/* SMOOTHIES! */
 	JE_checkSmoothies();
 	if (anySmoothies)
 		VGAScreen = smoothiesScreen;
-
+	
 	/* --- BACKGROUNDS --- */
 	/* --- BACKGROUND 1 --- */
-
+	
 	if (forceEvents && !backMove)
 		curLoc++;
-
+	
 	if (map1YDelayMax > 1 && backMove < 2)
 		backMove = (map1YDelay == 1) ? 1 : 0;
-
+	
 	/*Draw background*/
 	if (astralDuration == 0)
 		draw_background_1(VGAScreen);
 	else
 		JE_clr256();
-
+	
 	/*Set Movement of background 1*/
 	if (--map1YDelay == 0)
 	{
@@ -1493,7 +1493,7 @@ level_loop:
 	if (starActive || astralDuration > 0)
 	{
 		s = (Uint8 *)VGAScreen->pixels;
-
+		
 		for (i = MAX_STARS; i--; )
 		{
 			starDat[i].sLoc += starDat[i].sMov + starY;
@@ -1604,7 +1604,7 @@ level_loop:
 	{
 		tempW = levelEnemy[mt_rand() % levelEnemyMax];
 		if (tempW == 2)
-			soundQueue[3] = 7;
+			soundQueue[3] = S_WEAPON_7;
 		JE_newEnemy(0);
 	}
 
@@ -1690,20 +1690,20 @@ level_loop:
 
 					if (abs(playerShotData[z].shotDevY) == playerShotData[z].shotCirSizeY)
 						playerShotData[z].shotDirY = -playerShotData[z].shotDirY;
-
+					
 					/*Double Speed Circle Shots - add a second copy of above loop*/
 				}
-
+				
 				tempShotX = playerShotData[z].shotX;
 				tempShotY = playerShotData[z].shotY;
-
+				
 				if (playerShotData[z].shotX < -34 || playerShotData[z].shotX > 290 ||
 				    playerShotData[z].shotY < -15 || playerShotData[z].shotY > 190)
 				{
 					shotAvail[z] = 0;
 					goto draw_player_shot_loop_end;
 				}
-
+				
 				if (playerShotData[z].shotTrail != 255)
 				{
 					if (playerShotData[z].shotTrail == 98)
@@ -1711,20 +1711,20 @@ level_loop:
 					else
 						JE_setupExplosion(playerShotData[z].shotX, playerShotData[z].shotY, 0, playerShotData[z].shotTrail, false, false);
 				}
-
+				
 				if (playerShotData[z].aimAtEnemy != 0)
 				{
 					if (--playerShotData[z].aimDelay == 0)
 					{
 						playerShotData[z].aimDelay = playerShotData[z].aimDelayMax;
-
+						
 						if (enemyAvail[playerShotData[z].aimAtEnemy] != 1)
 						{
 							if (playerShotData[z].shotX < enemy[playerShotData[z].aimAtEnemy].ex)
 								playerShotData[z].shotXM++;
 							else
 								playerShotData[z].shotXM--;
-
+							
 							if (playerShotData[z].shotY < enemy[playerShotData[z].aimAtEnemy].ey)
 								playerShotData[z].shotYM++;
 							else
@@ -1739,22 +1739,22 @@ level_loop:
 						}
 					}
 				}
-
+				
 				tempW = playerShotData[z].shotGr + playerShotData[z].shotAni;
 				if (++playerShotData[z].shotAni == playerShotData[z].shotAniMax)
 					playerShotData[z].shotAni = 0;
-
+				
 				tempI2 = playerShotData[z].shotDmg;
 				temp2 = playerShotData[z].shotBlastFilter;
 				chain = playerShotData[z].chainReaction;
 				playerNum = playerShotData[z].playerNumber;
-
+				
 				tempSpecial = tempW > 60000;
-
+				
 				if (tempSpecial)
 				{
 					blit_shape_blend(VGAScreen, tempShotX+1, tempShotY, OPTION_SHAPES, tempW - 60001);
-
+					
 					tempX2 = shapeX[OPTION_SHAPES][tempW - 60001] / 2;
 					tempY2 = shapeY[OPTION_SHAPES][tempW - 60001] / 2;
 				}
@@ -1778,7 +1778,7 @@ level_loop:
 						JE_drawShape2(tempShotX+1, tempShotY, tempW, shapesC1);
 					}
 				}
-
+				
 			}
 
 			for (b = 0; b < 100; b++)
@@ -1809,7 +1809,7 @@ level_loop:
 						        ((enemy[b].enemycycle > 0) &&
 						        (abs(enemy[b].ex + enemy[b].mapoffset - tempShotX) < 13) && (abs(enemy[b].ey - tempShotY - 6) < 15));
 					}
-
+					
 					if (tempB)
 					{
 						if (chain > 0)
@@ -1819,9 +1819,9 @@ level_loop:
 							shotAvail[z] = 0;
 							goto draw_player_shot_loop_end;
 						}
-
+						
 						infiniteShot = false;
-
+						
 						if (tempI2 == 99)
 						{
 							tempI2 = 0;
@@ -1837,23 +1837,23 @@ level_loop:
 								infiniteShot = true;
 							}
 						}
-
+						
 						tempI = enemy[b].armorleft;
-
+						
 						temp = enemy[b].linknum;
 						if (temp == 0)
 							temp = 255;
-
+						
 						if (enemy[b].armorleft < 255)
 						{
 							if (temp == statBar[1-1])
 								statCol[1-1] = 6;
 							if (temp == statBar[2-1])
 								statCol[2-1] = 6;
-
+							
 							if (enemy[b].enemyground)
 								enemy[b].filter = temp2;
-
+							
 							for (i = 0; i < 100; i++)
 							{
 								if (enemy[i].linknum == temp &&
@@ -1866,7 +1866,7 @@ level_loop:
 								}
 							}
 						}
-
+						
 						if (tempI > tempI2)
 						{
 							if (z != MAX_PWEAPON - 1)
@@ -1881,13 +1881,13 @@ level_loop:
 									JE_doSP(tempShotX + 6, tempShotY + 6, tempI2 / 2 + 3, tempI2 / 4 + 2, temp2);
 								}
 							}
-
-							soundQueue[5] = 3;
-
+							
+							soundQueue[5] = S_ENEMY_HIT;
+							
 							if ((tempI - tempI2 <= enemy[b].edlevel) &&
 							    ((!enemy[b].edamaged) ^ (enemy[b].edani < 0)))
 							{
-
+								
 								for (temp3 = 0; temp3 < 100; temp3++)
 								{
 									if (enemyAvail[temp3] != 1)
@@ -1899,11 +1899,11 @@ level_loop:
 										    ((enemyContinualDamage && (temp - 100 == temp4)) ||
 										    ((temp4 > 40) && (temp4 / 20 == temp / 20) && (temp4 <= temp))))))
 										{
-
+										
 											enemy[temp3].enemycycle = 1;
-
+											
 											enemy[temp3].edamaged = !enemy[temp3].edamaged;
-
+											
 											if (enemy[temp3].edani != 0)
 											{
 												enemy[temp3].ani = abs(enemy[temp3].edani);
@@ -1911,7 +1911,7 @@ level_loop:
 												enemy[temp3].animax = 0;
 												enemy[temp3].animin = enemy[temp3].edgr;
 												enemy[temp3].enemycycle = enemy[temp3].animin - 1;
-
+												
 											}
 											else if (enemy[temp3].edgr > 0)
 											{
@@ -1926,15 +1926,15 @@ level_loop:
 												enemyAvail[temp3] = 1;
 												enemyKilled++;
 											}
-
+											
 											enemy[temp3].aniwhenfire = 0;
-
+											
 											if (enemy[temp3].armorleft > enemy[temp3].edlevel)
 												enemy[temp3].armorleft = enemy[temp3].edlevel;
-
+											
 											tempX = enemy[temp3].ex + enemy[temp3].mapoffset;
 											tempY = enemy[temp3].ey;
-
+											
 											if (enemyDat[enemy[temp3].enemytype].esize != 1)
 												JE_setupExplosion(tempX, tempY - 6, 0, 1, false, false);
 											else
@@ -1946,10 +1946,10 @@ level_loop:
 						}
 						else
 						{
-
+							
 							if ((temp == 254) && (superEnemy254Jump > 0))
 								JE_eventJump(superEnemy254Jump);
-
+						
 							for (temp2 = 0; temp2 < 100; temp2++)
 							{
 								if (enemyAvail[temp2] != 1)
@@ -1959,15 +1959,15 @@ level_loop:
 									    ((temp != 255) && ((temp == temp3) || (temp - 100 == temp3)
 									    || ((temp3 > 40) && (temp3 / 20 == temp / 20) && (temp3 <= temp)))))
 									{
-
+										
 										tempI3 = enemy[temp2].ex + enemy[temp2].mapoffset;
-
+										
 										if (enemy[temp2].special)
 											globalFlags[enemy[temp2].flagnum] = enemy[temp2].setto;
-
+										
 										if ((enemy[temp2].enemydie > 0) &&
-											!((superArcadeMode > 0) &&
-											(enemyDat[enemy[temp2].enemydie].value == 30000)))
+										    !((superArcadeMode != SA_NONE) &&
+										      (enemyDat[enemy[temp2].enemydie].value == 30000)))
 										{
 											zz = b;
 											tempW = enemy[temp2].enemydie;
@@ -1978,7 +1978,7 @@ level_loop:
 											}
 											JE_newEnemy(tempW2);
 											if (b != 0) {
-												if ((superArcadeMode > 0) && (enemy[b-1].evalue > 30000))
+												if ((superArcadeMode != SA_NONE) && (enemy[b-1].evalue > 30000))
 												{
 													superArcadePowerUp++;
 													if (superArcadePowerUp > 5)
@@ -1986,18 +1986,18 @@ level_loop:
 													enemy[b-1].egr[1-1] = 5 + superArcadePowerUp * 2;
 													enemy[b-1].evalue = 30000 + superArcadePowerUp;
 												}
-
+												
 												if (enemy[b-1].evalue != 0)
 													enemy[b-1].scoreitem = true;
 												else
 													enemy[b-1].scoreitem = false;
-
+												
 												enemy[b-1].ex = enemy[temp2].ex;
 												enemy[b-1].ey = enemy[temp2].ey;
 											}
 											b = zz;
 										}
-
+										
 										if ((enemy[temp2].evalue > 0) && (enemy[temp2].evalue < 10000))
 										{
 											if (enemy[temp2].evalue == 1)
@@ -2012,7 +2012,7 @@ level_loop:
 													score2 += enemy[temp2].evalue;
 											}
 										}
-
+										
 										if ((enemy[temp2].edlevel == -1) && (temp == temp3))
 										{
 											enemy[temp2].edlevel = 0;
@@ -2028,22 +2028,22 @@ level_loop:
 											enemyAvail[temp2] = 1;
 											enemyKilled++;
 										}
-
+										
 										if (enemyDat[enemy[temp2].enemytype].esize == 1)
 										{
 											JE_setupExplosionLarge(enemy[temp2].enemyground, enemy[temp2].explonum, tempI3, enemy[temp2].ey);
-											soundQueue[6] = 9;
+											soundQueue[6] = S_EXPLOSION_9;
 										}
 										else
 										{
 											JE_setupExplosion(tempI3, enemy[temp2].ey, 0, 1, false, false);
-											soundQueue[6] = 8;
+											soundQueue[6] = S_SELECT; // S_EXPLOSION_8
 										}
 									}
 								}
 							}
 						}
-
+						
 						if (infiniteShot)
 						{
 							tempI2 += 250;
@@ -2060,7 +2060,7 @@ level_loop:
 								playerShotData[z].shotDmg -= tempI;
 							}
 						}
-
+						
 					}
 				}
 			}
@@ -2073,20 +2073,20 @@ draw_player_shot_loop_end:
 	/* Player movement indicators for shots that track your ship */
 	lastPXShotMove = PX;
 	lastPYShotMove = PY;
-
+	
 	/*=================================*/
 	/*=======Collisions Detection======*/
 	/*=================================*/
-
+	
 	if (playerAlive && !endLevel)
 		JE_playerCollide(&PX, &PY, &lastTurn, &lastTurn2, &score, &armorLevel, &shield, &playerAlive, &playerStillExploding, 1, playerInvulnerable1);
-
+	
 	if (twoPlayerMode && playerAliveB && !endLevel)
 		JE_playerCollide(&PXB, &PYB, &lastTurnB, &lastTurn2B, &score2, &armorLevel2, &shield2, &playerAliveB, &playerStillExploding2, 2, playerInvulnerable2);
-
+	
 	if (firstGameOver)
 		JE_mainGamePlayerFunctions();      /*--------PLAYER DRAW+MOVEMENT---------*/
-
+	
 	if (!endLevel)
 	{    /*MAIN DRAWING IS STOPPED STARTING HERE*/
 
@@ -2137,7 +2137,7 @@ draw_player_shot_loop_end:
 				{
 					enemyShotAvail[z] = 1;
 				} else {
-
+					
 					if (((temp3 = 1)
 					     && playerAlive != 0
 					     && enemyShot[z].sx - PX > sAniXNeg && enemyShot[z].sx - PX < sAniX
@@ -2151,11 +2151,11 @@ draw_player_shot_loop_end:
 						tempX = enemyShot[z].sx;
 						tempY = enemyShot[z].sy;
 						temp = enemyShot[z].sdmg;
-
+						
 						enemyShotAvail[z] = 1;
-
+						
 						JE_setupExplosion(tempX, tempY, 0, 0, false, false);
-
+						
 						switch (temp3)
 						{
 							case 1:
@@ -2233,10 +2233,10 @@ enemy_shot_draw_overflow:
 			}
 		}
 	}
-
+	
 	if (background3over == 1)
 		draw_background_3(VGAScreen);
-
+	
 	/* Draw Top Enemy */
 	if (topEnemyOver)
 	{
@@ -2244,67 +2244,67 @@ enemy_shot_draw_overflow:
 		tempBackMove = backMove3;
 		JE_drawEnemy(75);
 	}
-
+	
 	/* Draw Sky Enemy */
 	if (skyEnemyOverAll)
 	{
 		lastEnemyOnScreen = enemyOnScreen;
-
+		
 		tempMapXOfs = mapX2Ofs;
 		tempBackMove = 0;
 		JE_drawEnemy(25);
-
+		
 		if (enemyOnScreen == lastEnemyOnScreen)
 		{
 			if (stopBackgroundNum == 2)
 				stopBackgroundNum = 9;
 		}
 	}
-
+	
 	/*-------------------------- Sequenced Explosions -------------------------*/
 	enemyStillExploding = false;
-	for (i = 0; i < MAX_REPEATING_EXPLOSIONS; i++)
+	for (int i = 0; i < MAX_REPEATING_EXPLOSIONS; i++)
 	{
 		if (rep_explosions[i].ttl != 0)
 		{
 			enemyStillExploding = true;
-
+			
 			if (rep_explosions[i].delay > 0)
 			{
 				rep_explosions[i].delay--;
 				continue;
 			}
-
+			
 			rep_explosions[i].y += backMove2 + 1;
 			tempX = rep_explosions[i].x + (mt_rand() % 24) - 12;
 			tempY = rep_explosions[i].y + (mt_rand() % 27) - 24;
-
+			
 			if (rep_explosions[i].big)
 			{
 				JE_setupExplosionLarge(false, 2, tempX, tempY);
-
+				
 				if (rep_explosions[i].ttl == 1 || mt_rand() % 5 == 1)
-					soundQueue[7] = 11;
+					soundQueue[7] = S_EXPLOSION_11;
 				else
-					soundQueue[6] = 9;
-
+					soundQueue[6] = S_EXPLOSION_9;
+				
 				rep_explosions[i].delay = 4 + (mt_rand() % 3);
 			}
 			else
 			{
 				JE_setupExplosion(tempX, tempY, 0, 1, false, false);
-
-				soundQueue[5] = 4;
-
+				
+				soundQueue[5] = S_EXPLOSION_4;
+				
 				rep_explosions[i].delay = 3;
 			}
-
+			
 			rep_explosions[i].ttl--;
 		}
 	}
 
 	/*---------------------------- Draw Explosions ----------------------------*/
-	for (j = 0; j < MAX_EXPLOSIONS; j++)
+	for (int j = 0; j < MAX_EXPLOSIONS; j++)
 	{
 		if (explosions[j].ttl != 0)
 		{
@@ -2318,20 +2318,20 @@ enemy_shot_draw_overflow:
 			}
 			explosions[j].y += explosions[j].delta_y;
 			explosions[j].x += explosions[j].delta_x;
-
+			
 			s = (Uint8 *)VGAScreen->pixels;
 			s += explosions[j].y * VGAScreen->pitch + explosions[j].x;
-
+			
 			s_limit = (Uint8 *)VGAScreen->pixels;
 			s_limit += VGAScreen->h * VGAScreen->pitch;
-
+			
 			if (s + VGAScreen->pitch * 14 > s_limit)
 			{
 				explosions[j].ttl = 0;
 			} else {
 				p = shapes6;
 				p += SDL_SwapLE16(((JE_word *)p)[explosions[j].sprite]);
-
+				
 				if (explosionTransparent)
 				{
 					while (*p != 0x0f)
@@ -2379,16 +2379,16 @@ enemy_shot_draw_overflow:
 					}
 				}
 explosion_draw_overflow:
-
+				
 				explosions[j].ttl--;
 			}
 		}
 	}
-
+	
 	if (!portConfigChange)
 		portConfigDone = true;
-
-
+	
+	
 	/*-----------------------BACKGROUNDS------------------------*/
 	/*-----------------------BACKGROUND 2------------------------*/
 	if (!(smoothies[2-1] && processorType < 4) &&
@@ -2408,7 +2408,7 @@ explosion_draw_overflow:
 	    (twoPlayerMode && !galagaMode && playerAliveB && armorLevel2 < 6))
 	{
 		tempW2 = (playerAlive && armorLevel < 6) ? armorLevel : armorLevel2;
-
+		
 		if (armorShipDelay > 0)
 		{
 			armorShipDelay--;
@@ -2425,25 +2425,25 @@ explosion_draw_overflow:
 			}
 			armorShipDelay = 500;
 		}
-
+		
 		if ((playerAlive && armorLevel < 6 && (!isNetworkGame || thisPlayerNum == 1))
 		    || (twoPlayerMode && playerAliveB && armorLevel2 < 6 && (!isNetworkGame || thisPlayerNum == 2)))
 		{
-
+				
 			tempW = tempW2 * 4 + 8;
 			if (warningSoundDelay > tempW)
 				warningSoundDelay = tempW;
-
+			
 			if (warningSoundDelay > 1)
 			{
 				warningSoundDelay--;
 			}
 			else
 			{
-				soundQueue[7] = 17;
+				soundQueue[7] = S_WARNING;
 				warningSoundDelay = tempW;
 			}
-
+			
 			warningCol += warningColChange;
 			if (warningCol > 113 + (14 - (tempW2 * 2)))
 			{
@@ -2457,16 +2457,16 @@ explosion_draw_overflow:
 			JE_bar(24, 181, 138, 183, warningCol);
 			JE_bar(175, 181, 287, 183, warningCol);
 			JE_bar(24, 0, 287, 3, warningCol);
-
+			
 			JE_outText(140, 178, "WARNING", 7, (warningCol % 16) / 2);
-
+			
 		}
 	}
 
 	/*------- Random Explosions --------*/
 	if (randomExplosions && mt_rand() % 10 == 1)
 		JE_setupExplosionLarge(false, 20, mt_rand() % 280, mt_rand() % 180);
-
+	
 	/*=================================*/
 	/*=======The Sound Routine=========*/
 	/*=================================*/
@@ -2475,7 +2475,7 @@ explosion_draw_overflow:
 		temp = 0;
 		for (temp2 = 0; temp2 < SFX_CHANNELS; temp2++)
 		{
-			if (soundQueue[temp2] > 0)
+			if (soundQueue[temp2] != S_NONE)
 			{
 				temp = soundQueue[temp2];
 				if (temp2 == 3)
@@ -2484,13 +2484,14 @@ explosion_draw_overflow:
 					temp3 = fxPlayVol / 4;
 				else   /*Lightning*/
 					temp3 = fxPlayVol / 2;
-
+				
 				JE_multiSamplePlay(digiFx[temp-1], fxSize[temp-1], temp2, temp3);
-				soundQueue[temp2] = 0;
+				
+				soundQueue[temp2] = S_NONE;
 			}
 		}
 	}
-
+	
 	if (returnActive && enemyOnScreen == 0)
 	{
 		JE_eventJump(65535);
@@ -2540,32 +2541,32 @@ explosion_draw_overflow:
 	{
 		frameCountMax = (frameCountMax == 2) ? 3 : 2;
 	}
-
+	
 	/*--------  Level Timer    ---------*/
 	if (levelTimer && levelTimerCountdown > 0)
 	{
 		levelTimerCountdown--;
 		if (levelTimerCountdown == 0)
 			JE_eventJump(levelTimerJumpTo);
-
+		
 		if (levelTimerCountdown > 200)
 		{
 			if (levelTimerCountdown % 100 == 0)
-				soundQueue[7] = 17;
-
+				soundQueue[7] = S_WARNING;
+			
 			if (levelTimerCountdown % 10 == 0)
-				soundQueue[6] = 24;  /*28 or 24*/
+				soundQueue[6] = S_CLICK;
 		}
 		else if (levelTimerCountdown % 20 == 0)
 		{
-				soundQueue[7] = 17;
+			soundQueue[7] = S_WARNING;
 		}
-
+		
 		JE_textShade (140, 6, miscText[66], 7, (levelTimerCountdown % 20) / 3, FULL_SHADE);
 		sprintf(buffer, "%.1f", levelTimerCountdown / 100.0f);
 		JE_dString (100, 2, buffer, SMALL_FONT_SHAPES);
 	}
-
+	
 	/*GAME OVER*/
 	if (!constantPlay && !constantDie)
 	{
@@ -2575,20 +2576,20 @@ explosion_draw_overflow:
 			{
 				if (galagaMode)
 					playerStillExploding2 = 0;
-
+				
 				musicFade = true;
 			}
 			else
 			{
-				if (playDemo || normalBonusLevelCurrent || bonusLevelCurrent)
+				if (play_demo || normalBonusLevelCurrent || bonusLevelCurrent)
 					reallyEndLevel = true;
 				else
-					JE_dString(120, 60, miscText[21], FONT_SHAPES);
-
+					JE_dString(120, 60, miscText[21], FONT_SHAPES); // game over
+				
 				set_mouse_position(159, 100);
 				if (firstGameOver)
 				{
-					if (!playDemo)
+					if (!play_demo)
 					{
 						play_song(SONG_GAMEOVER);
 						set_volume(tyrMusicVolume, fxVolume);
@@ -2596,13 +2597,11 @@ explosion_draw_overflow:
 					firstGameOver = false;
 				}
 
-				if (!playDemo)
+				if (!play_demo)
 				{
 					push_joysticks_as_keyboard();
 					service_SDL_events(true);
-					if (playDemo ||
-					   (newkey || button[0] || button[1] || button[2]) ||
-					   (newmouse))
+					if ((newkey || button[0] || button[1] || button[2]) || newmouse)
 					{
 						reallyEndLevel = true;
 					}
@@ -2614,47 +2613,46 @@ explosion_draw_overflow:
 		}
 	}
 
-	/* Call Keyboard input handler */
-	if (playDemo)
+	if (play_demo) // input kills demo
 	{
 		push_joysticks_as_keyboard();
 		service_SDL_events(false);
-
+		
 		if (newkey || newmouse)
 		{
 			reallyEndLevel = true;
-			stoppedDemo = true;
+			
+			stopped_demo = true;
+			skip_intro_logos = true;
 		}
 	}
-	else
+	else // input handling for pausing, menu, cheats
 	{
 		service_SDL_events(false);
-
+		
 		if (newkey)
 		{
 			skipStarShowVGA = false;
 			JE_mainKeyboardInput();
 			newkey = false;
 			if (skipStarShowVGA)
-			{
 				goto level_loop;
-			}
 		}
-
+		
 		if (pause_pressed)
 		{
 			pause_pressed = false;
-
+			
 			if (isNetworkGame)
 				pauseRequest = true;
 			else
 				JE_pauseGame();
 		}
-
+		
 		if (ingamemenu_pressed)
 		{
 			ingamemenu_pressed = false;
-
+			
 			if (isNetworkGame)
 			{
 				inGameMenuRequest = true;
@@ -2667,7 +2665,7 @@ explosion_draw_overflow:
 			}
 		}
 	}
-
+	
 	/*Network Update*/
 	if (isNetworkGame)
 	{
@@ -2678,20 +2676,20 @@ explosion_draw_overflow:
 			                  (skipLevelRequest == true) << 2 |
 			                  (nortShipRequest == true) << 3;
 			SDLNet_Write16(requests,        &packet_state_out[0]->data[14]);
-
+			
 			SDLNet_Write16(difficultyLevel, &packet_state_out[0]->data[16]);
 			SDLNet_Write16(PX,              &packet_state_out[0]->data[18]);
 			SDLNet_Write16(PXB,             &packet_state_out[0]->data[20]);
 			SDLNet_Write16(PY,              &packet_state_out[0]->data[22]);
 			SDLNet_Write16(PYB,             &packet_state_out[0]->data[24]);
 			SDLNet_Write16(curLoc,          &packet_state_out[0]->data[26]);
-
+			
 			network_state_send();
-
+			
 			if (network_state_update())
 			{
 				assert(SDLNet_Read16(&packet_state_in[0]->data[26]) == SDLNet_Read16(&packet_state_out[network_delay]->data[26]));
-
+				
 				requests = SDLNet_Read16(&packet_state_in[0]->data[14]) ^ SDLNet_Read16(&packet_state_out[network_delay]->data[14]);
 				if (requests & 1)
 				{
@@ -2714,20 +2712,20 @@ explosion_draw_overflow:
 				}
 				if (requests & 8)
 				{
-					pItems[12-1] = 12;
-					pItems[11-1] = 13;
-					pItems[1-1] = 36;
-					pItems[2-1] = 37;
+					pItems[P_SHIP] = 12;
+					pItems[P_SPECIAL] = 13;
+					pItems[P_FRONT] = 36;
+					pItems[P_REAR] = 37;
 					shipGr = 1;
 				}
-				int i;
-				for (i = 0; i < 2; i++)
+				
+				for (int i = 0; i < 2; i++)
 				{
 					if (SDLNet_Read16(&packet_state_in[0]->data[18 + i * 2]) != SDLNet_Read16(&packet_state_out[network_delay]->data[18 + i * 2]) || SDLNet_Read16(&packet_state_in[0]->data[20 + i * 2]) != SDLNet_Read16(&packet_state_out[network_delay]->data[20 + i * 2]))
 					{
 						char temp[64];
 						sprintf(temp, "Player %d is unsynchronized!", i + 1);
-
+						
 						tempScreenSeg = game_screen;
 						JE_textShade(40, 110 + i * 10, temp, 9, 2, FULL_SHADE);
 						tempScreenSeg = VGAScreen;
@@ -2735,7 +2733,7 @@ explosion_draw_overflow:
 				}
 			}
 		}
-
+		
 		JE_clearSpecialRequests();
 	}
 
@@ -2833,7 +2831,6 @@ void JE_loadMap( void )
 
 
 	FILE *f;
-/*	FILE *f2;*/
 	JE_char k2, k3;
 	JE_word x, y;
 	JE_integer yy, z, a, b;
@@ -2858,11 +2855,18 @@ void JE_loadMap( void )
 
 	/*Defaults*/
 	songBuy = DEFAULT_SONG_BUY;  /*Item Screen default song*/
-
-	if (loadTitleScreen || playDemo)
+	
+	if (loadTitleScreen || play_demo)
 	{
-		JE_openingAnim();
+		if (!skip_intro_logos && !isNetworkGame)
+			intro_logos();
+		
+		JE_initPlayerData();
+		JE_sortHighScores();
+		
+		moveTyrianLogoUp = true;
 		JE_titleScreen(true);
+		
 		loadTitleScreen = false;
 	}
 
@@ -2874,18 +2878,24 @@ new_game:
 	useLastBank = false;
 	extraGame   = false;
 	haltGame = false;
+	
 	if (loadTitleScreen)
 	{
+		JE_initPlayerData();
+		JE_sortHighScores();
+		
 		JE_titleScreen(true);
 		loadTitleScreen = false;
 	}
-
+	
 	gameLoaded = false;
-
-
+	
 	first = true;
-
-	if (!playDemo && !loadDestruct)
+	
+	if (loadDestruct)
+		return;
+	
+	if (!play_demo)
 	{
 		do
 		{
@@ -2970,16 +2980,16 @@ new_game:
 							case 'g':
 								galagaMode = true;   /*GALAGA mode*/
 								memcpy(&pItemsPlayer2, &pItems, sizeof(pItemsPlayer2));
-								pItemsPlayer2[1] = 15; /*Player 2 starts with 15 - MultiCannon and 2 single shot options*/
-								pItemsPlayer2[3] = 0;
-								pItemsPlayer2[4] = 0;
+								pItemsPlayer2[P_REAR] = 15; /*Player 2 starts with 15 - MultiCannon and 2 single shot options*/
+								pItemsPlayer2[P_LEFT_SIDEKICK] = 0;
+								pItemsPlayer2[P_RIGHT_SIDEKICK] = 0;
 								break;
 
 							case 'x':
 								extraGame = true;
 								break;
 
-							case 'e': /*ENGAGE mode*/
+							case 'e': // ENGAGE mode, used for mini-games
 								doNotSaveBackup = true;
 								constantDie = false;
 								onePlayerAction = true;
@@ -2988,28 +2998,27 @@ new_game:
 
 								score = 0;
 
+								pItems[P_SHIP] = 13;           // The Stalker 21.126
+								pItems[P_FRONT] = 39;          // Atomic RailGun
+								pItems[P_REAR] = 0;            // None
+								pItems[P_LEFT_SIDEKICK] = 0;   // None
+								pItems[P_RIGHT_SIDEKICK] = 0;  // None
+								pItems[P_GENERATOR] = 2;       // Advanced MR-12
+								pItems[P_SHIELD] = 4;          // Advanced Integrity Field
+								pItems[P_SPECIAL] = 0;         // None
+								pItems[P2_SIDEKICK_MODE] = 2;  // not sure
+								pItems[P2_SIDEKICK_TYPE] = 1;  // not sure
+								
 								portPower[0] = 3;
 								portPower[1] = 0;
-								pItems[11] = 13;
-								pItems[ 0] = 39;
-								pItems[ 2] = 255;
-
-								pItems[1] = 0; /*Normally 0 - Rear Weapon*/
-								pItems[3] = 0;
-								pItems[4] = 0;
-								pItems[5] = 2;
-								pItems[6] = 2;
-								pItems[7] = 1;
-								pItems[9] = 4;
-								pItems[10] = 0; /*Secret Weapons*/
 								break;
 
-							case 'J':
+							case 'J':  // section jump
 								temp = atoi(strnztcpy(buffer, s + 3, 3));
 								mainLevel = temp;
 								jumpSection = true;
 								break;
-							case '2':
+							case '2':  // two-player section jump
 								temp = atoi(strnztcpy(buffer, s + 3, 3));
 								if (twoPlayerMode || onePlayerAction)
 								{
@@ -3017,9 +3026,9 @@ new_game:
 									jumpSection = true;
 								}
 								break;
-							case 'w':
+							case 'w':  // Stalker 21.126 section jump
 								temp = atoi(strnztcpy(buffer, s + 3, 3));   /*Allowed to go to Time War?*/
-								if (pItems[11] == 13)
+								if (pItems[P_SHIP] == 13)
 								{
 									mainLevel = temp;
 									jumpSection = true;
@@ -3146,61 +3155,56 @@ new_game:
 
 								if (jumpBackToEpisode1 && !twoPlayerMode)
 								{
-
-									JE_loadPic(1, false);
+									JE_loadPic(1, false); // huh?
 									JE_clr256();
-
+									
 									if (superTyrian)
 									{
-										superArcadeMode = (initialDifficulty == 8) ? SA + 1 : 1;
-
+										// if completed Zinglon's Revenge, show SuperTyrian and Destruct codes
+										// if completed SuperTyrian, show Nort-Ship Z code
+										
+										superArcadeMode = (initialDifficulty == 8) ? 8 : 1;
+										
 										jumpSection = true;
 										loadTitleScreen = true;
 									}
-
-									if (superArcadeMode < SA + 2)
+									
+									if (superArcadeMode < SA_ENGAGE)
 									{
-										if (SANextShip[superArcadeMode] == 9)
+										if (SANextShip[superArcadeMode] == SA_ENGAGE)
 										{
+											sprintf(buffer, "%s %s", miscTextB[4], pName[0]);
+											JE_dString(JE_fontCenter(buffer, FONT_SHAPES), 100, buffer, FONT_SHAPES);
+											
 											sprintf(buffer, "Or play... %s", specialName[7]);
 											JE_dString(80, 180, buffer, SMALL_FONT_SHAPES);
 										}
-
-										if (SANextShip[superArcadeMode] != 9)
+										else
 										{
 											JE_dString(JE_fontCenter(superShips[0], FONT_SHAPES), 30, superShips[0], FONT_SHAPES);
 											JE_dString(JE_fontCenter(superShips[SANextShip[superArcadeMode]], SMALL_FONT_SHAPES), 100, superShips[SANextShip[superArcadeMode]], SMALL_FONT_SHAPES);
 										}
-										else
-										{
-											sprintf(buffer, "%s %s", miscTextB[4], pName[0]);
-											JE_dString(JE_fontCenter(buffer, FONT_SHAPES), 100, buffer, FONT_SHAPES);
-										}
-
-										if (SANextShip[superArcadeMode] < 7)
-										{
+										
+										if (SANextShip[superArcadeMode] < SA_NORTSHIPZ)
 											JE_drawShape2x2(148, 70, ships[SAShip[SANextShip[superArcadeMode]-1]].shipgraphic, shapes9);
-										}
-										else if (SANextShip[superArcadeMode] == 7)
-										{
+										else if (SANextShip[superArcadeMode] == SA_NORTSHIPZ)
 											trentWin = true;
-										}
-
+										
 										sprintf(buffer, "Type %s at Title", specialName[SANextShip[superArcadeMode]-1]);
 										JE_dString(JE_fontCenter(buffer, SMALL_FONT_SHAPES), 160, buffer, SMALL_FONT_SHAPES);
 										JE_showVGA();
-
+										
 										JE_fadeColor(50);
-
+										
 										if (!constantPlay)
 											wait_input(true, true, true);
 									}
 
 									jumpSection = true;
-
+									
 									if (isNetworkGame)
 										JE_readTextSync();
-
+									
 									if (superTyrian)
 										JE_fadeBlack(10);
 								}
@@ -3239,7 +3243,7 @@ new_game:
 									memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
 
 									service_SDL_events(true);
-
+									
 									for (z = 0; z <= 199; z++)
 									{
 										if (!newkey)
@@ -3249,7 +3253,7 @@ new_game:
 											pic = pic_buffer + (199 - z) * 320;
 
 											setjasondelay(1); /* attempting to emulate JE_waitRetrace();*/
-
+											
 											for (y = 0; y < 199; y++)
 											{
 												if (y <= z)
@@ -3262,18 +3266,18 @@ new_game:
 												}
 												vga += VGAScreen->pitch;
 											}
-
+											
 											JE_showVGA();
-
+											
 											if (isNetworkGame)
 											{
 												/* TODO: NETWORK */
 											}
-
+											
 											service_wait_delay();
 										}
 									}
-
+									
 									memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
 								}
 								break;
@@ -3296,9 +3300,9 @@ new_game:
 											vga = VGAScreen->pixels;
 											vga2 = VGAScreen2->pixels;
 											pic = pic_buffer;
-
+											
 											setjasondelay(1); /* attempting to emulate JE_waitRetrace();*/
-
+											
 											for (y = 0; y < 199; y++)
 											{
 												if (y <= 199 - z)
@@ -3311,18 +3315,18 @@ new_game:
 												}
 												vga += VGAScreen->pitch;
 											}
-
+											
 											JE_showVGA();
-
+											
 											if (isNetworkGame)
 											{
 												/* TODO: NETWORK */
 											}
-
+											
 											service_wait_delay();
 										}
 									}
-
+									
 									memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
 								}
 								break;
@@ -3338,7 +3342,7 @@ new_game:
 									memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
 
 									service_SDL_events(true);
-
+									
 									for (z = 0; z <= 318; z++)
 									{
 										if (!newkey)
@@ -3346,9 +3350,9 @@ new_game:
 											vga = VGAScreen->pixels;
 											vga2 = VGAScreen2->pixels;
 											pic = pic_buffer;
-
+											
 											setjasondelay(1); /* attempting to emulate JE_waitRetrace();*/
-
+											
 											for(y = 0; y < 200; y++)
 											{
 												memcpy(vga, vga2 + z, 319 - z);
@@ -3358,18 +3362,18 @@ new_game:
 												vga += z;
 												pic += 320;
 											}
-
+											
 											JE_showVGA();
-
+											
 											if (isNetworkGame)
 											{
 												/* TODO: NETWORK */
 											}
-
+											
 											service_wait_delay();
 										}
 									}
-
+									
 									memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
 								}
 								break;
@@ -3476,208 +3480,178 @@ new_game:
 
 		} while (!loadLevelOk);
 	}
-
-	if (!loadDestruct)
+	
+	if (play_demo)
+		load_next_demo();
+	else
+		fade_black(50);
+	
+	JE_resetFile(&lvlFile, levelFile);
+	fseek(lvlFile, lvlPos[(lvlFileNum-1) * 2], SEEK_SET);
+	
+	char_mapFile = fgetc(lvlFile);
+	char_shapeFile = fgetc(lvlFile);
+	efread(&mapX,  sizeof(JE_word), 1, lvlFile);
+	efread(&mapX2, sizeof(JE_word), 1, lvlFile);
+	efread(&mapX3, sizeof(JE_word), 1, lvlFile);
+	
+	efread(&levelEnemyMax, sizeof(JE_word), 1, lvlFile);
+	for (x = 0; x < levelEnemyMax; x++)
 	{
-
-		if (playDemo)
+		efread(&levelEnemy[x], sizeof(JE_word), 1, lvlFile);
+	}
+	
+	efread(&maxEvent, sizeof(JE_word), 1, lvlFile);
+	for (x = 0; x < maxEvent; x++)
+	{
+		efread(&eventRec[x].eventtime, sizeof(JE_word), 1, lvlFile);
+		efread(&eventRec[x].eventtype, sizeof(JE_byte), 1, lvlFile);
+		efread(&eventRec[x].eventdat,  sizeof(JE_integer), 1, lvlFile);
+		efread(&eventRec[x].eventdat2, sizeof(JE_integer), 1, lvlFile);
+		efread(&eventRec[x].eventdat3, sizeof(JE_shortint), 1, lvlFile);
+		efread(&eventRec[x].eventdat5, sizeof(JE_shortint), 1, lvlFile);
+		efread(&eventRec[x].eventdat6, sizeof(JE_shortint), 1, lvlFile);
+		efread(&eventRec[x].eventdat4, sizeof(JE_byte), 1, lvlFile);
+	}
+	eventRec[x].eventtime = 65500;  /*Not needed but just in case*/
+	
+	/*debuginfo('Level loaded.');*/
+	
+	/*debuginfo('Loading Map');*/
+	
+	/* MAP SHAPE LOOKUP TABLE - Each map is directly after level */
+	efread(mapSh, sizeof(JE_word), sizeof(mapSh) / sizeof(JE_word), lvlFile);
+	for (temp = 0; temp < 3; temp++)
+	{
+		for (temp2 = 0; temp2 < 128; temp2++)
 		{
-
-			difficultyLevel = 2;
-			sprintf(tempStr, "demo.%d", playDemoNum);
-			JE_resetFile(&recordFile, tempStr);
-
-			bonusLevelCurrent = false;
-
-			temp = fgetc(recordFile);
-			JE_initEpisode(temp);
-			efread(levelName, 1, 10, recordFile); levelName[10] = '\0';
-			lvlFileNum = fgetc(recordFile);
-			efread(pItems, sizeof(JE_byte), 12, recordFile);
-			efread(portPower, sizeof(JE_byte), 5, recordFile);
-			levelSong = fgetc(recordFile);
-
-			temp = fgetc(recordFile);
-			temp2 = fgetc(recordFile);
-			lastMoveWait = (temp << 8) | temp2;
-			nextDemoOperation = fgetc(recordFile);
-
-			firstEvent = true;
-
-			/*debuginfo('Demo loaded.');*/
+			mapSh[temp][temp2] = SDL_Swap16(mapSh[temp][temp2]);
+		}
+	}
+	
+	/* Read Shapes.DAT */
+	sprintf(tempStr, "shapes%c.dat", tolower(char_shapeFile));
+	JE_resetFile(&shpFile, tempStr);
+	
+	for (z = 0; z < 600; z++)
+	{
+		shapeBlank = fgetc(shpFile);
+		
+		if (shapeBlank)
+		{
+			memset(shape, 0, sizeof(shape));
 		} else {
-			JE_fadeColors(colors, black, 0, 255, 50);
+			efread(shape, sizeof(JE_byte), sizeof(shape), shpFile);
 		}
-
-
-		JE_resetFile(&lvlFile, levelFile);
-		fseek(lvlFile, lvlPos[(lvlFileNum-1) * 2], SEEK_SET);
-
-		char_mapFile = fgetc(lvlFile);
-		char_shapeFile = fgetc(lvlFile);
-		efread(&mapX,  sizeof(JE_word), 1, lvlFile);
-		efread(&mapX2, sizeof(JE_word), 1, lvlFile);
-		efread(&mapX3, sizeof(JE_word), 1, lvlFile);
-
-		efread(&levelEnemyMax, sizeof(JE_word), 1, lvlFile);
-		for (x = 0; x < levelEnemyMax; x++)
+		
+		/* Match 1 */
+		for (x = 0; x <= 71; x++)
 		{
-			efread(&levelEnemy[x], sizeof(JE_word), 1, lvlFile);
-		}
-
-		efread(&maxEvent, sizeof(JE_word), 1, lvlFile);
-		for (x = 0; x < maxEvent; x++)
-		{
-			efread(&eventRec[x].eventtime, sizeof(JE_word), 1, lvlFile);
-			efread(&eventRec[x].eventtype, sizeof(JE_byte), 1, lvlFile);
-			efread(&eventRec[x].eventdat,  sizeof(JE_integer), 1, lvlFile);
-			efread(&eventRec[x].eventdat2, sizeof(JE_integer), 1, lvlFile);
-			efread(&eventRec[x].eventdat3, sizeof(JE_shortint), 1, lvlFile);
-			efread(&eventRec[x].eventdat5, sizeof(JE_shortint), 1, lvlFile);
-			efread(&eventRec[x].eventdat6, sizeof(JE_shortint), 1, lvlFile);
-			efread(&eventRec[x].eventdat4, sizeof(JE_byte), 1, lvlFile);
-		}
-		eventRec[x].eventtime = 65500;  /*Not needed but just in case*/
-
-		/*debuginfo('Level loaded.');*/
-
-		/*debuginfo('Loading Map');*/
-
-		/* MAP SHAPE LOOKUP TABLE - Each map is directly after level */
-		efread(mapSh, sizeof(JE_word), sizeof(mapSh) / sizeof(JE_word), lvlFile);
-		for (temp = 0; temp < 3; temp++)
-		{
-			for (temp2 = 0; temp2 < 128; temp2++)
+			if (mapSh[0][x] == z+1)
 			{
-				mapSh[temp][temp2] = SDL_Swap16(mapSh[temp][temp2]);
+				memcpy(megaData1->shapes[x].sh, shape, sizeof(JE_DanCShape));
+				
+				ref[0][x] = (JE_byte *)megaData1->shapes[x].sh;
 			}
 		}
-
-		/* Read Shapes.DAT */
-		sprintf(tempStr, "shapes%c.dat", tolower(char_shapeFile));
-		JE_resetFile(&shpFile, tempStr);
-
-		for (z = 0; z < 600; z++)
+		
+		/* Match 2 */
+		for (x = 0; x <= 71; x++)
 		{
-			shapeBlank = fgetc(shpFile);
-
-			if (shapeBlank)
+			if (mapSh[1][x] == z+1)
 			{
-				memset(shape, 0, sizeof(shape));
-			} else {
-				efread(shape, sizeof(JE_byte), sizeof(shape), shpFile);
-			}
-
-			/* Match 1 */
-			for (x = 0; x <= 71; x++)
-			{
-				if (mapSh[0][x] == z+1)
+				if (x != 71 && !shapeBlank)
 				{
-					memcpy(megaData1->shapes[x].sh, shape, sizeof(JE_DanCShape));
-
-					ref[0][x] = (JE_byte *)megaData1->shapes[x].sh;
-				}
-			}
-
-			/* Match 2 */
-			for (x = 0; x <= 71; x++)
-			{
-				if (mapSh[1][x] == z+1)
-				{
-					if (x != 71 && !shapeBlank)
+					memcpy(megaData2->shapes[x].sh, shape, sizeof(JE_DanCShape));
+					
+					y = 1;
+					for (yy = 0; yy < (24 * 28) >> 1; yy++)
 					{
-						memcpy(megaData2->shapes[x].sh, shape, sizeof(JE_DanCShape));
-
-						y = 1;
-						for (yy = 0; yy < (24 * 28) >> 1; yy++)
+						if (shape[yy] == 0)
 						{
-							if (shape[yy] == 0)
-							{
-								y = 0;
-							}
+							y = 0;
 						}
-
-						megaData2->shapes[x].fill = y;
-						ref[1][x] = (JE_byte *)megaData2->shapes[x].sh;
-					} else {
-						ref[1][x] = NULL;
 					}
+					
+					megaData2->shapes[x].fill = y;
+					ref[1][x] = (JE_byte *)megaData2->shapes[x].sh;
+				} else {
+					ref[1][x] = NULL;
 				}
 			}
-
-			/*Match 3*/
-			for (x = 0; x <= 71; x++)
+		}
+		
+		/*Match 3*/
+		for (x = 0; x <= 71; x++)
+		{
+			if (mapSh[2][x] == z+1)
 			{
-				if (mapSh[2][x] == z+1)
+				if (x < 70 && !shapeBlank)
 				{
-					if (x < 70 && !shapeBlank)
+					memcpy(megaData3->shapes[x].sh, shape, sizeof(JE_DanCShape));
+					
+					y = 1;
+					for (yy = 0; yy < (24 * 28) >> 1; yy++)
 					{
-						memcpy(megaData3->shapes[x].sh, shape, sizeof(JE_DanCShape));
-
-						y = 1;
-						for (yy = 0; yy < (24 * 28) >> 1; yy++)
+						if (shape[yy] == 0)
 						{
-							if (shape[yy] == 0)
-							{
-								y = 0;
-							}
+							y = 0;
 						}
-
-						megaData3->shapes[x].fill = y;
-						ref[2][x] = (JE_byte *)megaData3->shapes[x].sh;
-					} else {
-						ref[2][x] = NULL;
 					}
+					
+					megaData3->shapes[x].fill = y;
+					ref[2][x] = (JE_byte *)megaData3->shapes[x].sh;
+				} else {
+					ref[2][x] = NULL;
 				}
 			}
 		}
-
-		fclose(shpFile);
-
-		efread(mapBuf, sizeof(JE_byte), 14 * 300, lvlFile);
-		bufLoc = 0;              /* MAP NUMBER 1 */
-		for (y = 0; y < 300; y++)
+	}
+	
+	fclose(shpFile);
+	
+	efread(mapBuf, sizeof(JE_byte), 14 * 300, lvlFile);
+	bufLoc = 0;              /* MAP NUMBER 1 */
+	for (y = 0; y < 300; y++)
+	{
+		for (x = 0; x < 14; x++)
 		{
-			for (x = 0; x < 14; x++)
-			{
-				megaData1->mainmap[y][x] = ref[0][mapBuf[bufLoc]];
-				bufLoc++;
-			}
+			megaData1->mainmap[y][x] = ref[0][mapBuf[bufLoc]];
+			bufLoc++;
 		}
-
-		efread(mapBuf, sizeof(JE_byte), 14 * 600, lvlFile);
-		bufLoc = 0;              /* MAP NUMBER 2 */
-		for (y = 0; y < 600; y++)
+	}
+	
+	efread(mapBuf, sizeof(JE_byte), 14 * 600, lvlFile);
+	bufLoc = 0;              /* MAP NUMBER 2 */
+	for (y = 0; y < 600; y++)
+	{
+		for (x = 0; x < 14; x++)
 		{
-			for (x = 0; x < 14; x++)
-			{
-				megaData2->mainmap[y][x] = ref[1][mapBuf[bufLoc]];
-				bufLoc++;
-			}
+			megaData2->mainmap[y][x] = ref[1][mapBuf[bufLoc]];
+			bufLoc++;
 		}
-
-		efread(mapBuf, sizeof(JE_byte), 15 * 600, lvlFile);
-		bufLoc = 0;              /* MAP NUMBER 3 */
-		for (y = 0; y < 600; y++)
+	}
+	
+	efread(mapBuf, sizeof(JE_byte), 15 * 600, lvlFile);
+	bufLoc = 0;              /* MAP NUMBER 3 */
+	for (y = 0; y < 600; y++)
+	{
+		for (x = 0; x < 15; x++)
 		{
-			for (x = 0; x < 15; x++)
-			{
-				megaData3->mainmap[y][x] = ref[2][mapBuf[bufLoc]];
-				bufLoc++;
-			}
+			megaData3->mainmap[y][x] = ref[2][mapBuf[bufLoc]];
+			bufLoc++;
 		}
-
-		fclose(lvlFile);
-
-		/* Note: The map data is automatically calculated with the correct mapsh
-		value and then the pointer is calculated using the formula (MAPSH-1)*168.
-		Then, we'll automatically add S2Ofs to get the exact offset location into
-		the shape table! This makes it VERY FAST! */
-
-		/*debuginfo('Map file done.');*/
-		/* End of find loop for LEVEL??.DAT */
-	} /*LoadDestruct?*/
-
+	}
+	
+	fclose(lvlFile);
+	
+	/* Note: The map data is automatically calculated with the correct mapsh
+	value and then the pointer is calculated using the formula (MAPSH-1)*168.
+	Then, we'll automatically add S2Ofs to get the exact offset location into
+	the shape table! This makes it VERY FAST! */
+	
+	/*debuginfo('Map file done.');*/
+	/* End of find loop for LEVEL??.DAT */
 }
 
 void JE_titleScreen( JE_boolean animate )
@@ -3685,7 +3659,9 @@ void JE_titleScreen( JE_boolean animate )
 	JE_boolean quit = 0;
 
 	const int menunum = 7;
-	JE_byte nameGo[SA + 2] = {0}; /* [1..SA+2] */
+	
+	unsigned int arcade_code_i[SA_ENGAGE] = { 0 };
+	
 	JE_word waitForDemo;
 	JE_byte menu = 0;
 	JE_boolean redraw = true,
@@ -3696,20 +3672,13 @@ void JE_titleScreen( JE_boolean animate )
 
 	JE_word temp; /* JE_byte temp; from varz.h will overflow in for loop */
 
-	JE_initPlayerData();
-
-	/*PlayCredits;*/
-
-	JE_sortHighScores();
-
 	if (haltGame)
 		JE_tyrianHalt(0);
 
 	tempScreenSeg = VGAScreen;
 
-	playDemo = false;
-
-	stoppedDemo = false;
+	play_demo = false;
+	stopped_demo = false;
 
 	first  = true;
 	redraw = true;
@@ -3725,20 +3694,20 @@ void JE_titleScreen( JE_boolean animate )
 		JE_dString(JE_fontCenter("Waiting for other player.", SMALL_FONT_SHAPES), 140, "Waiting for other player.", SMALL_FONT_SHAPES);
 		JE_showVGA();
 		JE_fadeColor(10);
-
+		
 		network_connect();
-
+		
 		twoPlayerMode = true;
 		if (thisPlayerNum == 1)
 		{
 			JE_fadeBlack(10);
-
+			
 			if (select_episode() && select_difficulty())
 			{
 				initialDifficulty = difficultyLevel;
-
+				
 				difficultyLevel++;  /*Make it one step harder for 2-player mode!*/
-
+				
 				network_prepare(PACKET_DETAILS);
 				SDLNet_Write16(episodeNum,      &packet_out_temp->data[4]);
 				SDLNet_Write16(difficultyLevel, &packet_out_temp->data[6]);
@@ -3748,7 +3717,7 @@ void JE_titleScreen( JE_boolean animate )
 			{
 				network_prepare(PACKET_QUIT);
 				network_send(4);  // PACKET QUIT
-
+				
 				network_tyrian_halt(0, true);
 			}
 		}
@@ -3757,40 +3726,40 @@ void JE_titleScreen( JE_boolean animate )
 			memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->pitch * VGAScreen->h);
 			JE_dString(JE_fontCenter(networkText[4-1], SMALL_FONT_SHAPES), 140, networkText[4-1], SMALL_FONT_SHAPES);
 			JE_showVGA();
-
+			
 			// until opponent sends details packet
 			while (true)
 			{
 				service_SDL_events(false);
 				JE_showVGA();
-
+				
 				if (packet_in[0] && SDLNet_Read16(&packet_in[0]->data[0]) == PACKET_DETAILS)
 					break;
-
+				
 				network_update();
 				network_check();
-
+				
 				SDL_Delay(16);
 			}
-
+			
 			JE_initEpisode(SDLNet_Read16(&packet_in[0]->data[4]));
 			difficultyLevel = SDLNet_Read16(&packet_in[0]->data[6]);
 			initialDifficulty = difficultyLevel - 1;
 			JE_fadeBlack(10);
-
+			
 			network_update();
 		}
-
+		
 		score = 0;
 		score2 = 0;
-
-		pItems[12-1] = 11;
-
+			
+		pItems[P_SHIP] = 11;
+		
 		while (!network_is_sync())
 		{
 			service_SDL_events(false);
 			JE_showVGA();
-
+			
 			network_check();
 			SDL_Delay(16);
 		}
@@ -3800,62 +3769,53 @@ void JE_titleScreen( JE_boolean animate )
 		do
 		{
 			defaultBrightness = -3;
-
+			
 			/* Animate instead of quickly fading in */
 			if (redraw)
 			{
 				play_song(SONG_TITLE);
-
+				
 				menu = 0;
 				redraw = false;
 				if (animate)
 				{
 					if (fadeIn)
-						JE_fadeBlack(10);
-
-					JE_loadPic(4, false);
-
-					JE_textShade(2, 192, opentyrian_version, 15, 0, PART_SHADE);
-
-					memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
-
-					temp = moveTyrianLogoUp ? 62 : 4;
-
-					blit_shape(VGAScreenSeg, 11, temp, PLANET_SHAPES, 146); // tyrian logo
-
-
-					memcpy(colors2, colors, sizeof(colors));
-					int i;
-					for (i = 256 - 16; i < 256; i++)
 					{
-						colors[i].r = 0;
-						colors[i].g = 0;
-						colors[i].b = 0;
+						JE_fadeBlack(10);
+						fadeIn = false;
 					}
-					colors2[255].r = 0;
-
+					
+					JE_loadPic(4, false);
+					
+					JE_textShade(2, 192, opentyrian_version, 15, 0, PART_SHADE);
+					
+					memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
+					
+					temp = moveTyrianLogoUp ? 62 : 4;
+					
+					blit_shape(VGAScreenSeg, 11, temp, PLANET_SHAPES, 146); // tyrian logo
+					
 					JE_showVGA();
-					JE_fadeColor(10);
-
-					fadeIn = false;
-
+					
+					fade_palette(colors, 10, 0, 255 - 16);
+					
 					if (moveTyrianLogoUp)
 					{
 						for (temp = 61; temp >= 4; temp -= 2)
 						{
 							setjasondelay(2);
-
+							
 							memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->pitch * VGAScreen->h);
-
+							
 							blit_shape(VGAScreenSeg, 11, temp, PLANET_SHAPES, 146); // tyrian logo
-
+							
 							JE_showVGA();
-
+							
 							service_wait_delay();
 						}
 						moveTyrianLogoUp = false;
 					}
-
+					
 					/* Draw Menu Text on Screen */
 					for (temp = 0; temp < menunum; temp++)
 					{
@@ -3863,7 +3823,7 @@ void JE_titleScreen( JE_boolean animate )
 						if (temp == 4) /* OpenTyrian override */
 						{
 							tempY = JE_fontCenter(opentyrian_str, SMALL_FONT_SHAPES);
-
+							
 							JE_outTextAdjust(tempY-1, tempX-1, opentyrian_str, 15, -10, SMALL_FONT_SHAPES, false);
 							JE_outTextAdjust(tempY+1, tempX+1, opentyrian_str, 15, -10, SMALL_FONT_SHAPES, false);
 							JE_outTextAdjust(tempY+1, tempX-1, opentyrian_str, 15, -10, SMALL_FONT_SHAPES, false);
@@ -3873,7 +3833,7 @@ void JE_titleScreen( JE_boolean animate )
 						else
 						{
 							tempY = JE_fontCenter(menuText[temp], SMALL_FONT_SHAPES);
-
+							
 							JE_outTextAdjust(tempY-1, tempX-1, menuText[temp], 15, -10, SMALL_FONT_SHAPES, false);
 							JE_outTextAdjust(tempY+1, tempX+1, menuText[temp], 15, -10, SMALL_FONT_SHAPES, false);
 							JE_outTextAdjust(tempY+1, tempX-1, menuText[temp], 15, -10, SMALL_FONT_SHAPES, false);
@@ -3882,15 +3842,15 @@ void JE_titleScreen( JE_boolean animate )
 						}
 					}
 					JE_showVGA();
-
-					JE_fadeColors(colors, colors2, 0, 255, 20);
-
+					
+					fade_palette(colors, 20, 255 - 16 + 1, 255); // fade in menu items
+					
 					memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
 				}
 			}
-
+			
 			memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->pitch * VGAScreen->h);
-
+			
 			for (temp = 0; temp < menunum; temp++)
 			{
 				if (temp == 4) /* OpenTyrian override */
@@ -3898,30 +3858,23 @@ void JE_titleScreen( JE_boolean animate )
 				else
 					JE_outTextAdjust(JE_fontCenter(menuText[temp], SMALL_FONT_SHAPES), 104+temp*13, menuText[temp], 15, -3+((temp == menu) * 2), SMALL_FONT_SHAPES, false);
 			}
-
+			
 			JE_showVGA();
-
+			
 			first = false;
-
+			
 			if (trentWin)
 			{
 				quit = true;
 				goto trentWinsGame;
 			}
-
+			
 			waitForDemo = 2000;
 			JE_textMenuWait(&waitForDemo, false);
-
+			
 			if (waitForDemo == 1)
-			{
-				playDemo = true;
-				if (++playDemoNum > 5)
-					playDemoNum = 1;
-			}
-
-			if (keysactive[SDLK_LALT] && keysactive[SDLK_x])
-				quit = true;
-
+				play_demo = true;
+			
 			if (newkey)
 			{
 				switch (lastkey_sym)
@@ -3931,126 +3884,122 @@ void JE_titleScreen( JE_boolean animate )
 							menu = menunum-1;
 						else
 							menu--;
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 						break;
 					case SDLK_DOWN:
 						if (menu == menunum-1)
 							menu = 0;
 						else
 							menu++;
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 						break;
 					default:
 						break;
 				}
 			}
-
-			for (z = 0; z < SA+2; z++)
+			
+			for (unsigned int i = 0; i < SA_ENGAGE; i++)
 			{
-				if (specialName[z][nameGo[z]] == toupper(lastkey_char))
+				if (toupper(lastkey_char) == specialName[i][arcade_code_i[i]])
+					arcade_code_i[i]++;
+				else
+					arcade_code_i[i] = 0;
+				
+				if (arcade_code_i[i] > 0 && arcade_code_i[i] == strlen(specialName[i]))
 				{
-					nameGo[z]++;
-					if (strlen(specialName[z]) == nameGo[z])
+					if (i+1 == SA_DESTRUCT)
 					{
-						if (z == SA)
+						loadDestruct = true;
+					}
+					else if (i+1 == SA_ENGAGE)
+					{
+						/* SuperTyrian */
+						
+						JE_playSampleNum(V_DATA_CUBE);
+						JE_whoa();
+						
+						initialDifficulty = keysactive[SDLK_SCROLLOCK] ? 6 : 8;
+						
+						JE_clr256();
+						JE_outText(10, 10, "Cheat codes have been disabled.", 15, 4);
+						if (initialDifficulty == 8)
+							JE_outText(10, 20, "Difficulty level has been set to Lord of Game.", 15, 4);
+						else
+							JE_outText(10, 20, "Difficulty level has been set to Suicide.", 15, 4);
+						JE_outText(10, 30, "It is imperitive that you discover the special codes.", 15, 4);
+						if (initialDifficulty == 8)
+							JE_outText(10, 40, "(Next time, for an easier challenge hold down SCROLL LOCK.)", 15, 4);
+						JE_outText(10, 60, "Prepare to play...", 15, 4);
+						
+						char buf[10+1+15+1];
+						snprintf(buf, sizeof(buf), "%s %s", miscTextB[4], pName[0]);
+						JE_dString(JE_fontCenter(buf, FONT_SHAPES), 110, buf, FONT_SHAPES);
+						
+						play_song(16);
+						JE_playSampleNum(V_DANGER);
+						JE_showVGA();
+						
+						wait_input(true, true, true);
+						
+						JE_initEpisode(1);
+						constantDie = false;
+						superTyrian = true;
+						onePlayerAction = true;
+						gameLoaded = true;
+						difficultyLevel = initialDifficulty;
+						score = 0;
+						
+						pItems[P_SHIP] = 13;           // The Stalker 21.126
+						pItems[P_FRONT] = 39;          // Atomic RailGun
+					}
+					else
+					{
+						pItems[P_SHIP] = SAShip[i];
+						
+						JE_fadeBlack(10);
+						if (select_episode() && select_difficulty())
 						{
-							loadDestruct = true;
-						}
-						else if (z == SA+1)
-						{
-							/* SuperTyrian */
-
-							JE_playSampleNum(37);
-							JE_whoa();
+							/* Start special mode! */
+							JE_fadeBlack(10);
+							JE_loadPic(1, false);
 							JE_clr256();
-							JE_outText(10, 10, "Cheat codes have been disabled.", 15, 4);
-
-							initialDifficulty = keysactive[SDLK_SCROLLOCK] ? 6 : 8;
-
-							if (initialDifficulty == 8)
-								JE_outText(10, 20, "Difficulty level has been set to Lord of Game.", 15, 4);
-							else
-								JE_outText(10, 20, "Difficulty level has been set to Suicide.", 15, 4);
-							JE_outText(10, 30, "It is imperitive that you discover the special codes.", 15, 4);
-							if (initialDifficulty == 8)
-								JE_outText(10, 40, "(Next time, for an easier challenge hold down SCROLL LOCK.)", 15, 4);
-							JE_outText(10, 60, "Prepare to play...", 15, 4);
-
-							char buf[10+1+15+1];
-							snprintf(buf, sizeof(buf), "%s %s", miscTextB[4], pName[0]);
-							JE_dString(JE_fontCenter(buf, FONT_SHAPES), 110, buf, FONT_SHAPES);
-							play_song(16);
-							JE_playSampleNum(35);
+							JE_dString(JE_fontCenter(superShips[0], FONT_SHAPES), 30, superShips[0], FONT_SHAPES);
+							JE_dString(JE_fontCenter(superShips[i+1], SMALL_FONT_SHAPES), 100, superShips[i+1], SMALL_FONT_SHAPES);
+							tempW = ships[pItems[P_SHIP]].shipgraphic;
+							if (tempW != 1)
+								JE_drawShape2x2(148, 70, tempW, shapes9);
+							
 							JE_showVGA();
-
-							JE_wipeKey();
-
+							JE_fadeColor(50);
+							
 							wait_input(true, true, true);
-
-							constantDie = false;
-							JE_initEpisode(1);
-							superTyrian = true;
+							
+							twoPlayerMode = false;
 							onePlayerAction = true;
-							pItems[11] = 13;
-							pItems[0] = 39;
-							pItems[2] = 254;
+							superArcadeMode = i+1;
 							gameLoaded = true;
-							difficultyLevel = initialDifficulty;
+							initialDifficulty = ++difficultyLevel;
 							score = 0;
+							
+							pItems[P_FRONT] = SAWeapon[i][0];
+							pItems[P_SPECIAL] = SASpecialWeapon[i];
+							if (superArcadeMode == SA_NORTSHIPZ)
+							{
+								pItems[P_LEFT_SIDEKICK] = 24;   // Companion Ship Quicksilver
+								pItems[P_RIGHT_SIDEKICK] = 24;  // Companion Ship Quicksilver
+							}
 						}
 						else
 						{
-							pItems[2] = z+1;
-							pItems[11] = SAShip[z];
-							JE_fadeBlack(10);
-							if (select_episode() && select_difficulty())
-							{
-								/* Start special mode! */
-								JE_fadeBlack(10);
-								JE_loadPic(1, false);
-								JE_clr256();
-								JE_dString(JE_fontCenter(superShips[0], FONT_SHAPES), 30, superShips[0], FONT_SHAPES);
-								JE_dString(JE_fontCenter(superShips[z+1], SMALL_FONT_SHAPES), 100, superShips[z+1], SMALL_FONT_SHAPES);
-								tempW = ships[pItems[11]].shipgraphic;
-								if (tempW != 1)
-									JE_drawShape2x2(148, 70, tempW, shapes9);
-
-								JE_showVGA();
-								JE_fadeColor(50);
-
-								wait_input(true, true, true);
-
-								twoPlayerMode = false;
-								onePlayerAction = true;
-								superArcadeMode = z+1;
-								gameLoaded = true;
-								score = 0;
-								pItems[0] = SAWeapon[z][0];
-								pItems[10] = SASpecialWeapon[z];
-								if (z+1 == SA)
-								{
-									pItems[3] = 24;
-									pItems[4] = 24;
-								}
-								difficultyLevel++;
-								initialDifficulty = difficultyLevel;
-							}
-							else
-							{
-								redraw = true;
-								fadeIn = true;
-							}
+							redraw = true;
+							fadeIn = true;
 						}
-						newkey = false;
 					}
-				}
-				else
-				{
-					nameGo[z] = 0;
+					newkey = false;
 				}
 			}
 			lastkey_char = '\0';
-
+			
 			if (newkey)
 			{
 				switch (lastkey_sym)
@@ -4059,7 +4008,7 @@ void JE_titleScreen( JE_boolean animate )
 						quit = true;
 						break;
 					case SDLK_RETURN:
-						JE_playSampleNum(SELECT);
+						JE_playSampleNum(S_SELECT);
 						switch (menu)
 						{
 							case 0: /* New game */
@@ -4073,19 +4022,19 @@ void JE_titleScreen( JE_boolean animate )
 										redraw = true;
 										fadeIn = true;
 									}
-
+									
 									initialDifficulty = difficultyLevel;
-
+									
 									if (onePlayerAction)
 									{
 										score = 0;
-										pItems[11] = 8;
+										pItems[P_SHIP] = 8;
 									}
 									else if (twoPlayerMode)
 									{
 										score = 0;
 										score2 = 0;
-										pItems[11] = 11;
+										pItems[P_SHIP] = 11;
 										difficultyLevel++;
 										inputDevice[0] = 1;
 										inputDevice[1] = 2;
@@ -4130,16 +4079,13 @@ void JE_titleScreen( JE_boolean animate )
 								redraw = true;
 								fadeIn = true;
 								break;
-							case 4: /* Ordering info, now OpenTyrian menu*/
+							case 4: /* Ordering info, now OpenTyrian menu */
 								opentyrian_menu();
 								redraw = true;
 								fadeIn = true;
 								break;
 							case 5: /* Demo */
-								JE_initPlayerData();
-								playDemo = true;
-								if (playDemoNum++ > 4)
-									playDemoNum = 1;
+								play_demo = true;
 								break;
 							case 6: /* Quit */
 								quit = true;
@@ -4152,58 +4098,48 @@ void JE_titleScreen( JE_boolean animate )
 				}
 			}
 		}
-		while (!(quit || gameLoaded || jumpSection || playDemo || loadDestruct));
-
+		while (!(quit || gameLoaded || jumpSection || play_demo || loadDestruct));
+		
 	trentWinsGame:
 		JE_fadeBlack(15);
 		if (quit)
 			JE_tyrianHalt(0);
-
+		
 	}
 }
 
-void JE_openingAnim( void )
+void intro_logos( void )
 {
-	/*JE_clr256();*/
-
-	moveTyrianLogoUp = true;
-
-	if (!isNetworkGame && !stoppedDemo)
-	{
-		memcpy(colors, black, sizeof(colors));
-		memset(black, 255, sizeof(black));
-		JE_fadeColors(colors, black, 0, 255, 50);
-
-		JE_loadPic(10, false);
-		JE_showVGA();
-
-		JE_fadeColors(black, colors, 0, 255, 50);
-		memset(black, 0, sizeof(black));
-
-		setjasondelay(200);
-		while (!JE_anyButton() && (signed int)(target - SDL_GetTicks()) > 0)
-			SDL_Delay(16);
-
-		JE_fadeBlack(15);
-
-		JE_loadPic(12, false);
-		JE_showVGA();
-
-		memcpy(colors, palettes[pcxpal[12-1]], sizeof(colors));
-		JE_fadeColor(10);
-
-		setjasondelay(200);
-		while (!JE_anyButton() && (signed int)(target - SDL_GetTicks()) > 0)
-			SDL_Delay(16);
-
-		JE_fadeBlack(10);
-	}
+	SDL_FillRect(VGAScreen, NULL, 0);
+	
+	SDL_Color white = { 255, 255, 255 };
+	fade_solid(&white, 50, 0, 255);
+	
+	JE_loadPic(10, false);
+	JE_showVGA();
+	
+	fade_palette(colors, 50, 0, 255);
+	
+	setjasondelay(200);
+	wait_delayorinput(true, true, true);
+	
+	fade_black(10);
+	
+	JE_loadPic(12, false);
+	JE_showVGA();
+	
+	fade_palette(colors, 10, 0, 255);
+	
+	setjasondelay(200);
+	wait_delayorinput(true, true, true);
+	
+	fade_black(10);
 }
 
 void JE_readTextSync( void )
 {
 	return;  // this function seems to be unnecessary
-
+	
 	JE_clr256();
 	JE_showVGA();
 	JE_loadPic(1, true);
@@ -4275,9 +4211,9 @@ void JE_displayText( void )
 		setjasondelay(1);
 
 		NETWORK_KEEP_ALIVE();
-
+		
 		wait_delay();
-
+		
 	} while (!(JE_anyButton() || (frameCountMax == 0 && temp == 1) || ESCPressed));
 	levelWarningDisplay = false;
 }
@@ -4288,10 +4224,8 @@ void JE_makeEnemy( struct JE_SingleEnemyType *enemy )
 	JE_byte temp;
 	int t = 0;
 
-	if (superArcadeMode > 0 && tempW == 534)
-	{
+	if (superArcadeMode != SA_NONE && tempW == 534)
 		tempW = 533;
-	}
 
 	enemyShapeTables[5-1] = 21;   /*Coins&Gems*/
 	enemyShapeTables[6-1] = 26;   /*Two-Player Stuff*/
@@ -4300,7 +4234,9 @@ void JE_makeEnemy( struct JE_SingleEnemyType *enemy )
 	{
 		temp = tempI2;
 		uniqueEnemy = false;
-	} else {
+	}
+	else
+	{
 		temp = enemyDat[tempW].shapebank;
 	}
 
@@ -4599,7 +4535,7 @@ void JE_makeEnemy( struct JE_SingleEnemyType *enemy )
 		}
 
 		enemy->armorleft = t;
-
+		
 		a = 0;
 		enemy->scoreitem = false;
 	} else {
@@ -4732,7 +4668,7 @@ JE_boolean JE_searchFor/*enemy*/( JE_byte PLType )
 void JE_eventSystem( void )
 {
 	JE_boolean tempb;
-
+	
 	switch (eventRec[eventLoc-1].eventtype)
 	{
 		case 1:
@@ -5170,13 +5106,13 @@ void JE_eventSystem( void )
 		case 33: /* Enemy From other Enemies */
 			if (!((eventRec[eventLoc-1].eventdat == 512 || eventRec[eventLoc-1].eventdat == 513) && (twoPlayerMode || onePlayerAction || superTyrian)))
 			{
-				if (superArcadeMode > 0)
+				if (superArcadeMode != SA_NONE)
 				{
 					if (eventRec[eventLoc-1].eventdat == 534)
-					{
 						eventRec[eventLoc-1].eventdat = 827;
-					}
-				} else {
+				}
+				else
+				{
 					if (eventRec[eventLoc-1].eventdat == 533
 					    && (portPower[1-1] == 11 || (mt_rand() % 15) < portPower[1-1])
 					    && !superTyrian)
@@ -5185,9 +5121,7 @@ void JE_eventSystem( void )
 					}
 				}
 				if (eventRec[eventLoc-1].eventdat == 534 && superTyrian)
-				{
 					eventRec[eventLoc-1].eventdat = 828 + superTyrianSpecials[mt_rand() % 4];
-				}
 
 				for (temp = 0; temp < 100; temp++)
 				{
@@ -5591,7 +5525,7 @@ void JE_eventSystem( void )
 			break;
 
 		case 82: /*Give SPECIAL WEAPON*/
-			pItems[11-1] = eventRec[eventLoc-1].eventdat;
+			pItems[P_SPECIAL] = eventRec[eventLoc-1].eventdat;
 			shotMultiPos[9-1] = 0;
 			shotRepeat[9-1] = 0;
 			shotMultiPos[11-1] = 0;
@@ -5703,10 +5637,10 @@ void JE_itemScreen( void )
 	play_song(songBuy);
 
 	JE_loadPic(1, false);
-
+	
 	curPal = 1;
 	newPal = 0;
-
+	
 	JE_showVGA();
 
 	JE_updateColorsFast(colors);
@@ -5847,8 +5781,7 @@ item_screen_start:
 		/* Data cube icons */
 		if (curMenu == 0)
 		{
-			int i;
-			for (i = 1; i <= cubeMax; i++)
+			for (int i = 1; i <= cubeMax; i++)
 			{
 				blit_shape_dark(VGAScreenSeg, 190 + i * 18 + 2, 37 + 1, OPTION_SHAPES, 34, false);
 				blit_shape(VGAScreenSeg, 190 + i * 18, 37, OPTION_SHAPES, 34);  // data cube
@@ -5950,7 +5883,7 @@ item_screen_start:
 		/* Joystick settings menu */
 		if (curMenu == 12)
 		{
-			char *menu_item[] =
+			char *menu_item[] = 
 			{
 				"JOYSTICK",
 				"ANALOG AXES",
@@ -5969,15 +5902,15 @@ item_screen_start:
 				menuInt[6][9],
 				menuInt[6][10]
 			};
-			int i;
-			for (i = 0; i < COUNTOF(menu_item); i++)
+			
+			for (int i = 0; i < COUNTOF(menu_item); i++)
 			{
 				int temp = (i == curSel[curMenu] - 2) ? 15 : 28;
-
+				
 				JE_textShade(166, 38 + i * 8, menu_item[i], temp / 16, temp % 16 - 8, DARKEN);
-
+				
 				temp = (i == curSel[curMenu] - 2) ? 252 : 250;
-
+				
 				char value[30] = "";
 				if (joysticks == 0 && i < 14)
 				{
@@ -5992,16 +5925,15 @@ item_screen_start:
 					sprintf(value, "%d", i == 2 ? joystick[joystick_config].sensitivity : joystick[joystick_config].threshold);
 				} else if (i < 14) {
 					bool comma = false;
-					int k;
-					for (k = 0; k < COUNTOF(*joystick->assignment); k++)
+					for (int k = 0; k < COUNTOF(*joystick->assignment); k++)
 					{
 						if (joystick[joystick_config].assignment[i - 4][k].num == -1)
 							continue;
-
+						
 						if (comma)
 							strcat(value, ", ");
 						comma = true;
-
+						
 						char temp[7];
 						snprintf(temp, sizeof(temp), "%s%s %0d",
 						         joystick[joystick_config].assignment[i - 4][k].is_axis ? "AX" : "BTN",
@@ -6010,10 +5942,10 @@ item_screen_start:
 						strcat(value, temp);
 					}
 				}
-
+				
 				JE_textShade(236, 38 + i * 8, value, temp / 16, temp % 16 - 8, DARKEN);
 			}
-
+			
 			menuChoices[curMenu] = COUNTOF(menu_item) + 1;
 		}
 
@@ -6186,7 +6118,7 @@ item_screen_start:
 				JE_textShade(65, 173, buf, 1, 6, DARKEN);
 			}
 			JE_barDrawShadow(42, 152, 3, 14, armorLevel, 2, 13);
-			JE_barDrawShadow(104, 152, 2, 14, shields[pItems[10-1]].mpwr * 2, 2, 13);
+			JE_barDrawShadow(104, 152, 2, 14, shields[pItems[P_SHIELD]].mpwr * 2, 2, 13);
 		}
 
 		/* Draw crap on the left side of the screen, i.e. two player scores, ship graphic, etc. */
@@ -6195,14 +6127,14 @@ item_screen_start:
 			if (twoPlayerMode)
 			{
 				char buf[50];
-
+				
 				snprintf(buf, sizeof buf, "%s %d", miscText[40], score);
 				JE_textShade(25, 50, buf, 15, 0, FULL_SHADE);
-
+				
 				snprintf(buf, sizeof buf, "%s %d", miscText[41], score2);
 				JE_textShade(25, 60, buf, 15, 0, FULL_SHADE);
 			}
-			else if (superArcadeMode > 0 || superTyrian)
+			else if (superArcadeMode != SA_NONE || superTyrian)
 			{
 				helpBoxColor = 15;
 				helpBoxBrightness = 4;
@@ -6211,21 +6143,21 @@ item_screen_start:
 				else
 					JE_helpBox(35, 25, superShips[SA+3], 18);
 				helpBoxBrightness = 1;
-
+				
 				JE_textShade(25, 50, superShips[SA+1], 15, 0, FULL_SHADE);
-				JE_helpBox(25, 60, weaponPort[pItems[1 - 1]].name, 22);
+				JE_helpBox(25, 60, weaponPort[pItems[P_FRONT]].name, 22);
 				JE_textShade(25, 120, superShips[SA+2], 15, 0, FULL_SHADE);
-				JE_helpBox(25, 130, special[pItems[11 - 1]].name, 22);
+				JE_helpBox(25, 130, special[pItems[P_SPECIAL]].name, 22);
 			}
 			else
 			{
-				if (pItems[12-1] > 90)
+				if (pItems[P_SHIP] > 90)
 					temp = 32;
-				else if (pItems[12-1] > 0)
-					temp = ships[pItems[12-1]].bigshipgraphic;
+				else if (pItems[P_SHIP] > 0)
+					temp = ships[pItems[P_SHIP]].bigshipgraphic;
 				else
 					temp = ships[pItemsBack[12-1]].bigshipgraphic;
-
+				
 				switch (temp)
 				{
 					case 32:
@@ -6241,51 +6173,51 @@ item_screen_start:
 						tempW2 = 35;
 						break;
 				}
-
+				
 				blit_shape(VGAScreenSeg, tempW, tempW2, OPTION_SHAPES, temp - 1);  // ship illustration
-
-				temp = pItems[5];
-
+				
+				temp = pItems[P_GENERATOR];
+				
 				if (temp > 1)
 					temp--;
-
+				
 				blit_shape(VGAScreenSeg, generatorX[temp-1]+1, generatorY[temp-1]+1, WEAPON_SHAPES, temp + 15);  // ship illustration: generator
-
-				if (pItems[0] > 0)
+				
+				if (pItems[P_FRONT] > 0)
 				{
-					temp = tyrian2_weapons[pItems[0] - 1];
-					temp2 = frontWeaponList[pItems[0] - 1] - 1;
+					temp = tyrian2_weapons[pItems[P_FRONT] - 1];
+					temp2 = frontWeaponList[pItems[P_FRONT] - 1] - 1;
 					blit_shape(VGAScreenSeg, frontWeaponX[temp2]+1, frontWeaponY[temp2], WEAPON_SHAPES, temp - 1);  // ship illustration: front weapon
 				}
-				if (pItems[1] > 0)
+				if (pItems[P_REAR] > 0)
 				{
-					temp = tyrian2_weapons[pItems[1] - 1];
-					temp2 = rearWeaponList[pItems[1] - 1] - 1;
+					temp = tyrian2_weapons[pItems[P_REAR] - 1];
+					temp2 = rearWeaponList[pItems[P_REAR] - 1] - 1;
 					blit_shape(VGAScreenSeg, rearWeaponX[temp2], rearWeaponY[temp2], WEAPON_SHAPES, temp - 1);  // ship illustration: rear weapon
 				}
-
-				JE_drawItem(6, pItems[3], 3, 84);
-				JE_drawItem(7, pItems[4], 129, 84);
-				blit_shape_hv(VGAScreenSeg, 28, 23, OPTION_SHAPES, 26, 15, shields[pItems[10-1]].mpwr - 10);  // ship illustration: shield
+				
+				JE_drawItem(6, pItems[P_LEFT_SIDEKICK], 3, 84);
+				JE_drawItem(7, pItems[P_RIGHT_SIDEKICK], 129, 84);
+				blit_shape_hv(VGAScreenSeg, 28, 23, OPTION_SHAPES, 26, 15, shields[pItems[P_SHIELD]].mpwr - 10);  // ship illustration: shield
 			}
 		}
-
+		
 		/* Changing the volume? */
 		if ((curMenu == 2) || (curMenu == 11))
 		{
 			JE_barDrawShadow(225, 70, 1, 16, tyrMusicVolume / 12, 3, 13);
 			JE_barDrawShadow(225, 86, 1, 16, fxVolume / 12, 3, 13);
 		}
-
+		
 		/* 7 is data cubes menu, 8 is reading a data cube, "firstmenu9" refers to menu 8 because of reindexing */
 		if ( (curMenu == 7) || ( (curMenu == 8) && firstMenu9) )
 		{
 			firstMenu9 = false;
 			menuChoices[7] = cubeMax + 2;
 			JE_bar(1, 1, 145, 170, 0);
-
+			
 			blit_shape(VGAScreenSeg, 1, 1, OPTION_SHAPES, 20); /* Portrait area background */
-
+			
 			if (curMenu == 7)
 			{
 				if (cubeMax == 0)
@@ -6329,25 +6261,25 @@ item_screen_start:
 					tempW = 44 + (x - 1) * 28;
 				}
 			}
-
+			
 			JE_textShade(172, tempW, miscText[6 - 1], temp2 / 16, (temp2 % 16) - 8, DARKEN);
-
+			
 			currentFaceNum = 0;
 			if (curSel[7] < menuChoices[7])
 			{
 				/* SYN: Be careful reindexing some things here, because faceNum 0 is blank, but
 				   faceNum 1 is at index 0 in several places! */
 				currentFaceNum = faceNum[curSel[7] - 2];
-
+				
 				if (lastSelect != curSel[7] && currentFaceNum > 0)
 				{
 					faceX = 77 - (shapeX[FACE_SHAPES][currentFaceNum - 1] >> 1);
 					faceY = 92 - (shapeY[FACE_SHAPES][currentFaceNum - 1] >> 1);
-
+					
 					paletteChanged = true;
 					temp2 = facepal[currentFaceNum - 1];
 					newPal = 0;
-
+					
 					for (temp = 1; temp <= 255 - (3 * 16); temp++)
 					{
 						colors[temp].r = palettes[temp2][temp].r;
@@ -6356,22 +6288,21 @@ item_screen_start:
 					}
 				}
 			}
-
+			
 			if (currentFaceNum > 0)
 				blit_shape(VGAScreenSeg, faceX, faceY, FACE_SHAPES, currentFaceNum - 1);  // datacube face
-
+			
 			lastSelect = curSel[7];
 		}
-
+		
 		/* 2 player input devices */
 		if (curMenu == 9)
 		{
-			int i;
-			for (i = 0; i < COUNTOF(inputDevice); i++)
+			for (int i = 0; i < COUNTOF(inputDevice); i++)
 			{
 				if (inputDevice[i] > 2 + joysticks)
 					inputDevice[i] = inputDevice[i == 0 ? 1 : 0] == 1 ? 2 : 1;
-
+				
 				char temp[64];
 				if (joysticks > 1 && inputDevice[i] > 2)
 					sprintf(temp, "%s %d", inputDevices[2], inputDevice[i] - 2);
@@ -6380,22 +6311,22 @@ item_screen_start:
 				JE_dString(186, 38 + 2 * (i + 1) * 16, temp, SMALL_FONT_SHAPES);
 			}
 		}
-
+		
 		/* JE: { - Step VI - Help text for current cursor location } */
-
+		
 		flash = false;
 		flashDelay = 5;
-
+		
 		/* scanCode = 0; */
 		/* k = 0; */
-
+		
 		/* JE: {Reset player weapons} */
 		memset(shotMultiPos, 0, sizeof(shotMultiPos));
-
+		
 		JE_drawScore();
-
+		
 		JE_drawMainMenuHelpText();
-
+		
 		if (newPal > 0) /* can't reindex this :( */
 		{
 			curPal = newPal;
@@ -6403,17 +6334,17 @@ item_screen_start:
 			JE_updateColorsFast(palettes[newPal - 1]);
 			newPal = 0;
 		}
-
+		
 		/* datacube title under face */
 		if ( ( (curMenu == 7) || (curMenu == 8) ) && (curSel[7] < menuChoices[7]) )
 			JE_textShade (75 - JE_textWidth(cubeHdr2[curSel[7] - 2], TINY_FONT) / 2, 173, cubeHdr2[curSel[7] - 2], 14, 3, DARKEN);
-
+		
 		/* SYN: Everything above was just drawing the screen. In the rest of it, we process
 		   any user input (and do a few other things) */
-
+		
 		/* SYN: Let's start by getting fresh events from SDL */
 		service_SDL_events(true);
-
+		
 		if (constantPlay)
 		{
 			mainLevel = mapSection[mapPNum-1];
@@ -6426,19 +6357,19 @@ item_screen_start:
 			/* Inner loop -- this handles animations on menus that need them and handles
 			   some keyboard events. Events it can't handle end the loop and fall through
 			   to the main keyboard handler below.
-
+			
 			   Also, I think all timing is handled in here. Somehow. */
-
+				
 				NETWORK_KEEP_ALIVE();
-
+				
 				mouseCursor = 0;
-
+				
 				col += colC;
 				if (col < -2 || col > 6)
 				{
 					colC = (-1 * colC);
 				}
-
+				
 				if (curMenu == 8)
 				{
 					if (mouseX > 164 && mouseX < 299 && mouseY > 47 && mouseY < 153)
@@ -6448,20 +6379,20 @@ item_screen_start:
 						else
 							mouseCursor = 1;
 					}
-
+					
 					JE_bar(160, 49, 310, 158, 228);
 					if (yLoc + yChg < 0)
 					{
 						yChg = 0;
 						yLoc = 0;
 					}
-
+					
 					yLoc += yChg;
 					temp = yLoc / 12;
 					temp2 = yLoc % 12;
 					tempW = 38 + 12 - temp2;
 					temp3 = cubeMaxY[curSel[7] - 2];
-
+					
 					for (x = temp + 1; x <= temp + 10; x++)
 					{
 						if (x <= temp3)
@@ -6470,36 +6401,36 @@ item_screen_start:
 							tempW += 12;
 						}
 					}
-
+					
 					JE_bar(160, 39, 310, 48, 228);
 					JE_bar(160, 157, 310, 166, 228);
-
+					
 					buf = malloc(strlen(miscText[12 - 1]) + 8);
 					sprintf(buf, "%s %d%%", miscText[12 - 1], (yLoc * 100) / ((cubeMaxY[currentCube] - 9) * 12));
 					JE_outTextAndDarken(176, 160, buf, 14, 1, TINY_FONT);
-
+					
 					JE_dString(260, 160, miscText[13 - 1], SMALL_FONT_SHAPES);
-
+					
 					if (temp2 == 0)
 						yChg = 0;
-
+					
 					JE_mouseStart();
-
+					
 					JE_showVGA();
-
+					
 					if (backFromHelp)
 					{
 						JE_fadeColor(10);
 						backFromHelp = false;
 					}
 					JE_mouseReplace();
-
+					
 					setjasondelay(1);
 				}
 				else
 				{
 					/* current menu is not 8 (read data cube) */
-
+					
 					if (curMenu == 3)
 					{
 						JE_updateNavScreen();
@@ -6509,13 +6440,13 @@ item_screen_start:
 						if (extraGame)
 							JE_dString(170, 140, miscText[68 - 1], FONT_SHAPES);
 					}
-
+					
 					if (curMenu == 7 && curSel[7] < menuChoices[7])
 					{
 						/* Draw flashy cube */
 						blit_shape_hv_blend(VGAScreenSeg, 166, 38 + (curSel[7] - 2) * 28, OPTION_SHAPES, 25, 13, col);
 					}
-
+					
 					/* IF (curmenu = 5) AND (cursel [2] IN [3, 4, 6, 7, 8]) */
 					if (curMenu == 4 && ( curSel[1] == 3 || curSel[1] == 4 || ( curSel[1] >= 6 && curSel[1] <= 8) ) )
 					{
@@ -6548,7 +6479,7 @@ item_screen_start:
 						}
 
 						JE_mouseReplace();
-
+						
 					} else { /* current menu is anything but weapon sim or datacube */
 
 						setjasondelay(2);
@@ -6580,17 +6511,17 @@ item_screen_start:
 							JE_fadeColor(10);
 							backFromHelp = false;
 						}
-
+						
 					}
 				}
-
+				
 				wait_delay();
-
+				
 				push_joysticks_as_keyboard();
 				service_SDL_events(false);
-				mouseButton = JE_mousePosition(&mouseX, &mouseY);
+				mouseButton = JE_mousePosition(&mouseX, &mouseY); 
 				inputDetected = newkey || mouseButton > 0;
-
+				
 				if (curMenu != 6)
 				{
 					if (keysactive[SDLK_s] && (keysactive[SDLK_LALT] || keysactive[SDLK_RALT]) )
@@ -6644,15 +6575,14 @@ item_screen_start:
 						yChg = 2;
 						inputDetected = false;
 					}
-
+					
 					bool joystick_up = false, joystick_down = false;
-					int j;
-					for (j = 0; j < joysticks; j++)
+					for (int j = 0; j < joysticks; j++)
 					{
 						joystick_up |= joystick[j].direction[0];
 						joystick_down |= joystick[j].direction[2];
 					}
-
+					
 					if (keysactive[SDLK_UP] || joystick_up)
 					{
 						yChg = -1;
@@ -6691,7 +6621,7 @@ item_screen_start:
 			if (curMenu == 7 && cubeMax == 0)
 			{
 				curMenu = 0;
-				JE_playSampleNum(ESC);
+				JE_playSampleNum(S_SPRING);
 				newPal = 1;
 				JE_wipeKey();
 			}
@@ -6701,7 +6631,7 @@ item_screen_start:
 				if ((mouseX > 258) && (mouseX < 290) && (mouseY > 159) && (mouseY < 171))
 				{
 					curMenu = 7;
-					JE_playSampleNum(ESC);
+					JE_playSampleNum(S_SPRING);
 				}
 			}
 
@@ -6716,36 +6646,36 @@ item_screen_start:
 						music_disabled = false;
 						restart_song();
 					}
-
+					
 					curSel[2] = 4;
-
+					
 					tyrMusicVolume = (mouseX - (225 - 4)) / 4 * 12;
 					if (tyrMusicVolume > 255)
 						tyrMusicVolume = 255;
 				}
-
+				
 				if ((mouseX >= (225 - 4)) && (mouseY >= 86) && (mouseY <= 98))
 				{
 					samples_disabled = false;
-
+					
 					curSel[2] = 5;
-
+					
 					fxVolume = (mouseX - (225 - 4)) / 4 * 12;
 					if (fxVolume > 255)
 						fxVolume = 255;
 				}
-
+				
 				JE_calcFXVol();
-
+				
 				set_volume(tyrMusicVolume, fxVolume);
-
-				JE_playSampleNum(CURSOR_MOVE);
+				
+				JE_playSampleNum(S_CURSOR);
 			}
 
 			if (tempB && (mouseY > 20) && (mouseX > 170) && (mouseX < 308) && (curMenu != 8))
 			{
 				const JE_byte mouseSelectionY[MAX_MENU] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16 };
-
+				
 				tempI = (mouseY - 38) / mouseSelectionY[curMenu]+2;
 
 				if (curMenu == 9)
@@ -6782,11 +6712,11 @@ item_screen_start:
 					{
 						score = JE_cashLeft();
 						curMenu = 1;
-						JE_playSampleNum(ITEM);
+						JE_playSampleNum(S_ITEM);
 					}
 					else
 					{
-						JE_playSampleNum(CLICK);
+						JE_playSampleNum(S_CLICK);
 						if (curSel[curMenu] == tempI)
 						{
 							JE_menuFunction(curSel[curMenu]);
@@ -6799,7 +6729,7 @@ item_screen_start:
 							}
 							if ((curMenu == 5) && (JE_getCost(curSel[1], itemAvail[itemAvailMap[curSel[2]-1]][tempI-1]) > score))
 							{
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							else
 							{
@@ -6823,7 +6753,7 @@ item_screen_start:
 			{
 				if ((mouseX >= 23) && (mouseX <= 36) && (mouseY >= 149) && (mouseY <= 168))
 				{
-					JE_playSampleNum(CURSOR_MOVE);
+					JE_playSampleNum(S_CURSOR);
 					switch (curSel[1])
 					{
 						case 3:
@@ -6831,7 +6761,7 @@ item_screen_start:
 							{
 								portPower[0]--;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						case 4:
@@ -6839,7 +6769,7 @@ item_screen_start:
 							{
 								portPower[1]--;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 					}
@@ -6848,7 +6778,7 @@ item_screen_start:
 
 				if ((mouseX >= 119) && (mouseX <= 131) && (mouseY >= 149) && (mouseY <= 168))
 				{
-					JE_playSampleNum(CURSOR_MOVE);
+					JE_playSampleNum(S_CURSOR);
 					switch (curSel[1])
 					{
 						case 3:
@@ -6856,7 +6786,7 @@ item_screen_start:
 							{
 								portPower[0]++;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						case 4:
@@ -6864,7 +6794,7 @@ item_screen_start:
 							{
 								portPower[1]++;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 					}
@@ -6880,7 +6810,7 @@ item_screen_start:
 					if ( (curMenu == 4) && (curSel[1] == 4))
 					{
 						portConfig[1]++;
-						if (portConfig[1] > weaponPort[pItems[1-1]].opnum)
+						if (portConfig[1] > weaponPort[pItems[P_FRONT]].opnum)
 						{
 							portConfig[1] = 1;
 						}
@@ -6893,7 +6823,7 @@ item_screen_start:
 					break;
 
 				case SDLK_ESCAPE:
-					JE_playSampleNum(ESC);
+					JE_playSampleNum(S_SPRING);
 					if ( (curMenu == 6) && quikSave)
 					{
 						curMenu = oldMenu;
@@ -6961,7 +6891,7 @@ item_screen_start:
 					lastDirection = -1;
 					if (curMenu != 8)
 					{
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 					}
 					if ( (curMenu == 4) && (curSel[1] == 3 || curSel[1] == 4) )
 					{
@@ -6992,7 +6922,7 @@ item_screen_start:
 					lastDirection = 1;
 					if (curMenu != 8)
 					{
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 					}
 					if ( (curMenu == 4) && (curSel[1] == 3 || curSel[1] == 4) )
 					{
@@ -7078,8 +7008,8 @@ item_screen_start:
 						{
 						case 3:
 						case 4:
-							JE_playSampleNum(CURSOR_MOVE);
-
+							JE_playSampleNum(S_CURSOR);
+							
 							int temp = curSel[curMenu] - 3;
 							do {
 								if (joysticks == 0)
@@ -7099,7 +7029,7 @@ item_screen_start:
 
 					if (curMenu == 2 || curMenu == 4  || curMenu == 11)
 					{
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 					}
 
 					switch (curMenu)
@@ -7130,7 +7060,7 @@ item_screen_start:
 							{
 								portPower[0]--;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						case 4:
@@ -7138,7 +7068,7 @@ item_screen_start:
 							{
 								portPower[1]--;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						}
@@ -7180,8 +7110,8 @@ item_screen_start:
 						{
 						case 3:
 						case 4:
-							JE_playSampleNum(CURSOR_MOVE);
-
+							JE_playSampleNum(S_CURSOR);
+							
 							int temp = curSel[curMenu] - 3;
 							do {
 								if (joysticks == 0)
@@ -7201,7 +7131,7 @@ item_screen_start:
 
 					if (curMenu == 2 || curMenu == 4  || curMenu == 11)
 					{
-						JE_playSampleNum(CURSOR_MOVE);
+						JE_playSampleNum(S_CURSOR);
 					}
 
 					switch (curMenu)
@@ -7232,7 +7162,7 @@ item_screen_start:
 							{
 								portPower[0]++;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						case 4:
@@ -7240,7 +7170,7 @@ item_screen_start:
 							{
 								portPower[1]++;
 							} else {
-								JE_playSampleNum(WRONG);
+								JE_playSampleNum(S_CLINK);
 							}
 							break;
 						}
@@ -7253,7 +7183,7 @@ item_screen_start:
 				}
 			}
 		}
-
+		
 	} while (!(quit || gameLoaded || jumpSection));
 
 	if (!quit && isNetworkGame)
@@ -7261,27 +7191,27 @@ item_screen_start:
 		JE_barShade(3, 3, 316, 196);
 		JE_barShade(1, 1, 318, 198);
 		JE_dString(10, 160, "Waiting for other player.", SMALL_FONT_SHAPES);
-
+		
 		network_prepare(PACKET_WAITING);
 		network_send(4);  // PACKET_WAITING
-
+		
 		while (true)
 		{
 			service_SDL_events(false);
 			JE_showVGA();
-
+			
 			if (packet_in[0] && SDLNet_Read16(&packet_in[0]->data[0]) == PACKET_WAITING)
 			{
 				network_update();
 				break;
 			}
-
+			
 			network_update();
 			network_check();
-
+			
 			SDL_Delay(16);
 		}
-
+		
 		network_state_reset();
 	}
 
@@ -7291,12 +7221,12 @@ item_screen_start:
 		{
 			service_SDL_events(false);
 			JE_showVGA();
-
+			
 			network_check();
 			SDL_Delay(16);
 		}
 	}
-
+	
 	if (gameLoaded)
 		JE_fadeBlack(10);
 }
@@ -7315,8 +7245,8 @@ void JE_loadCubes( void )
 	char buffer[256] = "";
 
 	memset(cubeText, 0, sizeof(cubeText));
-	int cube;
-	for (cube = 0; cube < cubeMax; cube++)
+
+	for (int cube = 0; cube < cubeMax; cube++)
 	{
 		FILE *f;
 		JE_resetFile(&f, cubeFile);
@@ -7340,7 +7270,7 @@ void JE_loadCubes( void )
 		curWidth = 0;
 		x = 5;
 		y = 1;
-
+		
 		s3[0] = '\0';
 
 		do
@@ -7391,7 +7321,7 @@ void JE_loadCubes( void )
 							}
 						} while (!(s[pos - 1] == ' ' || endString)); // Loops until end of word or string
 
-						//
+						// 
 						pastStringLen = (pos - startPos) > CUBE_WIDTH;
 						pastStringWidth = (curWidth > LINE_WIDTH);
 
@@ -7568,7 +7498,7 @@ void JE_updateNavScreen( void )
 	/* TODO: The starting coordinates for the scrolling effect may be wrong, the
 	   yellowish planet below Tyrian isn't visible for as many frames as in the
 	   original. */
-
+	
 	tempNavX = round(navX);
 	tempNavY = round(navY);
 	JE_bar(19, 16, 135, 169, 2);
@@ -7584,12 +7514,12 @@ void JE_updateNavScreen( void )
 		if (mapPlanet[x] > 11)
 			JE_drawPlanet(mapPlanet[x] - 1);
 	}
-
+	
 	if (mapOrigin > 11)
 		JE_drawPlanet(mapOrigin - 1);
-
+	
 	blit_shape(VGAScreenSeg, 0, 0, OPTION_SHAPES, 28);  // navigation screen interface
-
+	
 	if (curSel[3] < menuChoices[3])
 	{
 		newNavX = (planetX[mapOrigin-1] - shapeX[PLANET_SHAPES][PGR[mapOrigin-1]-1] / 2
@@ -7599,17 +7529,17 @@ void JE_updateNavScreen( void )
 		          + planetY[mapPlanet[curSel[3]-2] - 1]
 		          - shapeY[PLANET_SHAPES][PGR[mapPlanet[curSel[3]-2] - 1]-1] / 2) / 2.0;
 	}
-
+	
 	navX = navX + (newNavX - navX) / 2.0;
 	navY = navY + (newNavY - navY) / 2.0;
-
+	
 	if (abs(newNavX - navX) < 1)
 		navX = newNavX;
 	if (abs(newNavY - navY) < 1)
 		navY = newNavY;
-
+	
 	JE_bar(314, 0, 319, 199, 230);
-
+	
 	if (planetAniWait > 0)
 	{
 		planetAniWait--;
@@ -7621,7 +7551,7 @@ void JE_updateNavScreen( void )
 			planetAni = 0;
 		planetAniWait = 3;
 	}
-
+	
 	if (currentDotWait > 0)
 	{
 		currentDotWait--;
@@ -7700,16 +7630,16 @@ void JE_drawNavLines( JE_boolean dark )
 	JE_integer tempX, tempY;
 	JE_integer tempX2, tempY2;
 	JE_word tempW, tempW2;
-
+	
 	tempX2 = tempNavX >> 1;
 	tempY2 = tempNavY >> 1;
-
+	
 	tempW = 0;
 	for (x = 1; x <= 20; x++)
 	{
 		tempW += 15;
 		tempX = tempW - tempX2;
-
+		
 		if (tempX > 18 && tempX < 135)
 		{
 			if (dark)
@@ -7718,22 +7648,22 @@ void JE_drawNavLines( JE_boolean dark )
 				JE_rectangle(tempX, 16, tempX, 169, 5);
 		}
 	}
-
+	
 	tempW = 0;
 	for (y = 1; y <= 20; y++)
 	{
 		tempW += 15;
 		tempY = tempW - tempY2;
-
+		
 		if (tempY > 15 && tempY < 169)
 		{
 			if (dark)
 				JE_rectangle(19, tempY + 1, 135, tempY + 1, 1);
 			else
 				JE_rectangle(8, tempY, 160, tempY, 5);
-
+			
 			tempW2 = 0;
-
+			
 			for (x = 0; x < 20; x++)
 			{
 				tempW2 += 15;
@@ -7774,7 +7704,7 @@ void JE_drawPlanet( JE_byte planetNum )
 	{
 		if (PAni[planetNum])
 			tempZ += planetAni;
-
+		
 		blit_shape_dark(VGAScreenSeg, tempX + 3, tempY + 3, PLANET_SHAPES, tempZ, false);
 		blit_shape(VGAScreenSeg, tempX, tempY, PLANET_SHAPES, tempZ);  // planets
 	}
@@ -7788,28 +7718,27 @@ void JE_scaleBitmap( SDL_Surface *bitmap, JE_word x, JE_word y, JE_word x1, JE_w
 	JE_longint sx = x * 0x10000 / w,
 	           sy = y * 0x10000 / h,
 	           cx, cy = 0;
-
+	
 	Uint8 *s = VGAScreen->pixels;  /* 8-bit specific */
 	Uint8 *src = bitmap->pixels;  /* 8-bit specific */
-
+	
 	s += y1 * VGAScreen->pitch + x1;
-
+	
 	for (; h; h--)
 	{
 		cx = 0;
-		int x;
-		for (x = w; x; x--)
+		for (int x = w; x; x--)
 		{
 			*s = *src;
 			s++;
-
+			
 			cx += sx;
 			src += cx >> 16;
 			cx &= 0xffff;
 		}
-
+		
 		s += VGAScreen->pitch - w;
-
+		
 		cy += sy;
 		src -= ((sx * w) >> 16);
 		src += (cy >> 16) * bitmap->pitch;
@@ -7887,13 +7816,13 @@ JE_integer JE_partWay( JE_integer start, JE_integer finish, JE_byte dots, JE_byt
 
 void JE_doFunkyScreen( void )
 {
-	if (pItems[12-1] > 90)
+	if (pItems[P_SHIP] > 90)
 		temp = 32;
-	else if (pItems[12-1] > 0)
-		temp = ships[pItems[12-1]].bigshipgraphic;
+	else if (pItems[P_SHIP] > 0)
+		temp = ships[pItems[P_SHIP]].bigshipgraphic;
 	else
 		temp = ships[pItemsBack[12-1]].bigshipgraphic;
-
+	
 	switch (temp)
 	{
 		case 32:
@@ -7910,16 +7839,16 @@ void JE_doFunkyScreen( void )
 			break;
 	}
 	tempW -= 30;
-
+	
 	VGAScreen = VGAScreen2;
 	JE_clr256();
-
+	
 	blit_shape(VGAScreen2, tempW, tempW2, OPTION_SHAPES, temp - 1);  // ship illustration
-
+	
 	tempScreenSeg = VGAScreen2;
 	JE_funkyScreen();
 	tempScreenSeg = VGAScreenSeg;
-
+	
 	JE_loadPic(1, false);
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
 }
@@ -7973,8 +7902,7 @@ void JE_whoa( void )
 		Uint16 di = 640; // pixel pointer
 
 		Uint8 *vga2pixels = VGAScreen2->pixels;
-		Uint16 dx;
-		for (dx = 64000 - 1280; dx != 0; dx--)
+		for (Uint16 dx = 64000 - 1280; dx != 0; dx--)
 		{
 			Uint16 si = di + (Uint8)((Uint8)(dx >> 8) >> 5) - 4;
 
@@ -7991,17 +7919,16 @@ void JE_whoa( void )
 		}
 
 		di = 320 * 4;
-		Uint16 cx;
-		for (cx = 64000 - 320*7; cx != 0; cx--)
+		for (Uint16 cx = 64000 - 320*7; cx != 0; cx--)
 		{
 			((Uint8 *)VGAScreen->pixels)[di] = vga2pixels[di];
 			di++;
 		}
 
 		tempW3--;
-
+		
 		JE_showVGA();
-
+		
 		wait_delay();
 	} while (!(tempW3 == 0 || JE_anyButton()));
 
@@ -8011,43 +7938,43 @@ void JE_whoa( void )
 JE_boolean JE_quitRequest( void )
 {
 	bool quit_selected = true, done = false;
-
+	
 	JE_clearKeyboard();
 	JE_wipeKey();
 	wait_noinput(true, true, true);
-
+	
 	JE_barShade(65, 55, 255, 155);
-
+	
 	while (!done)
 	{
 		Uint8 col = 8;
 		int colC = 1;
-
+		
 		do
 		{
 			service_SDL_events(true);
 			setjasondelay(4);
-
+			
 			blit_shape(VGAScreenSeg, 50, 50, OPTION_SHAPES, 35);  // message box
 			JE_textShade(70, 60, miscText[28], 0, 5, FULL_SHADE);
 			JE_helpBox(70, 90, miscText[30], 30);
-
+			
 			col += colC;
 			if (col > 8 || col < 2)
 				colC = -colC;
-
+			
 			int temp_x, temp_c;
-
+			
 			temp_x = 54 + 45 - (JE_textWidth(miscText[9], FONT_SHAPES) / 2);
 			temp_c = quit_selected ? col - 12 : -5;
-
+			
 			JE_outTextAdjust(temp_x, 128, miscText[9], 15, temp_c, FONT_SHAPES, true);
-
+			
 			temp_x = 149 + 45 - (JE_textWidth(miscText[10], FONT_SHAPES) / 2);
 			temp_c = !quit_selected ? col - 12 : -5;
-
+			
 			JE_outTextAdjust(temp_x, 128, miscText[10], 15, temp_c, FONT_SHAPES, true);
-
+			
 			if (mouseInstalled)
 			{
 				JE_mouseStart();
@@ -8058,14 +7985,14 @@ JE_boolean JE_quitRequest( void )
 			{
 				JE_showVGA();
 			}
-
+			
 			wait_delay();
-
+			
 			push_joysticks_as_keyboard();
 			service_SDL_events(false);
-
+			
 		} while (!newkey && !mousedown);
-
+		
 		if (mousedown)
 		{
 			if (lastmouse_y > 123 && lastmouse_y < 149)
@@ -8091,7 +8018,7 @@ JE_boolean JE_quitRequest( void )
 				case SDLK_RIGHT:
 				case SDLK_TAB:
 					quit_selected = !quit_selected;
-					JE_playSampleNum(CURSOR_MOVE);
+					JE_playSampleNum(S_CURSOR);
 					break;
 				case SDLK_RETURN:
 				case SDLK_SPACE:
@@ -8106,17 +8033,17 @@ JE_boolean JE_quitRequest( void )
 			}
 		}
 	}
-
-	JE_playSampleNum(quit_selected ? ESC : CLICK);
-
+	
+	JE_playSampleNum(quit_selected ? S_SPRING : S_CLICK);
+	
 	if (isNetworkGame && quit_selected)
 	{
 		network_prepare(PACKET_QUIT);
 		network_send(4);  // PACKET QUIT
-
+		
 		network_tyrian_halt(0, true);
 	}
-
+	
 	return quit_selected;
 }
 
@@ -8150,14 +8077,14 @@ void JE_doStatBar( void )
 			}
 		}
 	}
-
+	
 	if (statBar[1-1] == 0)
 	{
 		statBar[1-1] = statBar[2-1];
 		statDmg[1-1] = statDmg[2-1];
 		statBar[2-1] = 0;
 	}
-
+	
 	if (statBar[2-1] > 0)
 	{  /*2 bars*/
 		JE_barX(100, 7, 150, 12, 115);
@@ -8173,7 +8100,7 @@ void JE_doStatBar( void )
 		JE_barX(tempW - 26, 7, tempW + 26, 12, 115);
 		JE_barX(tempW - (statDmg[1-1] / 10), 7, tempW + (statDmg[1-1] + 5) / 10, 12, 118 + statCol[1-1]);
 	}
-
+	
 	if (statCol[1-1] > 0)
 	{
 		statCol[1-1]--;
@@ -8202,7 +8129,7 @@ void JE_menuFunction( JE_byte select )
 
 	col = 0;
 	colC = -1;
-	JE_playSampleNum(CLICK);
+	JE_playSampleNum(S_CLICK);
 
 	curSelect = curSel[curMenu];
 
@@ -8319,7 +8246,7 @@ void JE_menuFunction( JE_byte select )
 				memcpy(portPower, lastPortPower, sizeof(portPower));
 				curSel[4] = lastCurSel; /* JE: Cancel */
 			} else {
-				JE_playSampleNum(ITEM);
+				JE_playSampleNum(S_ITEM);
 			}
 
 			score = JE_cashLeft();
@@ -8347,32 +8274,32 @@ void JE_menuFunction( JE_byte select )
 			tempY = 38 + (curSelect - 2) * 12;
 			JE_textShade(236, tempY, SDL_GetKeyName(keySettings[curSelect-2]), (temp2 / 16), (temp2 % 16) - 8, DARKEN);
 			JE_showVGA();
-
+			
 			wait_noinput(true, true, true);
-
+			
 			col = 248;
 			colC = 1;
 
 			do {
 				setjasondelay(1);
-
+				
 				col += colC;
 				if (col < 243 || col > 248)
 				{
 					colC *= -1;
 				}
 				JE_rectangle(230, tempY - 2, 300, tempY + 7, col);
-
+				
 				poll_joysticks();
 				service_SDL_events(true);
-
+				
 				JE_showVGA();
-
+				
 				wait_delay();
 			} while (!newkey && !mousedown && !joydown);
-
+			
 			tempB = newkey;
-
+			
 			// already used?
 			for (x = 0; x < 8; x++)
 			{
@@ -8382,7 +8309,7 @@ void JE_menuFunction( JE_byte select )
 					JE_playSampleNum(false);
 				}
 			}
-
+			
 			if ( lastkey_sym != SDLK_ESCAPE && // reserved for menu
 				 lastkey_sym != SDLK_F11 &&    // reserved for gamma
 				 lastkey_sym != SDLK_s &&      // reserved for sample mute
@@ -8390,7 +8317,7 @@ void JE_menuFunction( JE_byte select )
 				 lastkey_sym != SDLK_p &&      // reserved for pause
 				 tempB )
 			{
-				JE_playSampleNum(CLICK);
+				JE_playSampleNum(S_CLICK);
 				keySettings[curSelect-2] = lastkey_sym;
 				curSelect++;
 			}
@@ -8458,8 +8385,8 @@ void JE_menuFunction( JE_byte select )
 			break;
 		case 3:
 		case 4:
-			JE_playSampleNum(CURSOR_MOVE);
-
+			JE_playSampleNum(S_CURSOR);
+			
 			int temp = curSel[curMenu] - 3;
 			do {
 				if (joysticks == 0)
@@ -8525,7 +8452,7 @@ void JE_menuFunction( JE_byte select )
 	case 12:
 		if (joysticks == 0 && select != 17)
 			break;
-
+		
 		switch (select)
 		{
 		case 2:
@@ -8563,17 +8490,16 @@ void JE_menuFunction( JE_byte select )
 		default:
 			if (joysticks == 0)
 				break;
-
+			
 			// int temp = 254;
 			// JE_textShade(236, 38 + i * 8, value, temp / 16, temp % 16 - 8, DARKEN);
-
+			
 			JE_rectangle(235, 21 + select * 8, 310, 30 + select * 8, 248);
-
+			
 			struct joystick_assignment_struct temp;
 			if (detect_joystick_assignment(joystick_config, &temp))
 			{
-				int i;
-				for (i = 0; i < COUNTOF(*joystick->assignment); i++)
+				for (int i = 0; i < COUNTOF(*joystick->assignment); i++)
 				{
 					if (joystick_assignment_cmp(&temp, &joystick[joystick_config].assignment[select - 6][i]))
 					{
@@ -8581,8 +8507,8 @@ void JE_menuFunction( JE_byte select )
 						goto joystick_assign_done;
 					}
 				}
-
-				for (i = 0; i < COUNTOF(*joystick->assignment); i++)
+				
+				for (int i = 0; i < COUNTOF(*joystick->assignment); i++)
 				{
 					if (joystick[joystick_config].assignment[select - 6][i].num == -1)
 					{
@@ -8590,18 +8516,18 @@ void JE_menuFunction( JE_byte select )
 						goto joystick_assign_done;
 					}
 				}
-
-				for (i = 0; i < COUNTOF(*joystick->assignment); i++)
+				
+				for (int i = 0; i < COUNTOF(*joystick->assignment); i++)
 				{
 					if (i == COUNTOF(*joystick->assignment) - 1)
 						joystick[joystick_config].assignment[select - 6][i] = temp;
 					else
 						joystick[joystick_config].assignment[select - 6][i] = joystick[joystick_config].assignment[select - 6][i + 1];
 				}
-
+				
 joystick_assign_done:
 				curSelect++;
-
+				
 				poll_joysticks();
 			}
 		}
@@ -8645,10 +8571,10 @@ void JE_funkyScreen( void )
 
 	Uint8 *s = game_screen->pixels; /* 8-bit specific */
 	Uint8 *src = VGAScreen2->pixels; /* 8-bit specific */
-	int x,y;
-	for (y = 0; y < 200; y++)
+	
+	for (int y = 0; y < 200; y++)
 	{
-		for (x = 0; x < 320; x++)
+		for (int x = 0; x < 320; x++)
 		{
 			int avg = 0;
 			if (y > 0)
@@ -8660,14 +8586,14 @@ void JE_funkyScreen( void )
 			if (x < VGAScreen2->pitch - 1)
 				avg += *(src + 1) & 0x0f;
 			avg /= 4;
-
+			
 			if ((*src & 0x0f) > avg)
 			{
 				*s = (*src & 0x0f) | 0xc0;
 			} else {
 				*s = 0;
 			}
-
+			
 			src++;
 			s++;
 		}
@@ -8681,28 +8607,29 @@ void JE_funkyScreen( void )
 
 	s = VGAScreen2->pixels; /* 8-bit specific */
 	src = game_screen->pixels; /* 8-bit specific */
-	for (y = 0; y < 200; y++)
+	
+	for (int y = 0; y < 200; y++)
 	{
-		for (x = 0; x < 320; x++)
+		for (int x = 0; x < 320; x++)
 		{
 			if (*src)
 				*s = *src;
-
+			
 			src++;
 			s++;
 		}
 	}
 
 	verticalHeight = 9;
-	JE_outText(10, 2, ships[pItems[12-1]].name, 12, 3);
-	JE_helpBox(100, 20, shipInfo[pItems[12-1]-1][0], 40);
-	JE_helpBox(100, 100, shipInfo[pItems[12-1]-1][1], 40);
+	JE_outText(10, 2, ships[pItems[P_SHIP]].name, 12, 3);
+	JE_helpBox(100, 20, shipInfo[pItems[P_SHIP]-1][0], 40);
+	JE_helpBox(100, 100, shipInfo[pItems[P_SHIP]-1][1], 40);
 	verticalHeight = 7;
 
 	JE_outText(JE_fontCenter(miscText[4], TINY_FONT), 190, miscText[4], 12, 2);
 
 	JE_playSampleNum(16);
-
+	
 	VGAScreen = VGAScreenSeg;
 	JE_scaleInPicture();
 
@@ -8712,9 +8639,9 @@ void JE_funkyScreen( void )
 void JE_weaponSimUpdate( void )
 {
 	char buf[32];
-
+	
 	JE_weaponViewFrame(0);
-
+	
 	if ( (curSel[1] == 3 && curSel[4] < menuChoices[4]) || (curSel[1] == 4 && curSel[4] < menuChoices[4] - 1) )
 	{
 		if (leftPower)
@@ -8726,7 +8653,7 @@ void JE_weaponSimUpdate( void )
 		{
 			blit_shape(VGAScreenSeg, 24, 149, OPTION_SHAPES, 13);  // downgrade disabled
 		}
-
+		
 		if (rightPower)
 		{
 			if (!rightPowerAfford)
@@ -8745,7 +8672,7 @@ void JE_weaponSimUpdate( void )
 		{
 			blit_shape(VGAScreenSeg, 119, 149, OPTION_SHAPES, 14);  // upgrade disabled
 		}
-
+		
 		if (curSel[1] == 3)
 			temp = portPower[1 - 1];
 		else
@@ -8757,7 +8684,7 @@ void JE_weaponSimUpdate( void )
 			JE_bar(39 + x * 6, 152, 39 + x * 6 + 4, 164, 250);
 			JE_bar(39 + x * 6, 165, 39 + x * 6 + 4, 165, 249);
 		}
-
+		
 		sprintf(buf, "POWER: %d", temp);
 		JE_outText(58, 137, buf, 15, 4);
 	}
@@ -8767,7 +8694,7 @@ void JE_weaponSimUpdate( void )
 		rightPower = false;
 		blit_shape(VGAScreenSeg, 20, 146, OPTION_SHAPES, 17);  // hide power level interface
 	}
-
+	
 	JE_drawItem(1, pItems[12 - 1], PX - 5, PY - 7);
 }
 
@@ -8775,21 +8702,21 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 {
 	Uint8 *s; /* screen pointer, 8-bit specific */
 	int i;
-
+	
 	JE_bar(8, 8, 143, 182, 0);
-
+	
 	/* JE: (* Port Configuration Display *)
 	(*    drawportconfigbuttons;*/
-
+	
 	/*===========================STARS==========================*/
 	/*DRAWSTARS*/
-
+	
 	for (i = MAX_STARS; i--;)
 	{
 		s = (Uint8 *)VGAScreen->pixels;
-
+		
 		starDat[i].sLoc += starDat[i].sMov + VGAScreen->pitch;
-
+		
 		if (starDat[i].sLoc < 177 * VGAScreen->pitch)
 		{
 			if (*(s + starDat[i].sLoc) == 0)
@@ -8807,10 +8734,10 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 			}
 		}
 	}
-
+	
 	mouseX = PX;
 	mouseY = PY;
-
+	
 	/* JE: (* PLAYER SHOT Creation *) */
 	for (temp = 0; temp <= 1; temp++)
 	{
@@ -8819,16 +8746,16 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		else
 			JE_initPlayerShot(pItems[temp], temp + 1, PX, PY, mouseX, mouseY, weaponPort[pItems[temp]].op[portConfig[temp] - 1][portPower[temp] - 1], 1);
 	}
-
+	
 	if (options[pItems[4 - 1]].wport > 0)
 	{
 		if (shotRepeat[3 - 1] > 0)
 			shotRepeat[3 - 1]--;
 		else
-			JE_initPlayerShot(options[pItems[4-1]].wport, 3, option1X, option1Y, mouseX, mouseY, options[pItems[4-1]].wpnum, 1);
+			JE_initPlayerShot(options[pItems[P_LEFT_SIDEKICK]].wport, 3, option1X, option1Y, mouseX, mouseY, options[pItems[P_LEFT_SIDEKICK]].wpnum, 1);
 	}
-
-	if (options[pItems[5-1]].tr == 2)
+	
+	if (options[pItems[P_RIGHT_SIDEKICK]].tr == 2)
 	{
 		option2X = PX;
 		option2Y = PY - 20;
@@ -8840,15 +8767,15 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		option2X = 72 + 15;
 		option2Y = 120;
 	}
-
+	
 	if (options[pItems[5 - 1]].wport > 0)
 	{
 		if (shotRepeat[4 - 1] > 0)
 			shotRepeat[4 - 1]--;
 		else
-			JE_initPlayerShot(options[pItems[5-1]].wport, 4, option2X, option2Y, mouseX, mouseY, options[pItems[5-1]].wpnum, 1);
+			JE_initPlayerShot(options[pItems[P_RIGHT_SIDEKICK]].wport, 4, option2X, option2Y, mouseX, mouseY, options[pItems[P_RIGHT_SIDEKICK]].wpnum, 1);
 	}
-
+	
 	/* Player Shot Images */
 	for (z = 0; z < MAX_PWEAPON; z++)
 	{
@@ -8858,45 +8785,45 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 			if (z != MAX_PWEAPON - 1)
 			{
 				playerShotData[z].shotXM += playerShotData[z].shotXC;
-
+				
 				if (playerShotData[z].shotXM <= 100)
 					playerShotData[z].shotX += playerShotData[z].shotXM;
-
+				
 				playerShotData[z].shotYM += playerShotData[z].shotYC;
 				playerShotData[z].shotY += playerShotData[z].shotYM;
-
+				
 				if (playerShotData[z].shotYM > 100)
 				{
 					playerShotData[z].shotY -= 120;
 					playerShotData[z].shotY += PYChange;
 				}
-
+				
 				if (playerShotData[z].shotComplicated != 0)
 				{
 					playerShotData[z].shotDevX += playerShotData[z].shotDirX;
 					playerShotData[z].shotX += playerShotData[z].shotDevX;
-
+					
 					if (abs(playerShotData[z].shotDevX) == playerShotData[z].shotCirSizeX)
 						playerShotData[z].shotDirX = -playerShotData[z].shotDirX;
-
+					
 					playerShotData[z].shotDevY += playerShotData[z].shotDirY;
 					playerShotData[z].shotY += playerShotData[z].shotDevY;
-
+					
 					if (abs(playerShotData[z].shotDevY) == playerShotData[z].shotCirSizeY)
 						playerShotData[z].shotDirY = -playerShotData[z].shotDirY;
 					/*Double Speed Circle Shots - add a second copy of above loop*/
 				}
-
+				
 				tempShotX = playerShotData[z].shotX;
 				tempShotY = playerShotData[z].shotY;
-
+				
 				if (playerShotData[z].shotX < 0 || playerShotData[z].shotX > 140 ||
 				    playerShotData[z].shotY < 0 || playerShotData[z].shotY > 170)
 				{
 					shotAvail[z] = 0;
 					goto draw_player_shot_loop_end;
 				}
-
+				
 /*				if (playerShotData[z].shotTrail != 255)
 				{
 					if (playerShotData[z].shotTrail == 98)
@@ -8906,11 +8833,11 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 						JE_setupExplosion(playerShotData[z].shotX, playerShotData[z].shotY, playerShotData[z].shotTrail);
 					}
 				}*/
-
+				
 				tempW = playerShotData[z].shotGr + playerShotData[z].shotAni;
 				if (++playerShotData[z].shotAni == playerShotData[z].shotAniMax)
 					playerShotData[z].shotAni = 0;
-
+				
 				if (tempW < 6000)
 				{
 					if (tempW > 1000)
@@ -8921,23 +8848,23 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 						JE_drawShape2(tempShotX+1, tempShotY, tempW, shapesC1);
 				}
 			}
-
+			
 draw_player_shot_loop_end:
 			;
 		}
 	}
-
+	
 	blit_shape(VGAScreenSeg, 0, 0, OPTION_SHAPES, 12); // upgrade interface
-
-
+	
+	
 	/*========================Power Bar=========================*/
-
+	
 	power = power + powerAdd;
 	if (power > 900)
 		power = 900;
-
+	
 	temp = power / 10;
-
+	
 	for (temp = 147 - temp; temp <= 146; temp++)
 	{
 		temp2 = 113 + (146 - temp) / 9 + 2;
@@ -8946,29 +8873,29 @@ draw_player_shot_loop_end:
 			temp2 += 3;
 		else if (temp3 != 0)
 			temp2 += 2;
-
+		
 		JE_pix(141, temp, temp2 - 3);
 		JE_pix(142, temp, temp2 - 3);
 		JE_pix(143, temp, temp2 - 2);
 		JE_pix(144, temp, temp2 - 1);
 		JE_bar(145, temp, 149, temp, temp2);
-
+		
 		if (temp2 - 3 < 112)
 			temp2++;
 	}
-
+	
 	temp = 147 - (power / 10);
 	temp2 = 113 + (146 - temp) / 9 + 4;
-
+	
 	JE_pix(141, temp - 1, temp2 - 1);
 	JE_pix(142, temp - 1, temp2 - 1);
 	JE_pix(143, temp - 1, temp2 - 1);
 	JE_pix(144, temp - 1, temp2 - 1);
-
+	
 	JE_bar(145, temp-1, 149, temp-1, temp2);
-
+	
 	lastPower = temp;
-
+	
 	//JE_waitFrameCount();  TODO: didn't do anything?
 }
 
@@ -9033,14 +8960,13 @@ void JE_drawBackground3( void )
 
 void JE_scaleInPicture( void )
 {
-	int i;
-	for (i = 2; i <= 160; i += 2)
+	for (int i = 2; i <= 160; i += 2)
 	{
 		if (JE_anyButton())
 			i = 160;
 		JE_scaleBitmap(VGAScreen2, 320, 200, 160 - i, 0, 160 + i - 1, 100 + round(i * 0.625f) - 1);
 		JE_showVGA();
-
+		
 		SDL_Delay(1);
 	}
 }

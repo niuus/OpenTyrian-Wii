@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -28,25 +28,24 @@ void JE_loadPCX( char *file ) // this is only meant to load tshp2.pcx
 {
 	FILE *f;
 	Uint8 *s = VGAScreen->pixels; /* 8-bit specific */
-
+	
 	JE_resetFile(&f, file);
-
+	
 	fseek(f, -769, SEEK_END);
-
+	
 	if (fgetc(f) == 12)
 	{
-		int i;
-		for (i = 0; i < 256; i++)
+		for (int i = 0; i < 256; i++)
 		{
 			efread(&colors[i].r, 1, 1, f);
 			efread(&colors[i].g, 1, 1, f);
 			efread(&colors[i].b, 1, 1, f);
 		}
 	}
-
+	
 	fseek(f, 128, SEEK_SET);
-	int i;
-	for (i = 0; i < 320 * 200; )
+	
+	for (int i = 0; i < 320 * 200; )
 	{
 		Uint8 p = fgetc(f);
 		if ((p & 0xc0) == 0xc0)
@@ -64,7 +63,7 @@ void JE_loadPCX( char *file ) // this is only meant to load tshp2.pcx
 			s += VGAScreen->pitch - 320;
 		}
 	}
-
+	
 	fclose(f);
 }
 
