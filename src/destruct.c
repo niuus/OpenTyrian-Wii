@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -187,7 +187,7 @@ void JE_destructGame( void )
 	destructTempScreen = game_screen;
 	JE_loadCompShapes(&eShapes1, &eShapes1Size, '~');
 	JE_fadeBlack(1);
-
+	
 	JE_destructMain();
 }
 
@@ -195,38 +195,38 @@ void JE_destructMain( void )
 {
 	JE_byte temp, temp2;
 	char tempstr[256];
-
-	JE_loadPic(11);
+	
+	JE_loadPic(11, false);
 	JE_introScreen();
-
+	
 	cpu = 1;
 	leftScore = 0;
 	rightScore = 0;
-
+	
 	do {
 		JE_modeSelect();
-
+		
 		if (!destructQuit)
 		{
 			do {
 				destructQuit = false;
 				endOfGame = false;
-
+				
 				destructFirstTime = true;
-				JE_loadPic(11);
-
+				JE_loadPic(11, false);
+				
 				haveWalls = mt_rand() % 2;
-
+				
 				JE_generateTerrain();
-
+				
 				leftSel = 1;
 				rightSel = 1;
-
+				
 				Lc_Angle = 2;
 				Lc_Power = 2;
 				Lc_Fire = 0;
 				NoL_Down = 0;
-
+				
 				for (z = 0; z < MAX_INSTALLATIONS; z++)
 				{
 					leftLastMove[z] = 0;
@@ -258,19 +258,19 @@ void JE_destructMain( void )
 					rightPower[z] = 3;
 					rightShotType[z] = defaultWeapon[rightSystem[z]-1];
 				}
-
+				
 				for (x = 0; x < SHOT_MAX; x++)
 					destructShotAvail[x] = true;
 				for (x = 0; x < EXPLO_MAX; x++)
 					explosionAvail[x] = true;
-
+				
 				do {
 					setjasondelay(1);
-
+					
 					memset(soundQueue, 0, sizeof(soundQueue));
-
+					
 					JE_tempScreenChecking();
-
+					
 					if (!died)
 					{
 						/*LeftSkipNoShooters*/
@@ -280,7 +280,7 @@ void JE_destructMain( void )
 							if (leftSel > MAX_INSTALLATIONS)
 								leftSel = 1;
 						}
-
+						
 						/*RightSkipNoShooters*/
 						while (rightShotType[rightSel-1] == 0 || rightDmg[rightSel-1] == 0)
 						{
@@ -289,7 +289,7 @@ void JE_destructMain( void )
 								rightSel = 1;
 						}
 					}
-
+					
 					for (z = 0; z < MAX_INSTALLATIONS; z++)
 						if (leftDmg[z] > 0)
 						{
@@ -335,7 +335,7 @@ void JE_destructMain( void )
 								} else {
 									temp += floor(leftAngle[z] * 9.99f / M_PI);
 								}
-
+								
 								JE_drawShape2(leftX[z], round(leftY[z]) - 13, temp, eShapes1);
 							} else {
 								JE_drawShape2(leftX[z], round(leftY[z]) - 13, leftGraphicBase[leftSystem[z]-1] + leftAni[z], eShapes1);
@@ -380,7 +380,7 @@ void JE_destructMain( void )
 											rightY[z] += 1;
 										}
 									}
-
+								
 								temp = rightGraphicBase[rightSystem[z]-1] + rightAni[z];
 								if (rightSystem[z] == 8)
 								{
@@ -393,20 +393,20 @@ void JE_destructMain( void )
 								} else {
 									temp += floor(rightAngle[z] * 9.99f / M_PI);
 								}
-
+								
 								JE_drawShape2(rightX[z], round(rightY[z]) - 13, temp, eShapes1);
 							} else {
 								JE_drawShape2(rightX[z], round(rightY[z]) - 13, rightGraphicBase[rightSystem[z]-1] + rightAni[z], eShapes1);
 							}
 						}
-
+					
 					for (z = 0; z < MAX_INSTALLATIONS; z++)
 					{
 						if (leftSystem[z] == 6)
 							leftPower[z] = 6;
 						if (rightSystem[z] == 6)
 							rightPower[z] = 6;
-
+						
 						if (leftAni[z] == 0)
 						{
 							if (systemAni[leftSystem[z]-1])
@@ -426,22 +426,22 @@ void JE_destructMain( void )
 								rightAni[z] = 0;
 						}
 					}
-
+					
 					for (x = 0; x < 20; x++)
 						if (wallExist[x])
 							JE_drawShape2(wallsX[x], wallsY[x], 42, eShapes1);
-
+					
 				/*Explosions*/
 				for (z = 0; z < EXPLO_MAX; z++)
 					if (!explosionAvail[z])
 					{
-
+						
 						for (temp = 0; temp < exploRec[z].explofill; temp++)
 						{
 							destructTempR = ((float)mt_rand() / RAND_MAX) * (M_PI * 2);
 							destructTempY = exploRec[z].y + round(cos(destructTempR) * ((float)mt_rand() / RAND_MAX) * exploRec[z].explowidth);
 							destructTempX = exploRec[z].x + round(sin(destructTempR) * ((float)mt_rand() / RAND_MAX) * exploRec[z].explowidth);
-
+							
 							if (destructTempY < 200 && destructTempY > 15)
 							{
 								tempW = destructTempX + destructTempY * destructTempScreen->pitch;
@@ -450,7 +450,7 @@ void JE_destructMain( void )
 								else
 									((Uint8 *)destructTempScreen->pixels)[tempW] = exploRec[z].explocolor;
 							}
-
+							
 							if (exploRec[z].explocolor == 252)
 								for (temp2 = 0; temp2 < MAX_INSTALLATIONS; temp2++)
 								{
@@ -482,19 +482,19 @@ void JE_destructMain( void )
 									}
 								}
 						}
-
+						
 						exploRec[z].explowidth++;
 						if (exploRec[z].explowidth == exploRec[z].explomax)
 							explosionAvail[z] = true;
 					}
-
+					
 				/*Shotdraw*/
 				for (z = 0; z < SHOT_MAX; z++)
 					if (!destructShotAvail[z])
 					{
 						shotRec[z].x += shotRec[z].xmov;
 						shotRec[z].y += shotRec[z].ymov;
-
+						
 						if (shotBounce[shotRec[z].shottype-1])
 						{
 							if (shotRec[z].y > 199 || shotRec[z].y < 14)
@@ -517,18 +517,18 @@ void JE_destructMain( void )
 									shotRec[z].xmov += ((float)mt_rand() / RAND_MAX) - 0.5f;
 							}
 						}
-
+						
 						if (shotRec[z].x > 318 || shotRec[z].x < 1)
 						{
 							destructShotAvail[z] = true;
 						} else {
-
+							
 							destructTempX = round(shotRec[z].x);
 							destructTempY = round(shotRec[z].y);
-
+							
 							if (shotRec[z].y > 14)
 							{
-
+								
 								/*Check left hits*/
 								for (temp2 = 0; temp2 < MAX_INSTALLATIONS; temp2++)
 									if (leftDmg[temp2] > 0)
@@ -539,7 +539,7 @@ void JE_destructMain( void )
 											JE_makeExplosion(destructTempX, destructTempY, shotRec[z].shottype);
 										}
 									}
-
+								
 								/*Check right hits*/
 								for (temp2 = 0; temp2 < MAX_INSTALLATIONS; temp2++)
 									if (rightDmg[temp2] > 0)
@@ -550,11 +550,11 @@ void JE_destructMain( void )
 											JE_makeExplosion(destructTempX, destructTempY, shotRec[z].shottype);
 										}
 									}
-
-
+								
+								
 								tempW = (shotColor[shotRec[z].shottype-1] << 4) - 3;
 								JE_pixCool(destructTempX, destructTempY, tempW);
-
+								
 								/*shotTrail*/
 								switch (shotTrail[shotRec[z].shottype-1])
 								{
@@ -565,7 +565,7 @@ void JE_destructMain( void )
 										shotRec[z].trail2y = shotRec[z].trail1y;
 										if (shotRec[z].trail1c > 0)
 											shotRec[z].trail2c = shotRec[z].trail1c - 4;
-
+										
 										if (shotRec[z].trail1c > 0 && shotRec[z].trail1y > 12)
 											JE_pixCool(shotRec[z].trail1x, shotRec[z].trail1y, shotRec[z].trail1c);
 										shotRec[z].trail1x = destructTempX;
@@ -579,21 +579,21 @@ void JE_destructMain( void )
 										shotRec[z].trail4y = shotRec[z].trail3y;
 										if (shotRec[z].trail3c > 0)
 											shotRec[z].trail4c = shotRec[z].trail3c - 3;
-
+										
 										if (shotRec[z].trail3c > 0 && shotRec[z].trail3y > 12)
 											JE_pixCool(shotRec[z].trail3x, shotRec[z].trail3y, shotRec[z].trail3c);
 										shotRec[z].trail3x = shotRec[z].trail2x;
 										shotRec[z].trail3y = shotRec[z].trail2y;
 										if (shotRec[z].trail2c > 0)
 											shotRec[z].trail3c = shotRec[z].trail2c - 3;
-
+										
 										if (shotRec[z].trail2c > 0 && shotRec[z].trail2y > 12)
 											JE_pixCool(shotRec[z].trail2x, shotRec[z].trail2y, shotRec[z].trail2c);
 										shotRec[z].trail2x = shotRec[z].trail1x;
 										shotRec[z].trail2y = shotRec[z].trail1y;
 										if (shotRec[z].trail1c > 0)
 											shotRec[z].trail2c = shotRec[z].trail1c - 3;
-
+										
 										if (shotRec[z].trail1c > 0 && shotRec[z].trail1y > 12)
 											JE_pixCool(shotRec[z].trail1x, shotRec[z].trail1y, shotRec[z].trail1c);
 										shotRec[z].trail1x = destructTempX;
@@ -601,7 +601,7 @@ void JE_destructMain( void )
 										shotRec[z].trail1c = tempW - 1;
 										break;
 								}
-
+								
 								for (temp = 0; temp < 20; temp++)
 								{
 									if (wallExist[temp] && destructTempX >= wallsX[temp] && destructTempX <= wallsX[temp] + 11 && destructTempY >= wallsY[temp] && destructTempY <= wallsY[temp] + 14)
@@ -621,30 +621,30 @@ void JE_destructMain( void )
 												else
 													shotRec[z].ymov = -shotRec[z].ymov * 0.8f;
 											}
-
+											
 											destructTempX = round(shotRec[z].x);
 											destructTempY = round(shotRec[z].y);
 										}
 									}
 								}
-
+								
 								temp = ((Uint8 *)destructTempScreen->pixels)[destructTempX + destructTempY * destructTempScreen->pitch];
-
+								
 								if (temp == 25)
 								{
 									destructShotAvail[z] = true;
 									JE_makeExplosion(destructTempX, destructTempY, shotRec[z].shottype);
 								}
-
+								
 							} else {
 								shotRec[z].trail2c = 0;
 								shotRec[z].trail1c = 0;
 							}
-
+							
 						} /*destructShotAvail out of bounds*/
-
+						
 					}
-
+					
 					L_Left   = false;
 					L_Right  = false;
 					L_Up     = false;
@@ -653,13 +653,13 @@ void JE_destructMain( void )
 						NoL_Down--;
 					L_Change = false;
 					L_Fire   = false;
-
+					
 					L_Weapon = false;
-
+					
 					switch (cpu)
 					{
 						case 1:
-
+							
 							if (mt_rand() % 100 > 80)
 							{
 								Lc_Angle += (mt_rand() % 3) - 1;
@@ -675,7 +675,7 @@ void JE_destructMain( void )
 								if (Lc_Angle < 0 && leftAngle[leftSel-1] < M_PI / 8.0f)
 									Lc_Angle = 0;
 							}
-
+							
 							if (mt_rand() % 100 > 93)
 							{
 								Lc_Power += (mt_rand() % 3) - 1;
@@ -693,11 +693,11 @@ void JE_destructMain( void )
 								if (leftPower[leftSel-1] < 2)
 									Lc_Power = 1;
 							}
-
+							
 							for (x = 0; x < MAX_INSTALLATIONS; x++)
 								if (leftSystem[x] == 8 && leftDmg[x] > 0)
 									leftSel = x + 1;
-
+							
 							if (leftSystem[leftSel-1] == 8)
 							{
 								if (!leftYInAir[leftSel-1])
@@ -723,7 +723,7 @@ void JE_destructMain( void )
 									Lc_Power = 1;
 								} else
 									L_Fire = false;
-
+								
 								z = 0;
 								for (x = 0; x < MAX_INSTALLATIONS; x++)
 									if (abs(rightX[x] - leftX[leftSel-1]) < 8)
@@ -742,7 +742,7 @@ void JE_destructMain( void )
 							} else {
 								Lc_Fire = 1;
 							}
-
+							
 							if (mt_rand() % 200 > 198)
 							{
 								L_Change = true;
@@ -750,10 +750,10 @@ void JE_destructMain( void )
 								Lc_Power = 0;
 								Lc_Fire = 0;
 							}
-
+							
 							if (mt_rand() % 100 > 98 || leftShotType[leftSel-1] == 1)
 								L_Weapon = true;
-
+							
 							if (Lc_Angle > 0)
 								L_Left = true;
 							if (Lc_Angle < 0)
@@ -764,12 +764,12 @@ void JE_destructMain( void )
 								L_Down = true;
 							if (Lc_Fire > 0)
 								L_Fire = true;
-
+							
 							if (leftYMov[leftSel-1] < -0.1f && leftSystem[leftSel-1] == 8)
 								L_Fire = false;
 							break;
 					}
-
+					
 					if (leftSystem[leftSel-1] == 8)
 					{
 						destructTempX = leftX[leftSel-1] + round(0.1f * leftLastMove[leftSel-1] * leftLastMove[leftSel-1] * leftLastMove[leftSel-1]) + 5;
@@ -796,7 +796,7 @@ void JE_destructMain( void )
 					JE_pix(destructTempX - 3, destructTempY, 3);
 					JE_pix(destructTempX, destructTempY + 2, 3);
 					JE_pix(destructTempX, destructTempY - 2, 3);
-
+					
 					JE_bar( 5, 3, 14, 8, 241);
 					JE_rectangle( 4, 2, 15, 9, 242);
 					JE_rectangle( 3, 1, 16, 10, 240);
@@ -821,16 +821,16 @@ void JE_destructMain( void )
 					JE_outText(245, 3, tempstr, 15, 0);
 					sprintf(tempstr, "pts~%d~", rightScore);
 					JE_outText(280, 3, tempstr, 15, 0);
-
+					
 					JE_showVGA();
 					if (destructFirstTime)
 					{
 						JE_fadeColor(25);
 						destructFirstTime = false;
 					}
-
+					
 					service_SDL_events(true);
-
+					
 					if (leftAvail > 0)
 					{
 						/*LEFT PLAYER INPUT*/
@@ -870,7 +870,7 @@ void JE_destructMain( void )
 										leftYInAir[leftSel-1] = true;
 								}
 						}
-
+						
 						/*Leftincreasepower*/
 						if (keysactive[SDLK_a] || L_Up)
 						{
@@ -907,7 +907,7 @@ void JE_destructMain( void )
 							leftShotType[leftSel-1]++;
 							if (leftShotType[leftSel-1] > SHOT_TYPES)
 								leftShotType[leftSel-1] = 1;
-
+							
 							while (weaponSystems[leftSystem[leftSel-1]-1][leftShotType[leftSel-1]-1] == 0)
 							{
 								leftShotType[leftSel-1]++;
@@ -922,7 +922,7 @@ void JE_destructMain( void )
 							leftShotType[leftSel-1]--;
 							if (leftShotType[leftSel-1] < 1)
 								leftShotType[leftSel-1] = SHOT_TYPES;
-
+							
 							while (weaponSystems[leftSystem[leftSel-1]-1][leftShotType[leftSel-1]-1] == 0)
 							{
 								leftShotType[leftSel-1]--;
@@ -930,7 +930,7 @@ void JE_destructMain( void )
 									leftShotType[leftSel-1] = SHOT_TYPES;
 							}
 						}
-
+						
 						/*Leftchange*/
 						if (keysactive[SDLK_LALT] || L_Change)
 						{
@@ -939,26 +939,26 @@ void JE_destructMain( void )
 							if (leftSel > MAX_INSTALLATIONS)
 								leftSel = 1;
 						}
-
+						
 						/*Newshot*/
 						if (leftshotDelay > 0)
 							leftshotDelay--;
 						if ((keysactive[SDLK_LSHIFT] || keysactive[SDLK_x] || L_Fire) && (leftshotDelay == 0))
 						{
-
+							
 							leftshotDelay = shotDelay[leftShotType[leftSel-1]-1];
-
+							
 							if (shotDirt[leftShotType[leftSel-1]-1] > 20)
 							{
 								z = 0;
 								for (x = 0; x < SHOT_MAX; x++)
 									if (destructShotAvail[x])
 										z = x + 1;
-
+								
 								if (z > 0 && (leftSystem[leftSel-1] != 8 || leftYInAir[leftSel-1]))
 								{
 									soundQueue[0] = shotSound[leftShotType[leftSel-1]-1];
-
+									
 									if (leftSystem[leftSel-1] == 8)
 									{
 										shotRec[z-1].x = leftX[leftSel-1] + leftLastMove[leftSel-1] * 2 + 5;
@@ -980,13 +980,13 @@ void JE_destructMain( void )
 										shotRec[z-1].ymov = -sin(leftAngle[leftSel-1]) * leftPower[leftSel-1];
 										shotRec[z-1].xmov =  cos(leftAngle[leftSel-1]) * leftPower[leftSel-1];
 									}
-
+									
 									shotRec[z-1].shottype = leftShotType[leftSel-1];
-
+									
 									destructShotAvail[z-1] = false;
-
+									
 									shotRec[z-1].shotdur = shotFuse[shotRec[z-1].shottype-1];
-
+									
 									shotRec[z-1].trail1c = 0;
 									shotRec[z-1].trail2c = 0;
 								}
@@ -1011,7 +1011,7 @@ void JE_destructMain( void )
 							}
 						}
 					}
-
+					
 					/*RIGHT PLAYER INPUT*/
 					if (rightAvail > 0)
 					{
@@ -1051,7 +1051,7 @@ void JE_destructMain( void )
 										rightYInAir[rightSel-1] = true;
 								}
 						}
-
+						
 						/*Rightincreasepower*/
 						if (keysactive[SDLK_KP8] || keysactive[SDLK_UP])
 						{
@@ -1087,7 +1087,7 @@ void JE_destructMain( void )
 							rightShotType[rightSel-1]++;
 							if (rightShotType[rightSel-1] > SHOT_TYPES)
 								rightShotType[rightSel-1] = 1;
-
+							
 							while (weaponSystems[rightSystem[rightSel-1]-1][rightShotType[rightSel-1]-1] == 0)
 							{
 								rightShotType[rightSel-1]++;
@@ -1102,7 +1102,7 @@ void JE_destructMain( void )
 							rightShotType[rightSel-1]--;
 							if (rightShotType[rightSel-1] < 1)
 								rightShotType[rightSel-1] = SHOT_TYPES;
-
+							
 							while (weaponSystems[rightSystem[rightSel-1]-1][rightShotType[rightSel-1]-1] == 0)
 							{
 								rightShotType[rightSel-1]--;
@@ -1110,7 +1110,7 @@ void JE_destructMain( void )
 									rightShotType[rightSel-1] = SHOT_TYPES;
 							}
 						}
-
+						
 						/*Rightchange*/
 						if (keysactive[SDLK_KP5] || keysactive[SDLK_BACKSLASH])
 						{
@@ -1119,26 +1119,26 @@ void JE_destructMain( void )
 							if (rightSel > MAX_INSTALLATIONS)
 								rightSel = 1;
 						}
-
+						
 						/*Newshot*/
 						if (rightshotDelay > 0)
 							rightshotDelay--;
 						if ((keysactive[SDLK_KP0] || keysactive[SDLK_INSERT] || keysactive[SDLK_KP_ENTER] || keysactive[SDLK_RETURN]) && rightshotDelay == 0)
 						{
-
+							
 							rightshotDelay = shotDelay[rightShotType[rightSel-1]-1];
-
+							
 							z = 0;
 							for (x = 0; x < SHOT_MAX; x++)
 								if (destructShotAvail[x])
 									z = x + 1;
-
+							
 							if (shotDirt[rightShotType[rightSel-1]-1] > 20)
 							{
 								if (z > 0 && (rightSystem[rightSel-1] != 8 || rightYInAir[rightSel-1]))
 								{
 									soundQueue[1] = shotSound[rightShotType[rightSel-1]-1];
-
+									
 									if (rightSystem[rightSel-1] == 8)
 									{
 										shotRec[z-1].x = rightX[rightSel-1] + rightLastMove[rightSel-1] * 2 + 5;
@@ -1160,7 +1160,7 @@ void JE_destructMain( void )
 										shotRec[z-1].ymov = -sin(rightAngle[rightSel-1]) * rightPower[rightSel-1];
 										shotRec[z-1].xmov = -cos(rightAngle[rightSel-1]) * rightPower[rightSel-1];
 									}
-
+									
 									if (rightSystem[rightSel-1] == 7)
 									{
 										shotRec[z-1].x = rightX[rightSel-1] + 2;
@@ -1173,13 +1173,13 @@ void JE_destructMain( void )
 											shotRec[z-1].y = rightY[rightSel-1] - 12;
 										}
 									}
-
+									
 									shotRec[z-1].shottype = rightShotType[rightSel-1];
-
+									
 									destructShotAvail[z-1] = false;
-
+									
 									shotRec[z-1].shotdur = shotFuse[shotRec[z-1].shottype-1];
-
+									
 									shotRec[z-1].trail1c = 0;
 									shotRec[z-1].trail2c = 0;
 								}
@@ -1202,10 +1202,10 @@ void JE_destructMain( void )
 										break;
 								}
 							}
-
+							
 						}
 					}
-
+					
 					if (!died)
 					{
 						if (leftAvail == 0)
@@ -1223,7 +1223,7 @@ void JE_destructMain( void )
 							endDelay = 80;
 						}
 					}
-
+					
 					temp = 0;
 					for (temp2 = 0; temp2 < 8; temp2++)
 					{
@@ -1234,56 +1234,56 @@ void JE_destructMain( void )
 								temp3 = fxPlayVol;
 							else
 								temp3 = fxPlayVol / 2;
-
+							
 							JE_multiSamplePlay(digiFx[temp-1], fxSize[temp-1], temp2, temp3);
-
+							
 							soundQueue[temp2] = S_NONE;
 						}
 					}
-
+					
 					if (keysactive[SDLK_F10])
 					{
 						cpu = !cpu;
 						keysactive[SDLK_F10] = false;
 					}
-
+					
 					if (keysactive[SDLK_p])
 					{
 						JE_pauseScreen();
 						keysactive[lastkey_sym] = false;
 					}
-
+					
 					if (keysactive[SDLK_F1])
 					{
 						JE_helpScreen();
 						keysactive[lastkey_sym] = false;
 					}
-
+					
 					wait_delay();
-
+					
 					if (keysactive[SDLK_ESCAPE])
 					{
 						destructQuit = true;
 						endOfGame = true;
 						keysactive[SDLK_ESCAPE] = false;
 					}
-
+					
 					if (keysactive[SDLK_BACKSPACE])
 					{
 						destructQuit = true;
 						keysactive[SDLK_BACKSPACE] = false;
 					}
-
+					
 					if (endDelay > 0)
 						endDelay--;
 				} while (!destructQuit && !(died && endDelay == 0));
-
+				
 				destructQuit = false;
 				died = false;
 				JE_fadeBlack(25);
 			} while (!endOfGame);
 		}
-
+		
 	} while (!destructQuit);
 }
 
@@ -1295,14 +1295,14 @@ void JE_introScreen( void )
 	JE_outText(JE_fontCenter(miscText[66-1], TINY_FONT), 190, miscText[66-1], 15, 2);
 	JE_showVGA();
 	JE_fadeColor(15);
-
+	
 	newkey = false;
 	while (!newkey)
 	{
 		service_SDL_events(false);
 		SDL_Delay(16);
 	}
-
+	
 	JE_fadeBlack(15);
 	memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->h * VGAScreen->pitch);
 	JE_showVGA();
@@ -1312,10 +1312,10 @@ void JE_modeSelect( void )
 {
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
 	destructMode = 1;
-
+	
 	destructFirstTime = true;
 	destructQuit = false;
-
+	
 	do {
 		for (int x = 1; x <= DESTRUCT_MODES; x++)
 		{
@@ -1323,20 +1323,20 @@ void JE_modeSelect( void )
 			JE_textShade(JE_fontCenter(destructModeName[x-1], TINY_FONT), 70 + x * 12, destructModeName[x-1], 12, temp, FULL_SHADE);
 		}
 		JE_showVGA();
-
+		
 		if (destructFirstTime)
 		{
 			JE_fadeColor(15);
 			destructFirstTime = false;
 		}
-
+		
 		newkey = false;
 		while (!newkey)
 		{
 			service_SDL_events(false);
 			SDL_Delay(16);
 		}
-
+		
 		if (keysactive[SDLK_UP])
 		{
 			destructMode--;
@@ -1351,9 +1351,9 @@ void JE_modeSelect( void )
 		}
 		if (keysactive[SDLK_ESCAPE])
 			destructQuit = true;
-
+		
 	} while (!destructQuit && !keysactive[SDLK_RETURN]);
-
+	
 	JE_fadeBlack(15);
 	memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->h * VGAScreen->pitch);
 	JE_showVGA();
@@ -1362,7 +1362,7 @@ void JE_modeSelect( void )
 void JE_generateTerrain( void )
 {
 	const JE_byte goodsel[14] /*[1..14]*/ = {1, 2, 6, 12, 13, 14, 17, 23, 24, 26, 28, 29, 32, 33};
-
+	
 	const JE_byte basetypes[8][11] /*[1..8, 1..11]*/ = /*0 is amount of units*/
 	{
 		{5, 1, 1, 2, 3, 3, 4, 5, 6, 7, 8},   /*Normal*/
@@ -1374,10 +1374,10 @@ void JE_generateTerrain( void )
 		{8, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2},   /*Overpowering fleet*/
 		{4, 1, 1, 2, 3, 1, 6, 7, 8, 2, 7}    /*Weak fleet*/
 	};
-
+	
 	const JE_byte Lbaselookup[DESTRUCT_MODES] /*[1..destructmodes]*/ = {1, 2, 4, 5, 7};
 	const JE_byte Rbaselookup[DESTRUCT_MODES] /*[1..destructmodes]*/ = {1, 2, 3, 6, 8};
-
+	
 	JE_byte newheight, oldheight;
 	JE_shortint heightchange;
 	JE_real sinewave, sinewave2, cosinewave, cosinewave2;
@@ -1386,26 +1386,26 @@ void JE_generateTerrain( void )
 	JE_byte temp;
 	JE_word destructTempX, destructTempY, destructTempX2, destructTempY2;
 	JE_byte arenaType2;
-
+	
 	arenaType = (mt_rand() % 4) + 1;
 	arenaType2 = (mt_rand() % 4) + 1;
-
+	
 	/*  Type                 Type2
 	    1 = normal           1 = Normal
 	    2 = fuzzy walls
 	    3 = ballzies
 	    4 = highwalls
 	*/
-
+	
 	play_song(goodsel[mt_rand() % 14] - 1);
 	heightchange = (mt_rand() % 3) - 1;
-
+	
 	sinewave = ((float)mt_rand() / RAND_MAX) * M_PI / 50.0f + 0.01f;
 	sinewave2 = ((float)mt_rand() / RAND_MAX) * M_PI / 50.0f + 0.01f;
 	cosinewave = ((float)mt_rand() / RAND_MAX) * M_PI / 50.0f + 0.01f;
 	cosinewave2 = ((float)mt_rand() / RAND_MAX) * M_PI / 50.0f + 0.01f;
 	HC1 = 20;
-
+	
 	switch (arenaType)
 	{
 		case 1:
@@ -1416,28 +1416,28 @@ void JE_generateTerrain( void )
 			HC1 = 100;
 			break;
 	}
-
+	
 	for (x = 1; x <= 318; x++)
 	{
 		newheight = round(
 			sin(sinewave * x) * HC1 + sin(sinewave2 * x) * 15.0f +
 			cos(cosinewave * x) * 10.0f + sin(cosinewave2 * x) * 15.0f
 		) + 130;
-
+		
 		if (newheight < 40)
 			newheight = 40;
 		if (newheight > 195)
 			newheight = 195;
-
+		
 		dirtHeight[x] = newheight;
 	}
-
+	
 	memset(leftDmg, 0, sizeof(leftDmg));
 	memset(rightDmg, 0, sizeof(rightDmg));
-
+	
 	tempW = 0;
 	leftAvail = 0;
-
+	
 	for (x = 0; x < basetypes[Lbaselookup[destructMode-1]-1][1-1]; x++)
 	{
 		leftX[x] = (mt_rand() % 120) + 10;
@@ -1457,10 +1457,10 @@ void JE_generateTerrain( void )
 		if (leftSystem[x] != 4)
 			leftAvail++;
 	}
-
+	
 	tempW = 0;
 	rightAvail = 0;
-
+	
 	for (x = 0; x < basetypes[Rbaselookup[destructMode-1]-1][1-1]; x++)
 	{
 		rightX[x] = 320 - ((mt_rand() % 120) + 22);
@@ -1482,49 +1482,49 @@ void JE_generateTerrain( void )
 		if (rightSystem[x] != 4)
 			rightAvail++;
 	}
-
+	
 	for (z = 0; z < 20; z++)
 		wallExist[z] = false;
-
+	
 	if (haveWalls)
 	{
 		tempW = 20;
 		do {
-
+			
 			temp = (mt_rand() % 5) + 1;
 			if (temp > tempW)
 				temp = tempW;
-
+			
 			do {
 				x = (mt_rand() % 300) + 10;
-
+				
 				destructFound = true;
-
+				
 				for (z = 0; z < 4; z++)
 					if ((x > leftX[z] - 12) && (x < leftX[z] + 13))
 						destructFound = false;
 				for (z = 0; z < 4; z++)
 					if ((x > rightX[z] - 12) && (x < rightX[z] + 13))
 						destructFound = false;
-
+				
 			} while (!destructFound);
-
+			
 			for (z = 1; z <= temp; z++)
 			{
 				wallExist[tempW - z + 1-1] = true;
 				wallsX[tempW - z + 1-1] = x;
-
+				
 				wallsY[tempW - z + 1-1] = JE_placementPosition(x, 12) - 14 * z;
 			}
-
+			
 			tempW -= temp;
-
+			
 		} while (tempW != 0);
 	}
-
+	
 	for (x = 1; x <= 318; x++)
 		JE_rectangle(x, dirtHeight[x], x, 199, 25);
-
+	
 	if (arenaType == 3)
 	{ /*RINGIES!!!!*/
 		int rings = mt_rand() % 6 + 1;
@@ -1533,7 +1533,7 @@ void JE_generateTerrain( void )
 			destructTempX = (mt_rand() % 320);
 			destructTempY = (mt_rand() % 160) + 20;
 			y = (mt_rand() % 40) + 10;  /*Size*/
-
+			
 			for (z = 1; z <= y * y * 2; z++)
 			{
 				destructTempR = ((float)mt_rand() / RAND_MAX) * (M_PI * 2);
@@ -1552,7 +1552,7 @@ void JE_generateTerrain( void )
 			destructTempX = (mt_rand() % 320);
 			destructTempY = (mt_rand() % 160) + 20;
 			y = (mt_rand() % 40) + 10;  /*Size*/
-
+			
 			for (z = 1; z < y * y * 2; z++)
 			{
 				destructTempR = ((float)mt_rand() / RAND_MAX) * (M_PI * 2);
@@ -1563,11 +1563,11 @@ void JE_generateTerrain( void )
 			}
 		}
 	}
-
+	
 	JE_aliasDirt();
-
+	
 	JE_showVGA();
-
+	
 	memcpy(destructTempScreen->pixels, VGAScreen->pixels, destructTempScreen->pitch * destructTempScreen->h);
 }
 
@@ -1575,7 +1575,7 @@ void JE_aliasDirt( void )
 {
 	Uint8 *s = VGAScreen->pixels;
 	s += 12 * VGAScreen->pitch;
-
+	
 	for (int y = 12; y < VGAScreen->h; y++)
 	{
 		for (int x = 0; x < VGAScreen->pitch; x++)
@@ -1605,28 +1605,28 @@ void JE_aliasDirt( void )
 JE_byte JE_placementPosition( JE_word x, JE_byte width )
 {
 	JE_word y, z;
-
+	
 	y = 0;
 	for (z = x; z <= x + width - 1; z++)
 		if (y < dirtHeight[z])
 			y = dirtHeight[z];
-
+	
 	for (z = x; z <= x + width - 1; z++)
 		dirtHeight[z] = y;
-
+	
 	return y;
 }
 
 JE_boolean JE_stabilityCheck( JE_integer x, JE_integer y )
 {
 	JE_word z, tempW, tempW2;
-
+	
 	tempW2 = 0;
 	tempW = x + y * destructTempScreen->pitch - 2;
 	for (z = 1; z <= 12; z++)
 		if (((Uint8 *)destructTempScreen->pixels)[tempW + z] == 25)
 			tempW2++;
-
+	
 	return (tempW2 < 10);
 }
 
@@ -1634,10 +1634,10 @@ void JE_tempScreenChecking( void ) /*and copy to vgascreen*/
 {
 	Uint8 *s = VGAScreen->pixels;
 	s += 12 * VGAScreen->pitch;
-
+	
 	Uint8 *temps = destructTempScreen->pixels;
 	temps += 12 * destructTempScreen->pitch;
-
+	
 	for (int y = 12; y < VGAScreen->h; y++)
 	{
 		for (int x = 0; x < VGAScreen->pitch; x++)
@@ -1650,7 +1650,7 @@ void JE_tempScreenChecking( void ) /*and copy to vgascreen*/
 					(*temps)--;
 			}
 			*s = *temps;
-
+			
 			s++;
 			temps++;
 		}
@@ -1661,15 +1661,15 @@ void JE_makeExplosion( JE_word destructTempX, JE_word destructTempY, JE_byte sho
 {
 	JE_word tempW = 0;
 	JE_byte temp;
-
+	
 	for (temp = 0; temp < EXPLO_MAX; temp++)
 		if (explosionAvail[temp])
 			tempW = temp + 1;
-
+	
 	if (tempW > 0)
 	{
 		explosionAvail[tempW-1] = false;
-
+		
 		temp = exploSize[shottype-1];
 		if (temp < 5)
 			JE_eSound(3);
@@ -1683,11 +1683,11 @@ void JE_makeExplosion( JE_word destructTempX, JE_word destructTempY, JE_byte sho
 			JE_eSound(12);
 			JE_eSound(11);
 		}
-
+		
 		exploRec[tempW-1].x = destructTempX;
 		exploRec[tempW-1].y = destructTempY;
 		exploRec[tempW-1].explowidth = 2;
-
+		
 		if (shottype > 0)
 		{
 			exploRec[tempW-1].explomax = exploSize[shottype-1];
@@ -1708,7 +1708,7 @@ void JE_eSound( JE_byte sound )
 	exploSoundChannel++;
 	if (exploSoundChannel > 5)
 		exploSoundChannel = 1;
-
+	
 	soundQueue[exploSoundChannel] = sound;
 }
 
@@ -1716,7 +1716,7 @@ void JE_superPixel( JE_word loc )
 {
 	Uint8 *s = destructTempScreen->pixels;
 	int loc_max = destructTempScreen->pitch * destructTempScreen->h;
-
+	
 	if (loc > 0 && loc < loc_max)
 	{
 		/* center */
@@ -1727,7 +1727,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc] = 255;
 	}
-
+	
 	if (loc - 1 > 0 && loc - 1 < loc_max)
 	{
 		/* left 1 */
@@ -1738,7 +1738,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - 1] = 255;
 	}
-
+	
 	if (loc - 2 > 0 && loc - 2 < loc_max)
 	{
 		/* left 2 */
@@ -1749,7 +1749,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - 2] = 255;
 	}
-
+	
 	if (loc + 1 > 0 && loc + 1 < loc_max)
 	{
 		/* right 1 */
@@ -1760,7 +1760,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc + 1] = 255;
 	}
-
+	
 	if (loc + 2 > 0 && loc + 2 < loc_max)
 	{
 		/* right 2 */
@@ -1771,7 +1771,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc + 2] = 255;
 	}
-
+	
 	if (loc - destructTempScreen->pitch > 0 && loc - destructTempScreen->pitch < loc_max)
 	{
 		/* up 1 */
@@ -1782,7 +1782,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - destructTempScreen->pitch] = 255;
 	}
-
+	
 	if (loc - destructTempScreen->pitch - 1 > 0 && loc - destructTempScreen->pitch - 1 < loc_max)
 	{
 		/* up 1, left 1 */
@@ -1793,7 +1793,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - destructTempScreen->pitch - 1] = 255;
 	}
-
+	
 	if (loc - destructTempScreen->pitch + 1 > 0 && loc - destructTempScreen->pitch + 1 < loc_max)
 	{
 		/* up 1, right 1 */
@@ -1804,7 +1804,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - destructTempScreen->pitch + 1] = 255;
 	}
-
+	
 	if (loc - destructTempScreen->pitch * 2 > 0 && loc - destructTempScreen->pitch * 2 < loc_max)
 	{
 		/* up 2 */
@@ -1815,7 +1815,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc - destructTempScreen->pitch * 2] = 255;
 	}
-
+	
 	if (loc + destructTempScreen->pitch > 0 && loc + destructTempScreen->pitch < loc_max)
 	{
 		/* down 1 */
@@ -1826,7 +1826,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc + destructTempScreen->pitch] = 255;
 	}
-
+	
 	if (loc + destructTempScreen->pitch - 1 > 0 && loc + destructTempScreen->pitch - 1 < loc_max)
 	{
 		/* down 1, left 1 */
@@ -1837,7 +1837,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc + destructTempScreen->pitch - 1] = 255;
 	}
-
+	
 	if (loc + destructTempScreen->pitch + 1 > 0 && loc + destructTempScreen->pitch + 1 < loc_max)
 	{
 		/* down 1, right 1 */
@@ -1848,7 +1848,7 @@ void JE_superPixel( JE_word loc )
 		else
 			s[loc + destructTempScreen->pitch + 1] = 255;
 	}
-
+	
 	if (loc + destructTempScreen->pitch * 2 > 0 && loc + destructTempScreen->pitch * 2 < loc_max)
 	{
 		/* down 2 */
@@ -1867,7 +1867,7 @@ void JE_helpScreen( void )
 	JE_fadeBlack(15);
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
 	JE_clr256();
-
+	
 	for(x = 0; x < 2; x++)
 	{
 		JE_outText(100, 5 + x * 90, destructHelp[x * 12 + 1-1], 2, 4);
@@ -1880,12 +1880,12 @@ void JE_helpScreen( void )
 	JE_outText(30, 190, destructHelp[25-1], 3, 4);
 	JE_showVGA();
 	JE_fadeColor(15);
-
+	
 	do {
 		service_SDL_events(true);
 		SDL_Delay(16);
 	} while (!newkey);
-
+	
 	JE_fadeBlack(15);
 	memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->h * VGAScreen->pitch);
 	JE_showVGA();
@@ -1895,19 +1895,19 @@ void JE_helpScreen( void )
 void JE_pauseScreen( void )
 {
 	set_volume(tyrMusicVolume / 2, fxVolume);
-
+	
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
 	JE_outText(JE_fontCenter(miscText[23-1], TINY_FONT), 90, miscText[23-1], 12, 5);
 	JE_showVGA();
-
+	
 	do {
 		service_SDL_events(true);
 		SDL_Delay(16);
 	} while (!newkey);
-
+	
 	memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->h * VGAScreen->pitch);
 	JE_showVGA();
-
+	
 	set_volume(tyrMusicVolume, fxVolume);
 }
 

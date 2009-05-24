@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -159,7 +159,7 @@ JE_longint JE_cashLeft( void )
 void JE_itemScreen( void )
 {
 	bool quit = false;
-
+	
 	char *buf;
 
 	/* SYN: Okay, here's the menu numbers. All are reindexed by -1 from the original code.
@@ -187,14 +187,14 @@ void JE_itemScreen( void )
 	memcpy(menuChoices, menuChoicesDefault, sizeof(menuChoices));
 
 	first = true;
-
+	
 	play_song(songBuy);
 
-	JE_loadPic(1);
-
+	JE_loadPic(1, false);
+	
 	curPal = 1;
 	newPal = 0;
-
+	
 	JE_showVGA();
 
 	JE_updateColorsFast(colors);
@@ -436,7 +436,7 @@ item_screen_start:
 		/* Joystick settings menu */
 		if (curMenu == 12)
 		{
-			char *menu_item[] =
+			char *menu_item[] = 
 			{
 				"JOYSTICK",
 				"ANALOG AXES",
@@ -455,15 +455,15 @@ item_screen_start:
 				menuInt[6][9],
 				menuInt[6][10]
 			};
-
+			
 			for (int i = 0; i < COUNTOF(menu_item); i++)
 			{
 				int temp = (i == curSel[curMenu] - 2) ? 15 : 28;
-
+				
 				JE_textShade(166, 38 + i * 8, menu_item[i], temp / 16, temp % 16 - 8, DARKEN);
-
+				
 				temp = (i == curSel[curMenu] - 2) ? 252 : 250;
-
+				
 				char value[30] = "";
 				if (joysticks == 0 && i < 14)
 				{
@@ -482,11 +482,11 @@ item_screen_start:
 					{
 						if (joystick[joystick_config].assignment[i - 4][k].num == -1)
 							continue;
-
+						
 						if (comma)
 							strcat(value, ", ");
 						comma = true;
-
+						
 						char temp[7];
 						snprintf(temp, sizeof(temp), "%s%s %0d",
 						         joystick[joystick_config].assignment[i - 4][k].is_axis ? "AX" : "BTN",
@@ -495,10 +495,10 @@ item_screen_start:
 						strcat(value, temp);
 					}
 				}
-
+				
 				JE_textShade(236, 38 + i * 8, value, temp / 16, temp % 16 - 8, DARKEN);
 			}
-
+			
 			menuChoices[curMenu] = COUNTOF(menu_item) + 1;
 		}
 
@@ -680,10 +680,10 @@ item_screen_start:
 			if (twoPlayerMode)
 			{
 				char buf[50];
-
+				
 				snprintf(buf, sizeof buf, "%s %d", miscText[40], score);
 				JE_textShade(25, 50, buf, 15, 0, FULL_SHADE);
-
+				
 				snprintf(buf, sizeof buf, "%s %d", miscText[41], score2);
 				JE_textShade(25, 60, buf, 15, 0, FULL_SHADE);
 			}
@@ -696,7 +696,7 @@ item_screen_start:
 				else
 					JE_helpBox(35, 25, superShips[SA+3], 18);
 				helpBoxBrightness = 1;
-
+				
 				JE_textShade(25, 50, superShips[SA+1], 15, 0, FULL_SHADE);
 				JE_helpBox(25, 60, weaponPort[pItems[P_FRONT]].name, 22);
 				JE_textShade(25, 120, superShips[SA+2], 15, 0, FULL_SHADE);
@@ -710,7 +710,7 @@ item_screen_start:
 					temp = ships[pItems[P_SHIP]].bigshipgraphic;
 				else
 					temp = ships[pItemsBack[12-1]].bigshipgraphic;
-
+				
 				switch (temp)
 				{
 					case 32:
@@ -726,16 +726,16 @@ item_screen_start:
 						tempW2 = 35;
 						break;
 				}
-
+				
 				blit_shape(VGAScreenSeg, tempW, tempW2, OPTION_SHAPES, temp - 1);  // ship illustration
-
+				
 				temp = pItems[P_GENERATOR];
-
+				
 				if (temp > 1)
 					temp--;
-
+				
 				blit_shape(VGAScreenSeg, generatorX[temp-1]+1, generatorY[temp-1]+1, WEAPON_SHAPES, temp + 15);  // ship illustration: generator
-
+				
 				if (pItems[P_FRONT] > 0)
 				{
 					temp = tyrian2_weapons[pItems[P_FRONT] - 1];
@@ -748,29 +748,29 @@ item_screen_start:
 					temp2 = rearWeaponList[pItems[P_REAR] - 1] - 1;
 					blit_shape(VGAScreenSeg, rearWeaponX[temp2], rearWeaponY[temp2], WEAPON_SHAPES, temp - 1);  // ship illustration: rear weapon
 				}
-
+				
 				JE_drawItem(6, pItems[P_LEFT_SIDEKICK], 3, 84);
 				JE_drawItem(7, pItems[P_RIGHT_SIDEKICK], 129, 84);
 				blit_shape_hv(VGAScreenSeg, 28, 23, OPTION_SHAPES, 26, 15, shields[pItems[P_SHIELD]].mpwr - 10);  // ship illustration: shield
 			}
 		}
-
+		
 		/* Changing the volume? */
 		if ((curMenu == 2) || (curMenu == 11))
 		{
 			JE_barDrawShadow(225, 70, 1, 16, tyrMusicVolume / 12, 3, 13);
 			JE_barDrawShadow(225, 86, 1, 16, fxVolume / 12, 3, 13);
 		}
-
+		
 		/* 7 is data cubes menu, 8 is reading a data cube, "firstmenu9" refers to menu 8 because of reindexing */
 		if ( (curMenu == 7) || ( (curMenu == 8) && firstMenu9) )
 		{
 			firstMenu9 = false;
 			menuChoices[7] = cubeMax + 2;
 			JE_bar(1, 1, 145, 170, 0);
-
+			
 			blit_shape(VGAScreenSeg, 1, 1, OPTION_SHAPES, 20); /* Portrait area background */
-
+			
 			if (curMenu == 7)
 			{
 				if (cubeMax == 0)
@@ -814,25 +814,25 @@ item_screen_start:
 					tempW = 44 + (x - 1) * 28;
 				}
 			}
-
+			
 			JE_textShade(172, tempW, miscText[6 - 1], temp2 / 16, (temp2 % 16) - 8, DARKEN);
-
+			
 			currentFaceNum = 0;
 			if (curSel[7] < menuChoices[7])
 			{
 				/* SYN: Be careful reindexing some things here, because faceNum 0 is blank, but
 				   faceNum 1 is at index 0 in several places! */
 				currentFaceNum = faceNum[curSel[7] - 2];
-
+				
 				if (lastSelect != curSel[7] && currentFaceNum > 0)
 				{
 					faceX = 77 - (shapeX[FACE_SHAPES][currentFaceNum - 1] >> 1);
 					faceY = 92 - (shapeY[FACE_SHAPES][currentFaceNum - 1] >> 1);
-
+					
 					paletteChanged = true;
 					temp2 = facepal[currentFaceNum - 1];
 					newPal = 0;
-
+					
 					for (temp = 1; temp <= 255 - (3 * 16); temp++)
 					{
 						colors[temp].r = palettes[temp2][temp].r;
@@ -841,13 +841,13 @@ item_screen_start:
 					}
 				}
 			}
-
+			
 			if (currentFaceNum > 0)
 				blit_shape(VGAScreenSeg, faceX, faceY, FACE_SHAPES, currentFaceNum - 1);  // datacube face
-
+			
 			lastSelect = curSel[7];
 		}
-
+		
 		/* 2 player input devices */
 		if (curMenu == 9)
 		{
@@ -855,7 +855,7 @@ item_screen_start:
 			{
 				if (inputDevice[i] > 2 + joysticks)
 					inputDevice[i] = inputDevice[i == 0 ? 1 : 0] == 1 ? 2 : 1;
-
+				
 				char temp[64];
 				if (joysticks > 1 && inputDevice[i] > 2)
 					sprintf(temp, "%s %d", inputDevices[2], inputDevice[i] - 2);
@@ -864,22 +864,22 @@ item_screen_start:
 				JE_dString(186, 38 + 2 * (i + 1) * 16, temp, SMALL_FONT_SHAPES);
 			}
 		}
-
+		
 		/* JE: { - Step VI - Help text for current cursor location } */
-
+		
 		flash = false;
 		flashDelay = 5;
-
+		
 		/* scanCode = 0; */
 		/* k = 0; */
-
+		
 		/* JE: {Reset player weapons} */
 		memset(shotMultiPos, 0, sizeof(shotMultiPos));
-
+		
 		JE_drawScore();
-
+		
 		JE_drawMainMenuHelpText();
-
+		
 		if (newPal > 0) /* can't reindex this :( */
 		{
 			curPal = newPal;
@@ -887,17 +887,17 @@ item_screen_start:
 			JE_updateColorsFast(palettes[newPal - 1]);
 			newPal = 0;
 		}
-
+		
 		/* datacube title under face */
 		if ( ( (curMenu == 7) || (curMenu == 8) ) && (curSel[7] < menuChoices[7]) )
 			JE_textShade (75 - JE_textWidth(cubeHdr2[curSel[7] - 2], TINY_FONT) / 2, 173, cubeHdr2[curSel[7] - 2], 14, 3, DARKEN);
-
+		
 		/* SYN: Everything above was just drawing the screen. In the rest of it, we process
 		   any user input (and do a few other things) */
-
+		
 		/* SYN: Let's start by getting fresh events from SDL */
 		service_SDL_events(true);
-
+		
 		if (constantPlay)
 		{
 			mainLevel = mapSection[mapPNum-1];
@@ -910,19 +910,19 @@ item_screen_start:
 			/* Inner loop -- this handles animations on menus that need them and handles
 			   some keyboard events. Events it can't handle end the loop and fall through
 			   to the main keyboard handler below.
-
+			
 			   Also, I think all timing is handled in here. Somehow. */
-
+				
 				NETWORK_KEEP_ALIVE();
-
+				
 				mouseCursor = 0;
-
+				
 				col += colC;
 				if (col < -2 || col > 6)
 				{
 					colC = (-1 * colC);
 				}
-
+				
 				if (curMenu == 8)
 				{
 					if (mouseX > 164 && mouseX < 299 && mouseY > 47 && mouseY < 153)
@@ -932,20 +932,20 @@ item_screen_start:
 						else
 							mouseCursor = 1;
 					}
-
+					
 					JE_bar(160, 49, 310, 158, 228);
 					if (yLoc + yChg < 0)
 					{
 						yChg = 0;
 						yLoc = 0;
 					}
-
+					
 					yLoc += yChg;
 					temp = yLoc / 12;
 					temp2 = yLoc % 12;
 					tempW = 38 + 12 - temp2;
 					temp3 = cubeMaxY[curSel[7] - 2];
-
+					
 					for (x = temp + 1; x <= temp + 10; x++)
 					{
 						if (x <= temp3)
@@ -954,36 +954,36 @@ item_screen_start:
 							tempW += 12;
 						}
 					}
-
+					
 					JE_bar(160, 39, 310, 48, 228);
 					JE_bar(160, 157, 310, 166, 228);
-
+					
 					buf = malloc(strlen(miscText[12 - 1]) + 8);
 					sprintf(buf, "%s %d%%", miscText[12 - 1], (yLoc * 100) / ((cubeMaxY[currentCube] - 9) * 12));
 					JE_outTextAndDarken(176, 160, buf, 14, 1, TINY_FONT);
-
+					
 					JE_dString(260, 160, miscText[13 - 1], SMALL_FONT_SHAPES);
-
+					
 					if (temp2 == 0)
 						yChg = 0;
-
+					
 					JE_mouseStart();
-
+					
 					JE_showVGA();
-
+					
 					if (backFromHelp)
 					{
 						JE_fadeColor(10);
 						backFromHelp = false;
 					}
 					JE_mouseReplace();
-
+					
 					setjasondelay(1);
 				}
 				else
 				{
 					/* current menu is not 8 (read data cube) */
-
+					
 					if (curMenu == 3)
 					{
 						JE_updateNavScreen();
@@ -993,13 +993,13 @@ item_screen_start:
 						if (extraGame)
 							JE_dString(170, 140, miscText[68 - 1], FONT_SHAPES);
 					}
-
+					
 					if (curMenu == 7 && curSel[7] < menuChoices[7])
 					{
 						/* Draw flashy cube */
 						blit_shape_hv_blend(VGAScreenSeg, 166, 38 + (curSel[7] - 2) * 28, OPTION_SHAPES, 25, 13, col);
 					}
-
+					
 					/* IF (curmenu = 5) AND (cursel [2] IN [3, 4, 6, 7, 8]) */
 					if (curMenu == 4 && ( curSel[1] == 3 || curSel[1] == 4 || ( curSel[1] >= 6 && curSel[1] <= 8) ) )
 					{
@@ -1032,7 +1032,7 @@ item_screen_start:
 						}
 
 						JE_mouseReplace();
-
+						
 					} else { /* current menu is anything but weapon sim or datacube */
 
 						setjasondelay(2);
@@ -1064,17 +1064,17 @@ item_screen_start:
 							JE_fadeColor(10);
 							backFromHelp = false;
 						}
-
+						
 					}
 				}
-
+				
 				wait_delay();
-
+				
 				push_joysticks_as_keyboard();
 				service_SDL_events(false);
-				mouseButton = JE_mousePosition(&mouseX, &mouseY);
+				mouseButton = JE_mousePosition(&mouseX, &mouseY); 
 				inputDetected = newkey || mouseButton > 0;
-
+				
 				if (curMenu != 6)
 				{
 					if (keysactive[SDLK_s] && (keysactive[SDLK_LALT] || keysactive[SDLK_RALT]) )
@@ -1128,14 +1128,14 @@ item_screen_start:
 						yChg = 2;
 						inputDetected = false;
 					}
-
+					
 					bool joystick_up = false, joystick_down = false;
 					for (int j = 0; j < joysticks; j++)
 					{
 						joystick_up |= joystick[j].direction[0];
 						joystick_down |= joystick[j].direction[2];
 					}
-
+					
 					if (keysactive[SDLK_UP] || joystick_up)
 					{
 						yChg = -1;
@@ -1199,36 +1199,36 @@ item_screen_start:
 						music_disabled = false;
 						restart_song();
 					}
-
+					
 					curSel[2] = 4;
-
+					
 					tyrMusicVolume = (mouseX - (225 - 4)) / 4 * 12;
 					if (tyrMusicVolume > 255)
 						tyrMusicVolume = 255;
 				}
-
+				
 				if ((mouseX >= (225 - 4)) && (mouseY >= 86) && (mouseY <= 98))
 				{
 					samples_disabled = false;
-
+					
 					curSel[2] = 5;
-
+					
 					fxVolume = (mouseX - (225 - 4)) / 4 * 12;
 					if (fxVolume > 255)
 						fxVolume = 255;
 				}
-
+				
 				JE_calcFXVol();
-
+				
 				set_volume(tyrMusicVolume, fxVolume);
-
+				
 				JE_playSampleNum(S_CURSOR);
 			}
 
 			if (tempB && (mouseY > 20) && (mouseX > 170) && (mouseX < 308) && (curMenu != 8))
 			{
 				const JE_byte mouseSelectionY[MAX_MENU] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16 };
-
+				
 				tempI = (mouseY - 38) / mouseSelectionY[curMenu]+2;
 
 				if (curMenu == 9)
@@ -1415,7 +1415,7 @@ item_screen_start:
 
 						play_song(songBuy);
 
-						JE_loadPic(1);
+						JE_loadPic(1, false);
 						newPal = 1;
 
 						switch (curMenu)
@@ -1562,7 +1562,7 @@ item_screen_start:
 						case 3:
 						case 4:
 							JE_playSampleNum(S_CURSOR);
-
+							
 							int temp = curSel[curMenu] - 3;
 							do {
 								if (joysticks == 0)
@@ -1664,7 +1664,7 @@ item_screen_start:
 						case 3:
 						case 4:
 							JE_playSampleNum(S_CURSOR);
-
+							
 							int temp = curSel[curMenu] - 3;
 							do {
 								if (joysticks == 0)
@@ -1736,7 +1736,7 @@ item_screen_start:
 				}
 			}
 		}
-
+		
 	} while (!(quit || gameLoaded || jumpSection));
 
 	if (!quit && isNetworkGame)
@@ -1744,27 +1744,27 @@ item_screen_start:
 		JE_barShade(3, 3, 316, 196);
 		JE_barShade(1, 1, 318, 198);
 		JE_dString(10, 160, "Waiting for other player.", SMALL_FONT_SHAPES);
-
+		
 		network_prepare(PACKET_WAITING);
 		network_send(4);  // PACKET_WAITING
-
+		
 		while (true)
 		{
 			service_SDL_events(false);
 			JE_showVGA();
-
+			
 			if (packet_in[0] && SDLNet_Read16(&packet_in[0]->data[0]) == PACKET_WAITING)
 			{
 				network_update();
 				break;
 			}
-
+			
 			network_update();
 			network_check();
-
+			
 			SDL_Delay(16);
 		}
-
+		
 		network_state_reset();
 	}
 
@@ -1774,12 +1774,12 @@ item_screen_start:
 		{
 			service_SDL_events(false);
 			JE_showVGA();
-
+			
 			network_check();
 			SDL_Delay(16);
 		}
 	}
-
+	
 	if (gameLoaded)
 		JE_fadeBlack(10);
 }
@@ -1823,7 +1823,7 @@ void JE_loadCubes( void )
 		curWidth = 0;
 		x = 5;
 		y = 1;
-
+		
 		s3[0] = '\0';
 
 		do
@@ -1874,7 +1874,7 @@ void JE_loadCubes( void )
 							}
 						} while (!(s[pos - 1] == ' ' || endString)); // Loops until end of word or string
 
-						//
+						// 
 						pastStringLen = (pos - startPos) > CUBE_WIDTH;
 						pastStringWidth = (curWidth > LINE_WIDTH);
 
@@ -2051,7 +2051,7 @@ void JE_updateNavScreen( void )
 	/* TODO: The starting coordinates for the scrolling effect may be wrong, the
 	   yellowish planet below Tyrian isn't visible for as many frames as in the
 	   original. */
-
+	
 	tempNavX = round(navX);
 	tempNavY = round(navY);
 	JE_bar(19, 16, 135, 169, 2);
@@ -2067,12 +2067,12 @@ void JE_updateNavScreen( void )
 		if (mapPlanet[x] > 11)
 			JE_drawPlanet(mapPlanet[x] - 1);
 	}
-
+	
 	if (mapOrigin > 11)
 		JE_drawPlanet(mapOrigin - 1);
-
+	
 	blit_shape(VGAScreenSeg, 0, 0, OPTION_SHAPES, 28);  // navigation screen interface
-
+	
 	if (curSel[3] < menuChoices[3])
 	{
 		newNavX = (planetX[mapOrigin-1] - shapeX[PLANET_SHAPES][PGR[mapOrigin-1]-1] / 2
@@ -2082,17 +2082,17 @@ void JE_updateNavScreen( void )
 		          + planetY[mapPlanet[curSel[3]-2] - 1]
 		          - shapeY[PLANET_SHAPES][PGR[mapPlanet[curSel[3]-2] - 1]-1] / 2) / 2.0;
 	}
-
+	
 	navX = navX + (newNavX - navX) / 2.0;
 	navY = navY + (newNavY - navY) / 2.0;
-
+	
 	if (abs(newNavX - navX) < 1)
 		navX = newNavX;
 	if (abs(newNavY - navY) < 1)
 		navY = newNavY;
-
+	
 	JE_bar(314, 0, 319, 199, 230);
-
+	
 	if (planetAniWait > 0)
 	{
 		planetAniWait--;
@@ -2104,7 +2104,7 @@ void JE_updateNavScreen( void )
 			planetAni = 0;
 		planetAniWait = 3;
 	}
-
+	
 	if (currentDotWait > 0)
 	{
 		currentDotWait--;
@@ -2183,16 +2183,16 @@ void JE_drawNavLines( JE_boolean dark )
 	JE_integer tempX, tempY;
 	JE_integer tempX2, tempY2;
 	JE_word tempW, tempW2;
-
+	
 	tempX2 = tempNavX >> 1;
 	tempY2 = tempNavY >> 1;
-
+	
 	tempW = 0;
 	for (x = 1; x <= 20; x++)
 	{
 		tempW += 15;
 		tempX = tempW - tempX2;
-
+		
 		if (tempX > 18 && tempX < 135)
 		{
 			if (dark)
@@ -2201,22 +2201,22 @@ void JE_drawNavLines( JE_boolean dark )
 				JE_rectangle(tempX, 16, tempX, 169, 5);
 		}
 	}
-
+	
 	tempW = 0;
 	for (y = 1; y <= 20; y++)
 	{
 		tempW += 15;
 		tempY = tempW - tempY2;
-
+		
 		if (tempY > 15 && tempY < 169)
 		{
 			if (dark)
 				JE_rectangle(19, tempY + 1, 135, tempY + 1, 1);
 			else
 				JE_rectangle(8, tempY, 160, tempY, 5);
-
+			
 			tempW2 = 0;
-
+			
 			for (x = 0; x < 20; x++)
 			{
 				tempW2 += 15;
@@ -2257,7 +2257,7 @@ void JE_drawPlanet( JE_byte planetNum )
 	{
 		if (PAni[planetNum])
 			tempZ += planetAni;
-
+		
 		blit_shape_dark(VGAScreenSeg, tempX + 3, tempY + 3, PLANET_SHAPES, tempZ, false);
 		blit_shape(VGAScreenSeg, tempX, tempY, PLANET_SHAPES, tempZ);  // planets
 	}
@@ -2271,12 +2271,12 @@ void JE_scaleBitmap( SDL_Surface *bitmap, JE_word x, JE_word y, JE_word x1, JE_w
 	JE_longint sx = x * 0x10000 / w,
 	           sy = y * 0x10000 / h,
 	           cx, cy = 0;
-
+	
 	Uint8 *s = VGAScreen->pixels;  /* 8-bit specific */
 	Uint8 *src = bitmap->pixels;  /* 8-bit specific */
-
+	
 	s += y1 * VGAScreen->pitch + x1;
-
+	
 	for (; h; h--)
 	{
 		cx = 0;
@@ -2284,14 +2284,14 @@ void JE_scaleBitmap( SDL_Surface *bitmap, JE_word x, JE_word y, JE_word x1, JE_w
 		{
 			*s = *src;
 			s++;
-
+			
 			cx += sx;
 			src += cx >> 16;
 			cx &= 0xffff;
 		}
-
+		
 		s += VGAScreen->pitch - w;
-
+		
 		cy += sy;
 		src -= ((sx * w) >> 16);
 		src += (cy >> 16) * bitmap->pitch;
@@ -2375,7 +2375,7 @@ void JE_doFunkyScreen( void )
 		temp = ships[pItems[P_SHIP]].bigshipgraphic;
 	else
 		temp = ships[pItemsBack[12-1]].bigshipgraphic;
-
+	
 	switch (temp)
 	{
 		case 32:
@@ -2392,17 +2392,17 @@ void JE_doFunkyScreen( void )
 			break;
 	}
 	tempW -= 30;
-
+	
 	VGAScreen = VGAScreen2;
 	JE_clr256();
-
+	
 	blit_shape(VGAScreen2, tempW, tempW2, OPTION_SHAPES, temp - 1);  // ship illustration
-
+	
 	tempScreenSeg = VGAScreen2;
 	JE_funkyScreen();
 	tempScreenSeg = VGAScreenSeg;
-
-	JE_loadPic(1);
+	
+	JE_loadPic(1, false);
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
 }
 
@@ -2442,43 +2442,43 @@ void JE_drawMainMenuHelpText( void )
 JE_boolean JE_quitRequest( void )
 {
 	bool quit_selected = true, done = false;
-
+	
 	JE_clearKeyboard();
 	JE_wipeKey();
 	wait_noinput(true, true, true);
-
+	
 	JE_barShade(65, 55, 255, 155);
-
+	
 	while (!done)
 	{
 		Uint8 col = 8;
 		int colC = 1;
-
+		
 		do
 		{
 			service_SDL_events(true);
 			setjasondelay(4);
-
+			
 			blit_shape(VGAScreenSeg, 50, 50, OPTION_SHAPES, 35);  // message box
 			JE_textShade(70, 60, miscText[28], 0, 5, FULL_SHADE);
 			JE_helpBox(70, 90, miscText[30], 30);
-
+			
 			col += colC;
 			if (col > 8 || col < 2)
 				colC = -colC;
-
+			
 			int temp_x, temp_c;
-
+			
 			temp_x = 54 + 45 - (JE_textWidth(miscText[9], FONT_SHAPES) / 2);
 			temp_c = quit_selected ? col - 12 : -5;
-
+			
 			JE_outTextAdjust(temp_x, 128, miscText[9], 15, temp_c, FONT_SHAPES, true);
-
+			
 			temp_x = 149 + 45 - (JE_textWidth(miscText[10], FONT_SHAPES) / 2);
 			temp_c = !quit_selected ? col - 12 : -5;
-
+			
 			JE_outTextAdjust(temp_x, 128, miscText[10], 15, temp_c, FONT_SHAPES, true);
-
+			
 			if (mouseInstalled)
 			{
 				JE_mouseStart();
@@ -2489,14 +2489,14 @@ JE_boolean JE_quitRequest( void )
 			{
 				JE_showVGA();
 			}
-
+			
 			wait_delay();
-
+			
 			push_joysticks_as_keyboard();
 			service_SDL_events(false);
-
+			
 		} while (!newkey && !mousedown);
-
+		
 		if (mousedown)
 		{
 			if (lastmouse_y > 123 && lastmouse_y < 149)
@@ -2537,17 +2537,17 @@ JE_boolean JE_quitRequest( void )
 			}
 		}
 	}
-
+	
 	JE_playSampleNum(quit_selected ? S_SPRING : S_CLICK);
-
+	
 	if (isNetworkGame && quit_selected)
 	{
 		network_prepare(PACKET_QUIT);
 		network_send(4);  // PACKET QUIT
-
+		
 		network_tyrian_halt(0, true);
 	}
-
+	
 	return quit_selected;
 }
 
@@ -2613,7 +2613,7 @@ void JE_scaleInPicture( void )
 			i = 160;
 		JE_scaleBitmap(VGAScreen2, 320, 200, 160 - i, 0, 160 + i - 1, 100 + round(i * 0.625f) - 1);
 		JE_showVGA();
-
+		
 		SDL_Delay(1);
 	}
 }
@@ -2782,32 +2782,32 @@ void JE_menuFunction( JE_byte select )
 			tempY = 38 + (curSelect - 2) * 12;
 			JE_textShade(236, tempY, SDL_GetKeyName(keySettings[curSelect-2]), (temp2 / 16), (temp2 % 16) - 8, DARKEN);
 			JE_showVGA();
-
+			
 			wait_noinput(true, true, true);
-
+			
 			col = 248;
 			colC = 1;
 
 			do {
 				setjasondelay(1);
-
+				
 				col += colC;
 				if (col < 243 || col > 248)
 				{
 					colC *= -1;
 				}
 				JE_rectangle(230, tempY - 2, 300, tempY + 7, col);
-
+				
 				poll_joysticks();
 				service_SDL_events(true);
-
+				
 				JE_showVGA();
-
+				
 				wait_delay();
 			} while (!newkey && !mousedown && !joydown);
-
+			
 			tempB = newkey;
-
+			
 			// already used?
 			for (x = 0; x < 8; x++)
 			{
@@ -2817,7 +2817,7 @@ void JE_menuFunction( JE_byte select )
 					JE_playSampleNum(false);
 				}
 			}
-
+			
 			if ( lastkey_sym != SDLK_ESCAPE && // reserved for menu
 				 lastkey_sym != SDLK_F11 &&    // reserved for gamma
 				 lastkey_sym != SDLK_s &&      // reserved for sample mute
@@ -2894,7 +2894,7 @@ void JE_menuFunction( JE_byte select )
 		case 3:
 		case 4:
 			JE_playSampleNum(S_CURSOR);
-
+			
 			int temp = curSel[curMenu] - 3;
 			do {
 				if (joysticks == 0)
@@ -2960,7 +2960,7 @@ void JE_menuFunction( JE_byte select )
 	case 12:
 		if (joysticks == 0 && select != 17)
 			break;
-
+		
 		switch (select)
 		{
 		case 2:
@@ -2998,12 +2998,12 @@ void JE_menuFunction( JE_byte select )
 		default:
 			if (joysticks == 0)
 				break;
-
+			
 			// int temp = 254;
 			// JE_textShade(236, 38 + i * 8, value, temp / 16, temp % 16 - 8, DARKEN);
-
+			
 			JE_rectangle(235, 21 + select * 8, 310, 30 + select * 8, 248);
-
+			
 			struct joystick_assignment_struct temp;
 			if (detect_joystick_assignment(joystick_config, &temp))
 			{
@@ -3015,7 +3015,7 @@ void JE_menuFunction( JE_byte select )
 						goto joystick_assign_done;
 					}
 				}
-
+				
 				for (int i = 0; i < COUNTOF(*joystick->assignment); i++)
 				{
 					if (joystick[joystick_config].assignment[select - 6][i].num == -1)
@@ -3024,7 +3024,7 @@ void JE_menuFunction( JE_byte select )
 						goto joystick_assign_done;
 					}
 				}
-
+				
 				for (int i = 0; i < COUNTOF(*joystick->assignment); i++)
 				{
 					if (i == COUNTOF(*joystick->assignment) - 1)
@@ -3032,10 +3032,10 @@ void JE_menuFunction( JE_byte select )
 					else
 						joystick[joystick_config].assignment[select - 6][i] = joystick[joystick_config].assignment[select - 6][i + 1];
 				}
-
+				
 joystick_assign_done:
 				curSelect++;
-
+				
 				poll_joysticks();
 			}
 		}
@@ -3079,7 +3079,7 @@ void JE_funkyScreen( void )
 
 	Uint8 *s = game_screen->pixels; /* 8-bit specific */
 	Uint8 *src = VGAScreen2->pixels; /* 8-bit specific */
-
+	
 	for (int y = 0; y < 200; y++)
 	{
 		for (int x = 0; x < 320; x++)
@@ -3094,14 +3094,14 @@ void JE_funkyScreen( void )
 			if (x < VGAScreen2->pitch - 1)
 				avg += *(src + 1) & 0x0f;
 			avg /= 4;
-
+			
 			if ((*src & 0x0f) > avg)
 			{
 				*s = (*src & 0x0f) | 0xc0;
 			} else {
 				*s = 0;
 			}
-
+			
 			src++;
 			s++;
 		}
@@ -3115,14 +3115,14 @@ void JE_funkyScreen( void )
 
 	s = VGAScreen2->pixels; /* 8-bit specific */
 	src = game_screen->pixels; /* 8-bit specific */
-
+	
 	for (int y = 0; y < 200; y++)
 	{
 		for (int x = 0; x < 320; x++)
 		{
 			if (*src)
 				*s = *src;
-
+			
 			src++;
 			s++;
 		}
@@ -3137,7 +3137,7 @@ void JE_funkyScreen( void )
 	JE_outText(JE_fontCenter(miscText[4], TINY_FONT), 190, miscText[4], 12, 2);
 
 	JE_playSampleNum(16);
-
+	
 	VGAScreen = VGAScreenSeg;
 	JE_scaleInPicture();
 
@@ -3147,9 +3147,9 @@ void JE_funkyScreen( void )
 void JE_weaponSimUpdate( void )
 {
 	char buf[32];
-
+	
 	JE_weaponViewFrame(0);
-
+	
 	if ( (curSel[1] == 3 && curSel[4] < menuChoices[4]) || (curSel[1] == 4 && curSel[4] < menuChoices[4] - 1) )
 	{
 		if (leftPower)
@@ -3161,7 +3161,7 @@ void JE_weaponSimUpdate( void )
 		{
 			blit_shape(VGAScreenSeg, 24, 149, OPTION_SHAPES, 13);  // downgrade disabled
 		}
-
+		
 		if (rightPower)
 		{
 			if (!rightPowerAfford)
@@ -3180,7 +3180,7 @@ void JE_weaponSimUpdate( void )
 		{
 			blit_shape(VGAScreenSeg, 119, 149, OPTION_SHAPES, 14);  // upgrade disabled
 		}
-
+		
 		if (curSel[1] == 3)
 			temp = portPower[1 - 1];
 		else
@@ -3192,7 +3192,7 @@ void JE_weaponSimUpdate( void )
 			JE_bar(39 + x * 6, 152, 39 + x * 6 + 4, 164, 250);
 			JE_bar(39 + x * 6, 165, 39 + x * 6 + 4, 165, 249);
 		}
-
+		
 		sprintf(buf, "POWER: %d", temp);
 		JE_outText(58, 137, buf, 15, 4);
 	}
@@ -3202,7 +3202,7 @@ void JE_weaponSimUpdate( void )
 		rightPower = false;
 		blit_shape(VGAScreenSeg, 20, 146, OPTION_SHAPES, 17);  // hide power level interface
 	}
-
+	
 	JE_drawItem(1, pItems[12 - 1], PX - 5, PY - 7);
 }
 
@@ -3210,21 +3210,21 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 {
 	Uint8 *s; /* screen pointer, 8-bit specific */
 	int i;
-
+	
 	JE_bar(8, 8, 143, 182, 0);
-
+	
 	/* JE: (* Port Configuration Display *)
 	(*    drawportconfigbuttons;*/
-
+	
 	/*===========================STARS==========================*/
 	/*DRAWSTARS*/
-
+	
 	for (i = MAX_STARS; i--;)
 	{
 		s = (Uint8 *)VGAScreen->pixels;
-
+		
 		starDat[i].sLoc += starDat[i].sMov + VGAScreen->pitch;
-
+		
 		if (starDat[i].sLoc < 177 * VGAScreen->pitch)
 		{
 			if (*(s + starDat[i].sLoc) == 0)
@@ -3242,10 +3242,10 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 			}
 		}
 	}
-
+	
 	mouseX = PX;
 	mouseY = PY;
-
+	
 	/* JE: (* PLAYER SHOT Creation *) */
 	for (temp = 0; temp <= 1; temp++)
 	{
@@ -3254,7 +3254,7 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		else
 			JE_initPlayerShot(pItems[temp], temp + 1, PX, PY, mouseX, mouseY, weaponPort[pItems[temp]].op[portConfig[temp] - 1][portPower[temp] - 1], 1);
 	}
-
+	
 	if (options[pItems[4 - 1]].wport > 0)
 	{
 		if (shotRepeat[3 - 1] > 0)
@@ -3262,7 +3262,7 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		else
 			JE_initPlayerShot(options[pItems[P_LEFT_SIDEKICK]].wport, 3, option1X, option1Y, mouseX, mouseY, options[pItems[P_LEFT_SIDEKICK]].wpnum, 1);
 	}
-
+	
 	if (options[pItems[P_RIGHT_SIDEKICK]].tr == 2)
 	{
 		option2X = PX;
@@ -3275,7 +3275,7 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		option2X = 72 + 15;
 		option2Y = 120;
 	}
-
+	
 	if (options[pItems[5 - 1]].wport > 0)
 	{
 		if (shotRepeat[4 - 1] > 0)
@@ -3283,7 +3283,7 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 		else
 			JE_initPlayerShot(options[pItems[P_RIGHT_SIDEKICK]].wport, 4, option2X, option2Y, mouseX, mouseY, options[pItems[P_RIGHT_SIDEKICK]].wpnum, 1);
 	}
-
+	
 	/* Player Shot Images */
 	for (z = 0; z < MAX_PWEAPON; z++)
 	{
@@ -3293,45 +3293,45 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 			if (z != MAX_PWEAPON - 1)
 			{
 				playerShotData[z].shotXM += playerShotData[z].shotXC;
-
+				
 				if (playerShotData[z].shotXM <= 100)
 					playerShotData[z].shotX += playerShotData[z].shotXM;
-
+				
 				playerShotData[z].shotYM += playerShotData[z].shotYC;
 				playerShotData[z].shotY += playerShotData[z].shotYM;
-
+				
 				if (playerShotData[z].shotYM > 100)
 				{
 					playerShotData[z].shotY -= 120;
 					playerShotData[z].shotY += PYChange;
 				}
-
+				
 				if (playerShotData[z].shotComplicated != 0)
 				{
 					playerShotData[z].shotDevX += playerShotData[z].shotDirX;
 					playerShotData[z].shotX += playerShotData[z].shotDevX;
-
+					
 					if (abs(playerShotData[z].shotDevX) == playerShotData[z].shotCirSizeX)
 						playerShotData[z].shotDirX = -playerShotData[z].shotDirX;
-
+					
 					playerShotData[z].shotDevY += playerShotData[z].shotDirY;
 					playerShotData[z].shotY += playerShotData[z].shotDevY;
-
+					
 					if (abs(playerShotData[z].shotDevY) == playerShotData[z].shotCirSizeY)
 						playerShotData[z].shotDirY = -playerShotData[z].shotDirY;
 					/*Double Speed Circle Shots - add a second copy of above loop*/
 				}
-
+				
 				tempShotX = playerShotData[z].shotX;
 				tempShotY = playerShotData[z].shotY;
-
+				
 				if (playerShotData[z].shotX < 0 || playerShotData[z].shotX > 140 ||
 				    playerShotData[z].shotY < 0 || playerShotData[z].shotY > 170)
 				{
 					shotAvail[z] = 0;
 					goto draw_player_shot_loop_end;
 				}
-
+				
 /*				if (playerShotData[z].shotTrail != 255)
 				{
 					if (playerShotData[z].shotTrail == 98)
@@ -3341,11 +3341,11 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 						JE_setupExplosion(playerShotData[z].shotX, playerShotData[z].shotY, playerShotData[z].shotTrail);
 					}
 				}*/
-
+				
 				tempW = playerShotData[z].shotGr + playerShotData[z].shotAni;
 				if (++playerShotData[z].shotAni == playerShotData[z].shotAniMax)
 					playerShotData[z].shotAni = 0;
-
+				
 				if (tempW < 6000)
 				{
 					if (tempW > 1000)
@@ -3356,23 +3356,23 @@ void JE_weaponViewFrame( JE_byte testshotnum )
 						JE_drawShape2(tempShotX+1, tempShotY, tempW, shapesC1);
 				}
 			}
-
+			
 draw_player_shot_loop_end:
 			;
 		}
 	}
-
+	
 	blit_shape(VGAScreenSeg, 0, 0, OPTION_SHAPES, 12); // upgrade interface
-
-
+	
+	
 	/*========================Power Bar=========================*/
-
+	
 	power = power + powerAdd;
 	if (power > 900)
 		power = 900;
-
+	
 	temp = power / 10;
-
+	
 	for (temp = 147 - temp; temp <= 146; temp++)
 	{
 		temp2 = 113 + (146 - temp) / 9 + 2;
@@ -3381,29 +3381,29 @@ draw_player_shot_loop_end:
 			temp2 += 3;
 		else if (temp3 != 0)
 			temp2 += 2;
-
+		
 		JE_pix(141, temp, temp2 - 3);
 		JE_pix(142, temp, temp2 - 3);
 		JE_pix(143, temp, temp2 - 2);
 		JE_pix(144, temp, temp2 - 1);
 		JE_bar(145, temp, 149, temp, temp2);
-
+		
 		if (temp2 - 3 < 112)
 			temp2++;
 	}
-
+	
 	temp = 147 - (power / 10);
 	temp2 = 113 + (146 - temp) / 9 + 4;
-
+	
 	JE_pix(141, temp - 1, temp2 - 1);
 	JE_pix(142, temp - 1, temp2 - 1);
 	JE_pix(143, temp - 1, temp2 - 1);
 	JE_pix(144, temp - 1, temp2 - 1);
-
+	
 	JE_bar(145, temp-1, 149, temp-1, temp2);
-
+	
 	lastPower = temp;
-
+	
 	//JE_waitFrameCount();  TODO: didn't do anything?
 }
 

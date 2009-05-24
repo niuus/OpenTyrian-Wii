@@ -171,7 +171,7 @@ void opentyrian_menu( void )
 	char buffer[100];
 
 	JE_fadeBlack(10);
-	JE_loadPic(13);
+	JE_loadPic(13, false);
 
 	JE_outTextAdjust(JE_fontCenter(opentyrian_str, FONT_SHAPES), 5, opentyrian_str, 15, -3, FONT_SHAPES, false);
 
