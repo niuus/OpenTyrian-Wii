@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -29,7 +29,7 @@
 #define SFX_CHANNELS 8
 
 #ifndef TARGET_GP2X
-#define OUTPUT_QUALITY 4
+#define OUTPUT_QUALITY 6
 #else  /* TARGET_GP2X */
 #define OUTPUT_QUALITY 2
 #endif /* TARGET_GP2X */

@@ -26,17 +26,17 @@
 #include "video.h"
 
 #include <string.h>
+#include <unistd.h>
 
 
 JE_boolean notyetloadedpcx;
 JE_boolean notYetLoadedPCX = true;
 
-void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
+void JE_loadPic( JE_byte PCXnumber )
 {
-	typedef JE_byte JE_buftype[63000]; /* [1..63000] */
-
+	FILE *error = fopen("error.txt", "wb");
 	JE_word x;
-	JE_buftype buf;
+	JE_byte *buf = malloc(64000);
 	FILE *PCXfile;
 
 	int i;
@@ -63,6 +63,9 @@ void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 	}
 
 	fseek(PCXfile, pcxpos[PCXnumber], SEEK_SET);
+	fprintf(error, "pcxpos[PCXnumber + 1] = %x, pcxpos[PCXnumber] = %x, PCXnumber = %x",
+			pcxpos[PCXnumber+1], pcxpos[PCXnumber], PCXnumber);
+	fclose(error);
 	efread(buf, sizeof(JE_byte), pcxpos[PCXnumber + 1] - pcxpos[PCXnumber], PCXfile);
 	fclose(PCXfile);
 
@@ -86,10 +89,11 @@ void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 	}
 
 	memcpy(colors, palettes[pcxpal[PCXnumber]], sizeof(colors));
-	if (storepal)
+	free(buf);
+	/*if (storepal)
 	{
 		JE_updateColorsFast(colors);
-	}
+	}*/
 }
 
 // kate: tab-width 4; vim: set noet:

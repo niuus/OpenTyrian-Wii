@@ -53,6 +53,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 
 const JE_byte shapereorderlist[7] = {1, 2, 5, 0, 3, 4, 6};
@@ -78,28 +79,34 @@ char *strnztcpy( char *to, const char *from, size_t count )
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 /* endian-swapping fread */
-size_t efread( void *buffer, size_t size, size_t num, FILE *stream )
+size_t efread( void *buffer, size_t size, size_t num, FILE *stream)
 {
 	size_t i, f = fread(buffer, size, num, stream);
+	if (f != num)
+	{
+		FILE *error = fopen("error.txt", "wb+");
+		fputs("Read Error", error);
+		fclose(error);
+	}
 
 	switch (size)
 	{
 		case 2:
 			for (i = 0; i < num; i++)
 			{
-				((Uint16 *)buffer)[i] = SDL_Swap16(((Uint16 *)buffer)[i]);
+				((Uint16 *)buffer)[i] = SDL_SwapLE16(((Uint16 *)buffer)[i]);
 			}
 			break;
 		case 4:
 			for (i = 0; i < num; i++)
 			{
-				((Uint32 *)buffer)[i] = SDL_Swap32(((Uint32 *)buffer)[i]);
+				((Uint32 *)buffer)[i] = SDL_SwapLE32(((Uint32 *)buffer)[i]);
 			}
 			break;
 		case 8:
 			for (i = 0; i < num; i++)
 			{
-				((Uint64 *)buffer)[i] = SDL_Swap64(((Uint64 *)buffer)[i]);
+				((Uint64 *)buffer)[i] = SDL_SwapLE64(((Uint64 *)buffer)[i]);
 			}
 			break;
 		default:
@@ -128,7 +135,7 @@ size_t efwrite( void *buffer, size_t size, size_t num, FILE *stream )
 			swap_buffer = malloc(size * num);
 			for (i = 0; i < num; i++)
 			{
-				((Uint32 *)swap_buffer)[i] = SDL_Swap32(((Uint32 *)buffer)[i]);
+				((Uint32 *)swap_buffer)[i] = SDL_SwapLE32(((Uint32 *)buffer)[i]);
 			}
 			break;
 		case 8:
@@ -164,7 +171,7 @@ void opentyrian_menu( void )
 	char buffer[100];
 
 	JE_fadeBlack(10);
-	JE_loadPic(13, false);
+	JE_loadPic(13);
 
 	JE_outTextAdjust(JE_fontCenter(opentyrian_str, FONT_SHAPES), 5, opentyrian_str, 15, -3, FONT_SHAPES, false);
 

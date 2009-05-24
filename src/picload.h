@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -24,7 +24,7 @@
 
 extern JE_boolean notyetloadedpcx;
 
-void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal );
+void JE_loadPic(JE_byte PCXnumber);
 
 #endif /* PICLOAD_H */
 
