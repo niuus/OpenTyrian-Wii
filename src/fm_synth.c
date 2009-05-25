@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -34,7 +34,7 @@ void opl_update( OPLSAMPLE *buf, int samples )
 
 void opl_init( void )
 {
-	YM3812Init(1, 3579545, 11025 * OUTPUT_QUALITY);
+	YM3812Init(1, 3579545, 64000);
 }
 
 void opl_deinit( void )

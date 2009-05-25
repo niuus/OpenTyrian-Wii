@@ -18,8 +18,8 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	opentyrianwii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
-SOURCES		:=	src 
-INCLUDES 	:=  include src
+SOURCES		:=	src src/samplerate
+INCLUDES 	:=  include src src/samplerate
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -34,7 +34,8 @@ LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with
 #---------------------------------------------------------------------------------
-LIBS	:=	 -L/mingw/lib -lSDL -lSDL_net -lfat -lwiiuse -lm -lbte -logc -lwiikeyboard 
+LIBS	:=	 -L/mingw/lib -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -ljpeg -lpng -lz -lSDL -lSDL_net -lfreetype \
+                -lfat -lwiikeyboard -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

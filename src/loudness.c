@@ -45,7 +45,7 @@ Uint32 channel_len[SFX_CHANNELS] = { 0 };
 Uint8 channel_vol[SFX_CHANNELS];
 
 int sound_init_state = false;
-int freq = 11025 * OUTPUT_QUALITY;
+int freq = 64000;
 
 void audio_cb( void *userdata, unsigned char *feedme, int howmuch );
 
@@ -266,19 +266,19 @@ void JE_multiSamplePlay(JE_byte *buffer, JE_word size, JE_byte chan, JE_byte vol
 
 	free(channel_buffer[chan]);
 
-	channel_len[chan] = size * BYTES_PER_SAMPLE * SAMPLE_SCALING;
+	channel_len[chan] = size * BYTES_PER_SAMPLE * 6;
 	channel_buffer[chan] = malloc(channel_len[chan]);
 	channel_pos[chan] = channel_buffer[chan];
 	channel_vol[chan] = vol + 1;
 
 	for (int i = 0; i < size; i++)
 	{
-		for (int ex = 0; ex < SAMPLE_SCALING; ex++)
+		for (int ex = 0; ex < 6; ex++)
 		{
 #if (BYTES_PER_SAMPLE == 2)
-			channel_buffer[chan][(i * SAMPLE_SCALING) + ex] = (Sint8)buffer[i] << 8;
+			channel_buffer[chan][(i * 6) + ex] = (Sint8)buffer[i] << 8;
 #else  /* BYTES_PER_SAMPLE */
-			channel_buffer[chan][(i * SAMPLE_SCALING) + ex] = (Sint8)buffer[i];
+			channel_buffer[chan][(i * 6) + ex] = (Sint8)buffer[i];
 #endif  /* BYTES_PER_SAMPLE */
 		}
 	}

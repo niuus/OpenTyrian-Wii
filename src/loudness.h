@@ -29,7 +29,7 @@
 #define SFX_CHANNELS 8
 
 #ifndef TARGET_GP2X
-#define OUTPUT_QUALITY 6
+#define OUTPUT_QUALITY 8
 #else  /* TARGET_GP2X */
 #define OUTPUT_QUALITY 2
 #endif /* TARGET_GP2X */
