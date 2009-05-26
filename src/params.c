@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -56,26 +56,26 @@ void JE_paramCheck( int argc, char *argv[] )
 	options[] =
 	{
 		{ 'h', "help" },
-		
+
 		{ 's', "no-sound" },
 		{ 'j', "no-joystick" },
 		{ 'x', "no-xmas" },
-		
+
 		{ 'n', "net" },
 		{ 'p', "net-port" },
 		{ 'd', "net-delay" },
-		
+
 		{ 'X', "xmas" },
 		{ 'c', "constant" },
 		{ 'k', "death" },
 		{ 'r', "record" },
 		{ 'l', "loot" },
 	};
-	
+
 	for (int i = 1; i < argc; i++)
 	{
 		char match = '\0';
-		
+
 		if (argv[i][0] == '-')
 		{
 			if (strncmp(argv[i], "--", 2) == 0)
@@ -94,7 +94,7 @@ void JE_paramCheck( int argc, char *argv[] )
 				// could have support for multiple options following a -
 				match = argv[i][1];
 			}
-			
+
 			switch (match)
 			{
 				case 'h':
@@ -109,36 +109,36 @@ void JE_paramCheck( int argc, char *argv[] )
 					       "  --net-delay <frames>                     Set lag-compensation delay\n");
 					exit(0);
 					break;
-					
+
 				case 's':
 					// Disables sound/music usage
 					audio_disabled = true;
 					break;
-					
+
 				case 'j':
 					// Disables joystick detection
 					ignore_joystick = true;
 					break;
-					
+
 				case 'x':
 					xmas = false;
 					break;
-					
+
 				case 'n':
 					if (argc > i + 3)
 					{
 						isNetworkGame = true;
-						
+
 						{
 							intptr_t temp = (intptr_t)strchr(argv[++i], ':');
 							if (temp)
 							{
 								temp -= (intptr_t)argv[i];
-								
+
 								int temp_port = atoi(&argv[i][temp + 1]);
 								if (temp_port > 0 && temp_port < 49152)
 									network_opponent_port = temp_port;
-								
+
 								network_opponent_host = malloc(temp + 1);
 								strnztcpy(network_opponent_host, argv[i], temp);
 							}
@@ -148,21 +148,21 @@ void JE_paramCheck( int argc, char *argv[] )
 								strcpy(network_opponent_host, argv[i]);
 							}
 						}
-						
+
 						int temp = atoi(argv[++i]);
 						if (temp >= 1 && temp <= 2)
 							thisPlayerNum = temp;
-						
+
 						network_player_name = malloc(strlen(argv[++i]) + 1);
 						strcpy(network_player_name, argv[i]);
 					}
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(-1);
+						exit(0);
 					}
 					break;
-					
+
 				case 'p':
 					if (argc > i + 1)
 					{
@@ -173,10 +173,10 @@ void JE_paramCheck( int argc, char *argv[] )
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(-1);
+						exit(0);
 					}
 					break;
-					
+
 				case 'd':
 					if (argc > i + 1)
 					{
@@ -188,50 +188,50 @@ void JE_paramCheck( int argc, char *argv[] )
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(-1);
+						exit(0);
 					}
 					break;
-				
+
 				case 'X':
 					xmas = true;
 					break;
-					
+
 				case 'c':
 					/* Constant play for testing purposes (C key activates invincibility)
 					   This might be useful for publishers to see everything - especially
 					   those who can't play it */
 					constantPlay = true;
 					break;
-					
+
 				case 'k':
 					constantDie = true;
 					break;
-					
+
 				case 'r':
 					record_demo = true;
 					break;
-					
+
 				case 'l':
 					// Gives you mucho bucks
 					richMode = true;
 					break;
-					
+
 				default:
 					printf("Unknown option '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-					exit(-1);
+					exit(0);
 					break;
 			}
 		}
 		else
 		{
 			// legacy parameter support
-			
+
 			tempStr = argv[i];
 			for (y = 0; y < strlen(tempStr); y++)
 			{
 				tempStr[y] = toupper(tempStr[y]);
 			}
-			
+
 			for (y = 0; y < COUNTOF(pars); y++)
 			{
 				if (strcmp(tempStr, pars[y]) == 0)

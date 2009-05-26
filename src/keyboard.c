@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -63,7 +63,7 @@ void wait_input( JE_boolean keyboard, JE_boolean mouse, JE_boolean joystick )
 		SDL_Delay(SDL_POLL_INTERVAL);
 		push_joysticks_as_keyboard();
 		service_SDL_events(false);
-		
+
 		if (isNetworkGame)
 			network_check();
 	}
@@ -77,7 +77,7 @@ void wait_noinput( JE_boolean keyboard, JE_boolean mouse, JE_boolean joystick )
 		SDL_Delay(SDL_POLL_INTERVAL);
 		poll_joysticks();
 		service_SDL_events(false);
-		
+
 		if (isNetworkGame)
 			network_check();
 	}
@@ -101,7 +101,7 @@ void input_grab( void )
 #else /* TARGET_GP2X */
 	input_grabbed = input_grab_enabled || fullscreen_enabled;
 #endif /* TARGET_GP2X */
-	
+
 	SDL_ShowCursor(input_grabbed ? SDL_DISABLE : SDL_ENABLE);
 #ifdef NDEBUG
 	SDL_WM_GrabInput(input_grabbed ? SDL_GRAB_ON : SDL_GRAB_OFF);
@@ -125,10 +125,10 @@ void set_mouse_position( int x, int y )
 void service_SDL_events( JE_boolean clear_new )
 {
 	SDL_Event ev;
-	
+
 	if (clear_new)
 		newkey = newmouse = false;
-	
+
 	while (SDL_PollEvent(&ev))
 	{
 		switch (ev.type)
@@ -147,9 +147,9 @@ void service_SDL_events( JE_boolean clear_new )
 					{
 						puts("\n\n\nCtrl+Backspace pressed. Doing emergency quit.\n");
 						SDL_Quit();
-						exit(1);
+						exit(0);
 					}
-					
+
 					/* <ctrl><f10> toggle input grab */
 					if (ev.key.keysym.sym == SDLK_F10)
 					{
@@ -158,7 +158,7 @@ void service_SDL_events( JE_boolean clear_new )
 						break;
 					}
 				}
-				
+
 				if (ev.key.keysym.mod & KMOD_ALT)
 				{
 					/* <alt><enter> toggle fullscreen */
@@ -168,19 +168,19 @@ void service_SDL_events( JE_boolean clear_new )
 						reinit_video();
 						break;
 					}
-					
+
 					/* <alt><tab> disable input grab and fullscreen */
 					if (ev.key.keysym.sym == SDLK_TAB)
 					{
 						input_grab_enabled = false;
 						input_grab();
-						
+
 						fullscreen_enabled = false;
 						reinit_video();
 						break;
 					}
 				}
-				
+
 				newkey = true;
 				lastkey_sym = ev.key.keysym.sym;
 				lastkey_mod = ev.key.keysym.mod;

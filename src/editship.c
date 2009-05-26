@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -36,41 +36,41 @@ void JE_decryptShips( void )
 	JE_boolean correct = true;
 	JE_ShipsType s2;
 	JE_byte y, z;
-	
+
 	for (int x = SAS - 1; x >= 0; x--)
 	{
 		s2[x] = extraShips[x] ^ extraCryptKey[(x + 1) % 10];
 		if (x > 0)
 			s2[x] ^= extraShips[x - 1];
 	}  /*  <= Key Decryption Test (Reversed key) */
-	
+
 	y = 0;
 	for (int x = 0; x < SAS; x++)
 		y += s2[x];
 	if (extraShips[SAS + 0] != y)
 		correct = false;
-	
+
 	y = 0;
 	for (int x = 0; x < SAS; x++)
 		y -= s2[x];
 	if (extraShips[SAS + 1] != y)
 		correct = false;
-	
+
 	y = 1;
 	for (int x = 0; x < SAS; x++)
 		y = y * s2[x] + 1;
 	if (extraShips[SAS + 2] != y)
 		correct = false;
-	
+
 	y = 0;
 	for (int x = 0; x < SAS; x++)
 		y ^= s2[x];
 	if (extraShips[SAS + 3] != y)
 		correct = false;
-	
+
 	if (!correct)
-		exit(255);
-	
+		exit(0);
+
 	memcpy(extraShips, s2, sizeof(extraShips));
 }
 
@@ -109,9 +109,9 @@ void JE_loadExtraShapes( void )
 	dont_die = true;
 	char *temp = JE_locateFile("newsh$.shp");
 	dont_die = false;
-	
+
 	FILE *f;
-	
+
 	if (temp)
 	{
 		f = fopen_check(temp, "rb");
