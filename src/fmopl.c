@@ -1989,8 +1989,7 @@ void YM3812SetUpdateHandler(int which,OPL_UPDATEHANDLER UpdateHandler,int param)
 void YM3812UpdateOne(int which, OPLSAMPLE *buffer, int length)
 {
 	FM_OPL		*OPL = OPL_YM3812[which];
-	//UINT8		rhythm;
-	//memcpy (&rhythm, &OPL->rhythm&0x20, sizeof(OPL->rhythm&0x20));
+	UINT8		rhythm = OPL->rhythm&0x20;
 	OPLSAMPLE	*buf = buffer;
 	int i;
 
@@ -2018,7 +2017,7 @@ void YM3812UpdateOne(int which, OPLSAMPLE *buffer, int length)
 		OPL_CALC_CH(&OPL->P_CH[4]);
 		OPL_CALC_CH(&OPL->P_CH[5]);
 
-		if(!OPL->rhythm&0x20)
+		if(!rhythm)
 		{
 			OPL_CALC_CH(&OPL->P_CH[6]);
 			OPL_CALC_CH(&OPL->P_CH[7]);

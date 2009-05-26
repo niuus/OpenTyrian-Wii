@@ -1049,7 +1049,7 @@ start_level_first:
 		if (!demo_file)
 		{
 			printf("error: failed to open '%s' (mode '%s')\n", tempStr, "wb");
-			exit(0);
+			exit(1);
 		}
 
 		efwrite(&episodeNum, 1,  1, demo_file);
@@ -4039,7 +4039,7 @@ void intro_logos( void )
 	fade_palette(colors, 50, 0, 255);
 
 	setjasondelay(200);
-	wait_delayorinput(true, true, true);
+	wait_delayorinput(true, false, true);
 
 	fade_black(10);
 
@@ -4049,7 +4049,7 @@ void intro_logos( void )
 	fade_palette(colors, 10, 0, 255);
 
 	setjasondelay(200);
-	wait_delayorinput(true, true, true);
+	wait_delayorinput(true, false, true);
 
 	fade_black(10);
 }

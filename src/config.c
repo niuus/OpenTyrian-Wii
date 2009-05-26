@@ -640,7 +640,7 @@ void JE_decryptSaveTemp( void )
 	if (!correct)
 	{
 		printf("Error reading save file!\n");
-		exit(0);
+		exit(255);
 	}
 
 	/* Keep decrypted version plz */
@@ -650,7 +650,7 @@ void JE_decryptSaveTemp( void )
 #ifndef TARGET_MACOSX
 const char *get_user_directory( void )
 {
-	static char userdir[500] = "";
+	static char userdir[500] = "tyrian/userdata/";
 #ifdef TARGET_UNIX
 	if (strlen(userdir) == 0 && getenv("HOME"))
 		snprintf(userdir, sizeof(userdir), "%s/.opentyrian/", getenv("HOME"));

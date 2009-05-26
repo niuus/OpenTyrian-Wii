@@ -159,7 +159,7 @@ void JE_paramCheck( int argc, char *argv[] )
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(0);
+						exit(-1);
 					}
 					break;
 
@@ -173,7 +173,7 @@ void JE_paramCheck( int argc, char *argv[] )
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(0);
+						exit(-1);
 					}
 					break;
 
@@ -188,7 +188,7 @@ void JE_paramCheck( int argc, char *argv[] )
 					else
 					{
 						printf("Argument missing for '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-						exit(0);
+						exit(-1);
 					}
 					break;
 
@@ -218,7 +218,7 @@ void JE_paramCheck( int argc, char *argv[] )
 
 				default:
 					printf("Unknown option '%s'.\nUse --help to get a list of available command line options.\n", argv[i]);
-					exit(0);
+					exit(-1);
 					break;
 			}
 		}

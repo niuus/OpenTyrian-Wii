@@ -134,6 +134,7 @@ void service_SDL_events( JE_boolean clear_new )
 		switch (ev.type)
 		{
 			case SDL_MOUSEMOTION:
+				break;
 				mouse_x = ev.motion.x / scale;
 				mouse_y = ev.motion.y / scale;
 				mouse_xrel = ev.motion.xrel / scale;
@@ -147,7 +148,7 @@ void service_SDL_events( JE_boolean clear_new )
 					{
 						puts("\n\n\nCtrl+Backspace pressed. Doing emergency quit.\n");
 						SDL_Quit();
-						exit(0);
+						exit(1);
 					}
 
 					/* <ctrl><f10> toggle input grab */
@@ -191,6 +192,7 @@ void service_SDL_events( JE_boolean clear_new )
 				keydown = false;
 				return;
 			case SDL_MOUSEBUTTONDOWN:
+				break;
 				if (!input_grabbed)
 				{
 					input_grab_enabled = !input_grab_enabled;
@@ -198,6 +200,7 @@ void service_SDL_events( JE_boolean clear_new )
 					break;
 				}
 			case SDL_MOUSEBUTTONUP:
+				break;
 				if (ev.type == SDL_MOUSEBUTTONDOWN)
 				{
 					newmouse = true;

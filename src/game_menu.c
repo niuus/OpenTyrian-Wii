@@ -1373,7 +1373,6 @@ item_screen_start:
 				case SDLK_RETURN:
 					JE_menuFunction(curSel[curMenu]);
 					keyboardUsed = true;
-					SDL_Delay(150);
 					break;
 
 				case SDLK_ESCAPE:
@@ -1406,7 +1405,6 @@ item_screen_start:
 
 					}
 					keyboardUsed = true;
-					SDL_Delay(150);
 					break;
 
 				case SDLK_F1:

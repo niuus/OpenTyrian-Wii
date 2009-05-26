@@ -42,7 +42,7 @@ void init_video( void )
 	{
 video_error:
 		printf("error: failed to initialize SDL video: %s\n", SDL_GetError());
-		exit(0);
+		exit(1);
 	}
 
 	SDL_WM_SetCaption("OpenTyrian (ctrl-backspace to kill)", NULL);
@@ -90,7 +90,7 @@ void reinit_video( void )
 	if (display_surface == NULL)
 	{
 		printf("error: failed to initialize SDL video: %s\n", SDL_GetError());
-		exit(0);
+		exit(1);
 	} else {
 		printf("initialized SDL video: %dx%dx%d\n", w, h, bpp);
 	}

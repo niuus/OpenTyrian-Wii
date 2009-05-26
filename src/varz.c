@@ -663,7 +663,6 @@ void JE_tyrianHalt( JE_byte code )
 	if (code == 9)
 	{
 		/* OutputString('call=file0002.EXE' + #0'); TODO? */
-		code = 0;
 	}
 
 	if (code == 5)
@@ -685,11 +684,9 @@ void JE_tyrianHalt( JE_byte code )
 		       "\n"
 		       "You'll need the 2.1 patch, though!\n"
 		       "\n");
-		code = 0;
 	}
 
 	SDL_Quit();
-
 	exit(0);
 }
 

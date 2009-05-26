@@ -69,7 +69,7 @@ void JE_decryptShips( void )
 		correct = false;
 
 	if (!correct)
-		exit(0);
+		exit(255);
 
 	memcpy(extraShips, s2, sizeof(extraShips));
 }
