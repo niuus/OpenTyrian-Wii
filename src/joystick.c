@@ -150,10 +150,26 @@ void poll_joystick( int j )
 	case 2:
 		joystick[j].hat_direction[1] = 1;
 		break;
+	case 3:
+		joystick[j].hat_direction[0] = 1;
+		joystick[j].hat_direction[1] = 1;
+		break;
 	case 4:
 		joystick[j].hat_direction[2] = 1;
 		break;
+	case 6:
+		joystick[j].hat_direction[1] = 1;
+		joystick[j].hat_direction[2] = 1;
+		break;
 	case 8:
+		joystick[j].hat_direction[3] = 1;
+		break;
+	case 9:
+		joystick[j].hat_direction[0] = 1;
+		joystick[j].hat_direction[3] = 1;
+		break;
+	case 12:
+		joystick[j].hat_direction[2] = 1;
 		joystick[j].hat_direction[3] = 1;
 		break;
 	}
