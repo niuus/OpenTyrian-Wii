@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -37,7 +37,7 @@ JE_boolean dont_die = false;
 char err_msg[1000] = "No error!?";
 
 #ifndef TARGET_MACOSX
-static const char *tyrian_searchpaths[] = { "data", "tyrian", "tyrian2k" };
+static const char *tyrian_searchpaths[] = { "sd:/data", "sd:/tyrian", "sd:/tyrian2k" };
 #endif
 
 long get_stream_size( FILE *f )
@@ -78,10 +78,10 @@ FILE *fopen_check( const char *file, const char *mode )
 		}
 		snprintf(err_msg, sizeof(err_msg), "warning: failed to open '%s' (mode '%s'): %s\n", file, mode, buf);
 		fprintf(stderr, "%s", err_msg);
-		
+
 		return NULL;
 	}
-	
+
 	return f;
 }
 
@@ -153,17 +153,17 @@ void JE_findTyrian( const char *filename )
 		for (int i = 0; i < COUNTOF(tyrian_searchpaths); i++)
 		{
 			strbuf = malloc(strlen(tyrian_searchpaths[i]) + strlen(filename) + 2);
-			
+
 			sprintf(strbuf, "%s/%s", tyrian_searchpaths[i], filename);
 			if (JE_find(strbuf))
 			{
 				free(strbuf);
-				
+
 				sprintf(dir, "%s/", tyrian_searchpaths[i]);
 				printf("Tyrian data files found at %s\n\n", dir);
 				return;
 			}
-			
+
 			free(strbuf);
 		}
 #endif /* TARGET_MACOSX */

@@ -56,12 +56,11 @@ bool init_audio( void )
 {
 	if (audio_disabled)
 		return false;
-	FILE *error = fopen("audioLog.txt", "wb+");
 	SDL_AudioSpec ask, got;
 
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO))
 	{
-		fprintf(error, "error: failed to initialize audio system: %s\n", SDL_GetError());
+		printf(error, "error: failed to initialize audio system: %s\n", SDL_GetError());
 		audio_disabled = true;
 		return false;
 	}
@@ -72,17 +71,16 @@ bool init_audio( void )
 	ask.samples = 512;
 	ask.callback = audio_cb;
 
-	fprintf(error, "\trequested  frequency: %d; buffer size: %d\n", ask.freq, ask.samples);
+	printf(error, "\trequested  frequency: %d; buffer size: %d\n", ask.freq, ask.samples);
 
 	if (SDL_OpenAudio(&ask, &got) == -1)
 	{
-		fprintf(error, "error: failed to initialize SDL audio: %s\n", SDL_GetError());
+		printf(error, "error: failed to initialize SDL audio: %s\n", SDL_GetError());
 		audio_disabled = true;
 		return false;
 	}
 
-	fprintf(error, "\tobtained   frequency: %d; buffer size: %d\n", got.freq, got.samples);
-	fclose(error);
+	printf(error, "\tobtained   frequency: %d; buffer size: %d\n", got.freq, got.samples);
 	opl_init();
 
 	SDL_PauseAudio(0); // unpause
