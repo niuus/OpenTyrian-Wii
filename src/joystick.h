@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -31,19 +31,20 @@ struct joystick_assignment_struct
 struct joystick_struct
 {
 	SDL_Joystick *handle;
-	
+
 	struct joystick_assignment_struct assignment[10][2]; // 0-3: directions, 4-9: actions
-	
+
 	bool analog;
 	int sensitivity, threshold;
-	
+
 	signed int x, y;
 	int analog_direction[4];
 	bool direction[4], direction_pressed[4]; // up, right, down, left  (_pressed, for emulating key presses)
-	
+	int hat_direction[4];
+
 	bool confirm, cancel;
 	bool action[6], action_pressed[6]; // fire, mode swap, left fire, right fire, menu, pause
-	
+
 	Uint32 joystick_delay;
 	bool input_pressed;
 };

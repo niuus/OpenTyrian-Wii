@@ -136,12 +136,35 @@ void poll_joystick( int j )
 
 	bool repeat = joystick[j].joystick_delay < SDL_GetTicks();
 
+	int hat;
+
+	hat = SDL_JoystickGetHat(joystick[j].handle, 0);
+
+	switch (hat)
+	{
+	case 0:
+		break;
+	case 1:
+		joystick[j].hat_direction[0] = 1;
+		break;
+	case 2:
+		joystick[j].hat_direction[1] = 1;
+		break;
+	case 4:
+		joystick[j].hat_direction[2] = 1;
+		break;
+	case 8:
+		joystick[j].hat_direction[3] = 1;
+		break;
+	}
+
 	for (int d = 0; d < COUNTOF(joystick[j].direction); d++)
 	{
 		bool old = joystick[j].direction[d];
 
 		joystick[j].analog_direction[d] = check_assigned(joystick[j].handle, joystick[j].assignment[d]);
-		joystick[j].direction[d] = joystick[j].analog_direction[d] > (joystick_analog_max / 2);
+		joystick[j].direction[d] = (joystick[j].analog_direction[d] > (joystick_analog_max / 2)) || (joystick[j].hat_direction[d] == 1);
+		joystick[j].hat_direction[d] = 0;
 		joydown |= joystick[j].direction[d];
 
 		joystick[j].direction_pressed[d] = joystick[j].direction[d];
@@ -298,20 +321,31 @@ void reset_joystick_assignments( int j )
 			joystick[j].assignment[a][i].num = -1;
 		}
 	}
-	if(j < 4)
+	if(j < 4) /* Joystick is Wiimote */
 	{
+		/* Configure Wiimote+Joystick assignments */
 		joystick[j].assignment[4][0].num = 0;
 		joystick[j].assignment[5][0].num = 8;
 		joystick[j].assignment[6][0].num = 7;
 		joystick[j].assignment[7][0].num = 1;
 		joystick[j].assignment[8][0].num = 5;
 		joystick[j].assignment[9][0].num = 4;
+		/* Configure Classic Controller assignments */
 		joystick[j].assignment[4][1].num = 10;
 		joystick[j].assignment[5][1].num = 12;
 		joystick[j].assignment[6][1].num = 13;
 		joystick[j].assignment[7][1].num = 14;
 		joystick[j].assignment[8][1].num = 18;
 		joystick[j].assignment[9][1].num = 17;
+	}
+	else /* Joystick is GC Pad */
+	{
+		joystick[j].assignment[4][0].num = 0;
+		joystick[j].assignment[5][0].num = 1;
+		joystick[j].assignment[6][0].num = 6;
+		joystick[j].assignment[7][0].num = 5;
+		joystick[j].assignment[8][0].num = 7;
+		joystick[j].assignment[9][0].num = 4;
 	}
 	joystick[j].analog = false;
 	joystick[j].sensitivity = 5;
