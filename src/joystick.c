@@ -396,6 +396,7 @@ bool load_joystick_assignments( int j )
 
 bool save_joystick_assignments( int j )
 {
+	return true;
 	FILE *f = seek_joystick_assignments(j, false);
 
 	if (f == NULL)

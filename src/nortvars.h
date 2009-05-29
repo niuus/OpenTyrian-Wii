@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -22,7 +22,7 @@
 #include "opentyr.h"
 
 
-typedef JE_char JE_TextBuffer[4096]; /* [1..4096] */
+//typedef JE_char JE_TextBuffer[4096]; /* [1..4096] */
 
 typedef JE_byte JE_ShapeTypeOne[168]; /* [0..168-1] */
 typedef JE_ShapeTypeOne JE_ShapeType[304]; /* [1..304] */

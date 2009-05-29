@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  * hq2x, hq3x, hq4x Copyright (C) 2003 MaxSt ( maxst@hiend3d.com )
@@ -72,15 +72,15 @@ void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	for (int y = height; y > 0; y--)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		for (int x = width; x > 0; x--)
 		{
 			for (int z = scale; z > 0; z--)
@@ -90,10 +90,10 @@ void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			}
 			src++;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + dst_pitch;
-		
+
 		for (int z = scale; z > 1; z--)
 		{
 			memcpy(dst, dst_temp, dst_pitch);
@@ -109,15 +109,15 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	for (int y = height; y > 0; y--)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		for (int x = width; x > 0; x--)
 		{
 			for (int z = scale; z > 0; z--)
@@ -127,10 +127,10 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			}
 			src++;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + dst_pitch;
-		
+
 		for (int z = scale; z > 1; z--)
 		{
 			memcpy(dst, dst_temp, dst_pitch);
@@ -161,7 +161,7 @@ inline void interp2(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 inline void interp3(Uint32 *pc, Uint32 c1, Uint32 c2)
 {
 	//*((int*)pc) = (c1*7+c2)/8;
-	
+
 	*((int*)pc) = ((((c1 & 0x00FF00)*7 + (c2 & 0x00FF00) ) & 0x0007F800) +
 	               (((c1 & 0xFF00FF)*7 + (c2 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
@@ -169,7 +169,7 @@ inline void interp3(Uint32 *pc, Uint32 c1, Uint32 c2)
 inline void interp4(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
 	//*((int*)pc) = (c1*2+(c2+c3)*7)/16;
-	
+
 	*((int*)pc) = ((((c1 & 0x00FF00)*2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00))*7 ) & 0x000FF000) +
 	               (((c1 & 0xFF00FF)*2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF))*7 ) & 0x0FF00FF0)) >> 4;
 }
@@ -182,7 +182,7 @@ inline void interp5(Uint32 *pc, Uint32 c1, Uint32 c2)
 inline void interp6(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
 	//*pc = (c1*5+c2*2+c3)/8;
-	
+
 	*pc = ((((c1 & 0x00FF00)*5 + (c2 & 0x00FF00)*2 + (c3 & 0x00FF00) ) & 0x0007F800) +
 	       (((c1 & 0xFF00FF)*5 + (c2 & 0xFF00FF)*2 + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
@@ -190,7 +190,7 @@ inline void interp6(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 inline void interp7(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
 	//*pc = (c1*6+c2+c3)/8;
-	
+
 	*pc = ((((c1 & 0x00FF00)*6 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x0007F800) +
 	       (((c1 & 0xFF00FF)*6 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x07F807F8)) >> 3;
 }
@@ -198,7 +198,7 @@ inline void interp7(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 inline void interp8(Uint32 *pc, Uint32 c1, Uint32 c2)
 {
 	//*pc = (c1*5+c2*3)/8;
-	
+
 	*pc = ((((c1 & 0x00FF00)*5 + (c2 & 0x00FF00)*3 ) & 0x0007F800) +
 	       (((c1 & 0xFF00FF)*5 + (c2 & 0xFF00FF)*3 ) & 0x07F807F8)) >> 3;
 }
@@ -206,7 +206,7 @@ inline void interp8(Uint32 *pc, Uint32 c1, Uint32 c2)
 inline void interp9(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
 	//*pc = (c1*2+(c2+c3)*3)/8;
-	
+
 	*pc = ((((c1 & 0x00FF00)*2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00))*3 ) & 0x0007F800) +
 	       (((c1 & 0xFF00FF)*2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF))*3 ) & 0x07F807F8)) >> 3;
 }
@@ -214,7 +214,7 @@ inline void interp9(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 inline void interp10(Uint32 *pc, Uint32 c1, Uint32 c2, Uint32 c3)
 {
 	//*pc = (c1*14+c2+c3)/16;
-	
+
 	*pc = ((((c1 & 0x00FF00)*14 + (c2 & 0x00FF00) + (c3 & 0x00FF00) ) & 0x000FF000) +
 	       (((c1 & 0xFF00FF)*14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF) ) & 0x0FF00FF0)) >> 4;
 }
@@ -285,15 +285,15 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint32 w[10];
 	Uint32 c[10];
-	
+
 	//   +----+----+----+
 	//   |    |    |    |
 	//   | w1 | w2 | w3 |
@@ -304,21 +304,21 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	//   |    |    |    |
 	//   | w7 | w8 | w9 |
 	//   +----+----+----+
-	
+
 	for (int j = 0; j < height; j++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (j > 0) ? -width : 0;
 		nextline = (j < height - 1) ? width : 0;
-		
+
 		for (int i = 0; i < width; i++)
 		{
 			w[2] = *(src + prevline);
 			w[5] = *src;
 			w[8] = *(src + nextline);
-			
+
 			if (i > 0)
 			{
 				w[1] = *(src + prevline - 1);
@@ -329,7 +329,7 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[4] = w[5];
 				w[7] = w[8];
 			}
-			
+
 			if (i < width - 1)
 			{
 				w[3] = *(src + prevline + 1);
@@ -340,16 +340,16 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[6] = w[5];
 				w[9] = w[8];
 			}
-			
+
 			int pattern = 0;
 			int flag = 1;
-			
+
 			YUV1 = yuv_palette[w[5]];
-			
+
 			for (int k=1; k<=9; k++)
 			{
 				if (k==5) continue;
-				
+
 				if ( w[k] != w[5] )
 				{
 					YUV2 = yuv_palette[w[k]];
@@ -360,10 +360,10 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				}
 				flag <<= 1;
 			}
-			
+
 			for (int k=1; k<=9; k++)
 				c[k] = rgb_palette[w[k]] & 0xfcfcfcfc; // hq2x has a nasty inability to accept more than 6 bits for each component
-			
+
 			switch (pattern)
 			{
 				case 0:
@@ -3006,11 +3006,11 @@ void hq2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 					break;
 				}
 			}
-			
+
 			src++;
 			dst += 2 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 2 * dst_pitch;
 	}
@@ -3078,15 +3078,15 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint32 w[10];
 	Uint32 c[10];
-	
+
 	//   +----+----+----+
 	//   |    |    |    |
 	//   | w1 | w2 | w3 |
@@ -3097,21 +3097,21 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	//   |    |    |    |
 	//   | w7 | w8 | w9 |
 	//   +----+----+----+
-	
+
 	for (int j = 0; j < height; j++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (j > 0) ? -width : 0;
 		nextline = (j < height - 1) ? width : 0;
-		
+
 		for (int i = 0; i < width; i++)
 		{
 			w[2] = *(src + prevline);
 			w[5] = *src;
 			w[8] = *(src + nextline);
-			
+
 			if (i>0)
 			{
 				w[1] = *(src + prevline - 1);
@@ -3122,7 +3122,7 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[4] = w[5];
 				w[7] = w[8];
 			}
-			
+
 			if (i < width - 1)
 			{
 				w[3] = *(src + prevline + 1);
@@ -3133,16 +3133,16 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[6] = w[5];
 				w[9] = w[8];
 			}
-			
+
 			int pattern = 0;
 			int flag = 1;
-			
+
 			YUV1 = yuv_palette[w[5]];
-			
+
 			for (int k=1; k<=9; k++)
 			{
 				if (k==5) continue;
-				
+
 				if ( w[k] != w[5] )
 				{
 					YUV2 = yuv_palette[w[k]];
@@ -3153,10 +3153,10 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				}
 				flag <<= 1;
 			}
-			
+
 			for (int k=1; k<=9; k++)
 				c[k] = rgb_palette[w[k]] & 0xfcfcfcfc; // hq3x has a nasty inability to accept more than 6 bits for each component
-			
+
 			switch (pattern)
 			{
 				case 0:
@@ -6772,11 +6772,11 @@ void hq3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 					break;
 				}
 			}
-			
+
 			src++;
 			dst += 3 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 3 * dst_pitch;
 	}
@@ -6931,15 +6931,15 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint32 w[10];
 	Uint32 c[10];
-	
+
 	//   +----+----+----+
 	//   |    |    |    |
 	//   | w1 | w2 | w3 |
@@ -6950,21 +6950,21 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	//   |    |    |    |
 	//   | w7 | w8 | w9 |
 	//   +----+----+----+
-	
+
 	for (int j = 0; j < height; j++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (j > 0) ? -width : 0;
 		nextline = (j < height - 1) ? width : 0;
-		
+
 		for (int i = 0; i < width; i++)
 		{
 			w[2] = *(src + prevline);
 			w[5] = *src;
 			w[8] = *(src + nextline);
-			
+
 			if (i>0)
 			{
 				w[1] = *(src + prevline - 1);
@@ -6975,7 +6975,7 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[4] = w[5];
 				w[7] = w[8];
 			}
-			
+
 			if (i < width - 1)
 			{
 				w[3] = *(src + prevline + 1);
@@ -6986,16 +6986,16 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				w[6] = w[5];
 				w[9] = w[8];
 			}
-			
+
 			int pattern = 0;
 			int flag = 1;
-			
+
 			YUV1 = yuv_palette[w[5]];
-			
+
 			for (int k=1; k<=9; k++)
 			{
 				if (k==5) continue;
-				
+
 				if ( w[k] != w[5] )
 				{
 					YUV2 = yuv_palette[w[k]];
@@ -7006,10 +7006,10 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 				}
 				flag <<= 1;
 			}
-			
+
 			for (int k=1; k<=9; k++)
 				c[k] = rgb_palette[w[k]] & 0xfcfcfcfc; // hq4x has a nasty inability to accept more than 6 bits for each component
-			
+
 			switch (pattern)
 			{
 				case 0:
@@ -11984,11 +11984,11 @@ void hq4x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 					break;
 				}
 			}
-			
+
 			src++;
 			dst += 4 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 4 * dst_pitch;
 	}
@@ -12002,21 +12002,21 @@ void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint32 E0, E1, E2, E3, B, D, E, F, H;
 	for (int y = 0; y < height; y++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (y > 0) ? -src_pitch : 0;
 		nextline = (y < height - 1) ? src_pitch : 0;
-		
+
 		for (int x = 0; x < width; x++)
 		{
 			B = rgb_palette[*(src + prevline)];
@@ -12024,7 +12024,7 @@ void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			E = rgb_palette[*src];
 			F = rgb_palette[*(x < width - 1 ? src + 1 : src)];
 			H = rgb_palette[*(src + nextline)];
-			
+
 			if (B != H && D != F) {
 				E0 = D == B ? D : E;
 				E1 = B == F ? F : E;
@@ -12033,16 +12033,16 @@ void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			} else {
 				E0 = E1 = E2 = E3 = E;
 			}
-			
+
 			*(Uint32 *)dst = E0;
 			*(Uint32 *)(dst + dst_Bpp) = E1;
 			*(Uint32 *)(dst + dst_pitch) = E2;
 			*(Uint32 *)(dst + dst_pitch + dst_Bpp) = E3;
-			
+
 			src++;
 			dst += 2 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 2 * dst_pitch;
 	}
@@ -12055,21 +12055,20 @@ void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint16 E0, E1, E2, E3, B, D, E, F, H;
 	for (int y = 0; y < height; y++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
 		prevline = (y > 0) ? -src_pitch : 0;
-		nextline = (y < height - 1) ? src_pitch : 0;
-		
+		nextline = (y < 200 - 1) ? src_pitch : 0;
+
 		for (int x = 0; x < width; x++)
 		{
 			B = rgb_palette[*(src + prevline)];
@@ -12077,7 +12076,7 @@ void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			E = rgb_palette[*src];
 			F = rgb_palette[*(x < width - 1 ? src + 1 : src)];
 			H = rgb_palette[*(src + nextline)];
-			
+
 			if (B != H && D != F) {
 				E0 = D == B ? D : E;
 				E1 = B == F ? F : E;
@@ -12086,18 +12085,19 @@ void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			} else {
 				E0 = E1 = E2 = E3 = E;
 			}
-			
+
 			*(Uint16 *)dst = E0;
 			*(Uint16 *)(dst + dst_Bpp) = E1;
 			*(Uint16 *)(dst + dst_pitch) = E2;
 			*(Uint16 *)(dst + dst_pitch + dst_Bpp) = E3;
-			
+
 			src++;
 			dst += 2 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 2 * dst_pitch;
+
 	}
 }
 
@@ -12109,21 +12109,21 @@ void scale3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint32 E0, E1, E2, E3, E4, E5, E6, E7, E8, A, B, C, D, E, F, G, H, I;
 	for (int y = 0; y < height; y++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (y > 0) ? -src_pitch : 0;
 		nextline = (y < height - 1) ? src_pitch : 0;
-		
+
 		for (int x = 0; x < width; x++)
 		{
 			A = rgb_palette[*(src + prevline - (x > 0 ? 1 : 0))];
@@ -12135,7 +12135,7 @@ void scale3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			G = rgb_palette[*(src + nextline - (x > 0 ? 1 : 0))];
 			H = rgb_palette[*(src + nextline)];
 			I = rgb_palette[*(src + nextline + (x < width - 1 ? 1 : 0))];
-			
+
 			if (B != H && D != F) {
 				E0 = D == B ? D : E;
 				E1 = (D == B && E != C) || (B == F && E != A) ? B : E;
@@ -12149,7 +12149,7 @@ void scale3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			} else {
 				E0 = E1 = E2 = E3 = E4 = E5 = E6 = E7 = E8 = E;
 			}
-			
+
 			*(Uint32 *)dst = E0;
 			*(Uint32 *)(dst + dst_Bpp) = E1;
 			*(Uint32 *)(dst + 2 * dst_Bpp) = E2;
@@ -12159,11 +12159,11 @@ void scale3x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			*(Uint32 *)(dst + 2 * dst_pitch) = E6;
 			*(Uint32 *)(dst + 2 * dst_pitch + dst_Bpp) = E7;
 			*(Uint32 *)(dst + 2 * dst_pitch + 2 * dst_Bpp) = E8;
-			
+
 			src++;
 			dst += 3 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 3 * dst_pitch;
 	}
@@ -12176,21 +12176,21 @@ void scale3x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
-	
+
 	const int height = vga_height, // src_surface->h
 	          width = vga_width;   // src_surface->w
-	
+
 	int prevline, nextline;
-	
+
 	Uint16 E0, E1, E2, E3, E4, E5, E6, E7, E8, A, B, C, D, E, F, G, H, I;
 	for (int y = 0; y < height; y++)
 	{
 		src_temp = src;
 		dst_temp = dst;
-		
+
 		prevline = (y > 0) ? -src_pitch : 0;
 		nextline = (y < height - 1) ? src_pitch : 0;
-		
+
 		for (int x = 0; x < width; x++)
 		{
 			A = rgb_palette[*(src + prevline - (x > 0 ? 1 : 0))];
@@ -12202,7 +12202,7 @@ void scale3x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			G = rgb_palette[*(src + nextline - (x > 0 ? 1 : 0))];
 			H = rgb_palette[*(src + nextline)];
 			I = rgb_palette[*(src + nextline + (x < width - 1 ? 1 : 0))];
-			
+
 			if (B != H && D != F) {
 				E0 = D == B ? D : E;
 				E1 = (D == B && E != C) || (B == F && E != A) ? B : E;
@@ -12216,7 +12216,7 @@ void scale3x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			} else {
 				E0 = E1 = E2 = E3 = E4 = E5 = E6 = E7 = E8 = E;
 			}
-			
+
 			*(Uint16 *)dst = E0;
 			*(Uint16 *)(dst + dst_Bpp) = E1;
 			*(Uint16 *)(dst + 2 * dst_Bpp) = E2;
@@ -12226,11 +12226,11 @@ void scale3x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			*(Uint16 *)(dst + 2 * dst_pitch) = E6;
 			*(Uint16 *)(dst + 2 * dst_pitch + dst_Bpp) = E7;
 			*(Uint16 *)(dst + 2 * dst_pitch + 2 * dst_Bpp) = E8;
-			
+
 			src++;
 			dst += 3 * dst_Bpp;
 		}
-		
+
 		src = src_temp + src_pitch;
 		dst = dst_temp + 3 * dst_pitch;
 	}

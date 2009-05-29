@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -27,22 +27,22 @@
 #include "SDL.h"
 
 
-typedef JE_byte JE_DigiMixType [0x4ff];
-typedef JE_byte JE_AweType [35000];
+//typedef JE_byte JE_DigiMixType [0x4ff];
+//typedef JE_byte JE_AweType [35000];
 
 extern JE_word w1;
-extern JE_AweType * awe_data;
+//extern JE_AweType * awe_data;
 /*extern JE_word tempw;*/
 extern JE_word w2;
 extern JE_byte sberror;
 extern JE_byte sysintcount;
 extern JE_byte sbint;
-extern JE_AweType * awe_code;
+//extern JE_AweType * awe_code;
 extern void * oldvector;
 extern JE_byte midiport;
 extern JE_byte sysintwait;
 extern JE_word sbport;
-extern JE_DigiMixType * digimix;
+//extern JE_DigiMixType * digimix;
 extern JE_byte midierror;
 extern JE_longint address;
 extern JE_word intcount;

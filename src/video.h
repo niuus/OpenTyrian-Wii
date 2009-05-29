@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -27,7 +27,7 @@
 #ifdef TARGET_GP2X
 #	define vga_height 240
 #else
-#	define vga_height 200
+#	define vga_height 240
 #endif // TARGET_GP2X
 
 extern bool fullscreen_enabled;

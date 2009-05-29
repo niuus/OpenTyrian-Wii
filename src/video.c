@@ -75,7 +75,7 @@ void reinit_video( void )
 	int w = vga_width * scale,
 	    h = vga_height * scale;
 	int bpp = 16;
-	int flags = SDL_SWSURFACE | SDL_HWPALETTE | (fullscreen_enabled ? SDL_FULLSCREEN : 0);
+	int flags = SDL_SWSURFACE | SDL_HWPALETTE /*| (fullscreen_enabled ? SDL_FULLSCREEN : 0)*/;
 
 #ifndef TARGET_GP2X
 	bpp = SDL_VideoModeOK(w, h, bpp, flags);

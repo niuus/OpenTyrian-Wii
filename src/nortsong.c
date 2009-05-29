@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -32,18 +32,18 @@
 
 
 JE_word w1;
-JE_AweType * awe_data;
+//JE_AweType * awe_data = malloc(35000);
 /*JE_word tempw;*/
 JE_word w2;
 JE_byte sberror;
 JE_byte sysintcount;
 JE_byte sbint;
-JE_AweType * awe_code;
+//JE_AweType * awe_code = malloc(35000);
 void * oldvector;
 JE_byte midiport;
 JE_byte sysintwait;
 JE_word sbport;
-JE_DigiMixType * digimix;
+//JE_DigiMixType * digimix = malloc(0x4ff);
 JE_byte midierror;
 JE_longint address;
 JE_word intcount;
@@ -151,7 +151,7 @@ void JE_loadSndFile( char *effects_sndfile, char *voices_sndfile )
 
 	/* SYN: Loading offsets into VOICES.SND */
 	JE_resetFile(&fi, voices_sndfile);
-	
+
 	efread(&sndNum, sizeof(sndNum), 1, fi);
 
 	for (x = 0; x < sndNum; x++)
@@ -204,7 +204,7 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 {
 	int music_temp = *music + music_delta,
 	    sample_temp = *sample + sample_delta;
-	
+
 	if (music_delta)
 	{
 		if (music_temp > 255)
@@ -218,7 +218,7 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 			JE_playSampleNum(S_CLINK);
 		}
 	}
-	
+
 	if (sample_delta)
 	{
 		if (sample_temp > 255)
@@ -232,12 +232,12 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 			JE_playSampleNum(S_CLINK);
 		}
 	}
-	
+
 	*music = music_temp;
 	*sample = sample_temp;
-	
+
 	JE_calcFXVol();
-	
+
 	set_volume(*music, *sample);
 }
 
