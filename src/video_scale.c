@@ -58,11 +58,11 @@ const struct scaler_struct scalers[] =
 	{ 2, nn_16,      nn_32,      "2x" },
 	{ 2, scale2x_16, scale2x_32, "Scale2x" },
 	{ 2, NULL,       hq2x_32,    "hq2x" },
-	{ 3, nn_16,      nn_32,      "3x" },
-	{ 3, scale3x_16, scale3x_32, "Scale3x" },
-	{ 3, NULL,       hq3x_32,    "hq3x" },
-	{ 4, nn_16,      nn_32,      "4x" },
-	{ 4, NULL,       hq4x_32,    "hq4x" },
+	//{ 3, nn_16,      nn_32,      "3x" },
+	//{ 3, scale3x_16, scale3x_32, "Scale3x" },
+	//{ 3, NULL,       hq3x_32,    "hq3x" },
+	//{ 4, nn_16,      nn_32,      "4x" },
+	//{ 4, NULL,       hq4x_32,    "hq4x" },
 };
 
 void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
@@ -106,9 +106,9 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 {
 	Uint8 *src = src_surface->pixels;
 	Uint16 *dst = dst_surface->pixels;
-	int src_pitch = src_surface->pitch,
-	    dst_pitch = dst_surface->pitch;
-	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
+	//int src_pitch = src_surface->pitch,
+	    //dst_pitch = dst_surface->pitch;
+	//const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
 
 	const int dst_height = dst_surface->h,
 	          dst_width = dst_surface->w;
@@ -118,14 +118,14 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 		for (int sx = 0; sx < dst_width; sx++)
 		{
 			const float map_x = sx/2,
-			            map_y = sy/2;
+			            map_y = sy*.416;
 			const int trunc_x = map_x, trunc_y = map_y;
 			SDL_Color A, B, C, D, c;
 
-			SDL_GetRGB(rgb_palette[src[trunc_y*src_pitch+trunc_x]], dst_surface->format, &A.r, &A.g, &A.b);
-			SDL_GetRGB(rgb_palette[src[trunc_y*src_pitch+(trunc_x+1)]], dst_surface->format, &B.r, &B.g, &B.b);
-			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*src_pitch+trunc_x]], dst_surface->format, &C.r, &C.g, &C.b);
-			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*src_pitch+(trunc_x+1)]], dst_surface->format, &D.r, &D.g, &D.b);
+			SDL_GetRGB(rgb_palette[src[trunc_y*320+trunc_x]], dst_surface->format, &A.r, &A.g, &A.b);
+			SDL_GetRGB(rgb_palette[src[trunc_y*320+(trunc_x+1)]], dst_surface->format, &B.r, &B.g, &B.b);
+			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*320+trunc_x]], dst_surface->format, &C.r, &C.g, &C.b);
+			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*320+(trunc_x+1)]], dst_surface->format, &D.r, &D.g, &D.b);
 
 			const float x = map_x - trunc_x,
 			            y = map_y - trunc_y;
@@ -133,7 +133,7 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			c.g = (int)((A.g*x + B.g*(1-x))*y + (C.g*x + D.g*(1-x))*(1-y));
 			c.b = (int)((A.b*x + B.b*(1-x))*y + (C.b*x + D.b*(1-x))*(1-y));
 
-			dst[sy*dst_pitch+sx*dst_Bpp] = SDL_MapRGB(dst_surface->format, c.r, c.g, c.b);
+			dst[sy*640+sx] = SDL_MapRGB(dst_surface->format, c.r, c.g, c.b);
 		}
 	}
 	/*Uint8 *src = src_surface->pixels, *src_temp,

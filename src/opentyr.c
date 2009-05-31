@@ -63,7 +63,6 @@ const char *opentyrian_str = "OpenTyrian",
 const char *opentyrian_menu_items[] =
 {
 	"About OpenTyrian",
-	"Toggle Fullscreen",
 	"Scaler: None",
 	/* "Play Destruct", */
 	"Jukebox",
@@ -189,7 +188,7 @@ void opentyrian_menu( void )
 		{
 			const char *text = opentyrian_menu_items[i];
 
-			if (i == 2) /* Scaler */
+			if (i == 1) /* Scaler */
 			{
 				snprintf(buffer, sizeof(buffer), "Scaler: %s", scalers[temp_scaler].name);
 				text = buffer;
@@ -233,7 +232,7 @@ void opentyrian_menu( void )
 					JE_playSampleNum(S_CURSOR);
 					break;
 				case SDLK_LEFT:
-					if (sel == 2)
+					if (sel == 1)
 					{
 						do {
 							if (temp_scaler == 0)
@@ -248,7 +247,7 @@ void opentyrian_menu( void )
 					}
 					break;
 				case SDLK_RIGHT:
-					if (sel == 2)
+					if (sel == 1)
 					{
 						do {
 							temp_scaler++;
@@ -274,13 +273,13 @@ void opentyrian_menu( void )
 							JE_showVGA();
 							fade_in = true;
 							break;
-						case 1: /* Fullscreen */
+						/*case 1: // Fullscreen
 							JE_playSampleNum(S_SELECT);
 
 							fullscreen_enabled = !fullscreen_enabled;
 							reinit_video();
-							break;
-						case 2: /* Scaler */
+							break;*/
+						case 1: /* Scaler */
 							JE_playSampleNum(S_SELECT);
 
 							if (scaler != temp_scaler)
@@ -289,7 +288,7 @@ void opentyrian_menu( void )
 								reinit_video();
 							}
 							break;
-						case 3: /* Jukebox */
+						case 2: /* Jukebox */
 							JE_playSampleNum(S_SELECT);
 
 							JE_fadeBlack(10);
