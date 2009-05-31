@@ -27,7 +27,7 @@
 #ifdef TARGET_GP2X
 #	define vga_height 240
 #else
-#	define vga_height 240
+#	define vga_height 200
 #endif // TARGET_GP2X
 
 extern bool fullscreen_enabled;

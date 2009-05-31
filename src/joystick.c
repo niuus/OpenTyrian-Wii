@@ -340,19 +340,26 @@ void reset_joystick_assignments( int j )
 	if(j < 4) /* Joystick is Wiimote */
 	{
 		/* Configure Wiimote+Joystick assignments */
-		joystick[j].assignment[4][0].num = 0;
-		joystick[j].assignment[5][0].num = 8;
-		joystick[j].assignment[6][0].num = 7;
-		joystick[j].assignment[7][0].num = 1;
-		joystick[j].assignment[8][0].num = 5;
-		joystick[j].assignment[9][0].num = 4;
+		joystick[j].assignment[4][0].num = 0; // Fire/select
+		joystick[j].assignment[5][0].num = 8; // Change weapon/back/cancel
+		joystick[j].assignment[6][0].num = 7; // Left Sidekick
+		joystick[j].assignment[7][0].num = 1; // Right Sidekick
+		joystick[j].assignment[8][0].num = 5; // Select/level menu
+		joystick[j].assignment[9][0].num = 4; // Pause game
+		/* Configure Wiimote horizontal assignments */
+		/*joystick[j].assignment[4][0].num = 3; // Fire/select
+		joystick[j].assignment[5][0].num = 0; // Change weapon/back/cancel
+		joystick[j].assignment[6][0].num = 1; // Left Sidekick
+		joystick[j].assignment[7][0].num = 2; // Right Sidekick
+		joystick[j].assignment[8][0].num = 5; // Select/level menu
+		joystick[j].assignment[9][0].num = 4; // Pause game*/
 		/* Configure Classic Controller assignments */
-		joystick[j].assignment[4][1].num = 10;
-		joystick[j].assignment[5][1].num = 12;
-		joystick[j].assignment[6][1].num = 13;
-		joystick[j].assignment[7][1].num = 14;
-		joystick[j].assignment[8][1].num = 18;
-		joystick[j].assignment[9][1].num = 17;
+		joystick[j].assignment[4][1].num = 10; // Fire/select
+		joystick[j].assignment[5][1].num = 12; // Change weapon/back/cancel
+		joystick[j].assignment[6][1].num = 13; // Left Sidekick
+		joystick[j].assignment[7][1].num = 14; // Right Sidekick
+		joystick[j].assignment[8][1].num = 18; // Select/level menu
+		joystick[j].assignment[9][1].num = 17; // Pause game
 	}
 	else /* Joystick is GC Pad */
 	{

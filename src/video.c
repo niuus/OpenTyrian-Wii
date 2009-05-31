@@ -63,6 +63,7 @@ video_error:
 
 void reinit_video( void )
 {
+	FILE *video = fopen("sd:/tyrainvideo.txt", "wb+");
 #ifdef TARGET_GP2X
 	if (display_surface)
 		return;
@@ -72,8 +73,8 @@ void reinit_video( void )
 
 	scale = scalers[scaler].scale;
 
-	int w = vga_width * scale,
-	    h = vga_height * scale;
+	int w = 640,
+	    h = 480;
 	int bpp = 16;
 	int flags = SDL_SWSURFACE | SDL_HWPALETTE /*| (fullscreen_enabled ? SDL_FULLSCREEN : 0)*/;
 
@@ -89,11 +90,12 @@ void reinit_video( void )
 
 	if (display_surface == NULL)
 	{
-		printf("error: failed to initialize SDL video: %s\n", SDL_GetError());
+		fprintf(video, "error: failed to initialize SDL video: %s\n", SDL_GetError());
 		exit(1);
 	} else {
-		printf("initialized SDL video: %dx%dx%d\n", w, h, bpp);
+		fprintf(video, "initialized SDL video: %dx%dx%d\n", w, h, bpp);
 	}
+	fclose(video);
 
 #ifdef TARGET_GP2X
 	VGAScreen = VGAScreenSeg = display_surface;

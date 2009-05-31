@@ -1,75 +1,131 @@
-# BUILD SETTINGS ###################################
-DEBUG := 0
-# Valid values: WINDOWS, UNIX, GP2X
-PLATFORM := UNIX
+#---------------------------------------------------------------------------------
+# Clear the implicit built in rules
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
 
-# If building for the GP2X
-GP2X_CHAINPREFIX := /opt/open2x/gcc-4.1.1-glibc-2.3.6
-GP2X_CHAIN := $(GP2X_CHAINPREFIX)/bin/arm-open2x-linux-
+include $(DEVKITPPC)/wii_rules
 
-# END SETTINGS #####################################
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#---------------------------------------------------------------------------------
+TARGET		:=	opentyrianwii
+TARGETDIR   :=  executables
+BUILD		:=	build_wii
+SOURCES		:=	src # src/samplerate
+INCLUDES 	:=  include src # src/samplerate
 
-TARGET := tyrian
-OBJS := animlib.o backgrnd.o config.o destruct.o editship.o episodes.o error.o fm_synth.o fmopl.o fonthand.o helptext.o joystick.o jukebox.o keyboard.o lds_play.o loudness.o lvllib.o lvlmast.o mainint.o menus.o mtrand.o musmast.o network.o newshape.o nortsong.o nortvars.o opentyr.o palette.o params.o pcxload.o pcxmast.o picload.o scroller.o setup.o sndmast.o starlib.o tyrian2.o varz.o vga256d.o video.o video_scale.o xmas.o
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
 
-CFLAGS += --std=c99 -pedantic -Wall -Wstrict-prototypes -Wold-style-definition -Wmissing-declarations -Wno-unused -I$(CURDIR)/src/
-LDFLAGS += -lm
+CFLAGS  = 	-g -O2 -Wall $(MACHDEP) $(INCLUDE) \
+			-fomit-frame-pointer -Wno-strict-aliasing \
+			-DWORDS_BIGENDIAN -std=gnu99 -fgnu89-inline
+CXXFLAGS	= $(CFLAGS)
+LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 
-ifeq ($(DEBUG), 1)
-	DEBUG_FLAGS := -g3 -O0 -Werror
+#---------------------------------------------------------------------------------
+# any extra libraries we wish to link with
+#---------------------------------------------------------------------------------
+LIBS	:=	 -L/mingw/lib -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -ljpeg -lpng -lz -lSDL -lSDL_net -lfreetype \
+                -lfat -lwiikeyboard -lwiiuse -lbte -logc -lm
+
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:= $(CURDIR)
+
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
+
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+#---------------------------------------------------------------------------------
+# automatically build a list of object files for our project
+#---------------------------------------------------------------------------------
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
+
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+	export LD	:=	$(CC)
 else
-	DEBUG_FLAGS := -g -O2 -DNDEBUG -fno-strict-aliasing
+	export LD	:=	$(CXX)
 endif
 
-ifeq ($(PLATFORM), UNIX)
-	CFLAGS += -DTARGET_UNIX
-	SDL_CFLAGS := $(shell sdl-config --cflags)
-	SDL_LDFLAGS := $(shell sdl-config --libs) -lSDL_net
+export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
+					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o)
+
+#---------------------------------------------------------------------------------
+# build a list of include paths
+#---------------------------------------------------------------------------------
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD) \
+					-I$(LIBOGC_INC) -I$(LIBOGC_INC)/SDL
+
+#---------------------------------------------------------------------------------
+# build a list of library paths
+#---------------------------------------------------------------------------------
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+					-L$(LIBOGC_LIB)
+
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
+.PHONY: $(BUILD) clean
+
+#---------------------------------------------------------------------------------
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+#	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+#---------------------------------------------------------------------------------
+clean:
+	@echo clean ...
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+
+#---------------------------------------------------------------------------------
+run:
+	wiiload $(OUTPUT).dol
+
+#---------------------------------------------------------------------------------
+reload:
+	wiiload -r $(OUTPUT).dol
+
+#---------------------------------------------------------------------------------
+else
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+$(OUTPUT).dol: $(OUTPUT).elf
+$(OUTPUT).elf: $(OFILES)
+
+-include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
 endif
-ifeq ($(PLATFORM), WINDOWS)
-	SDL_CFLAGS := -I/mingw/include/SDL -D_GNU_SOURCE=1 -Dmain=SDL_main
-	SDL_LDFLAGS := -L/mingw/lib -lmingw32 -lSDLmain -lSDL -lSDL_net -mwindows
-endif
-ifeq ($(PLATFORM), GP2X)
-	CFLAGS += -DTARGET_GP2X -mcpu=arm920t -mtune=arm920t -msoft-float -ffast-math -funroll-loops
-	SDL_CFLAGS := `$(GP2X_CHAINPREFIX)/bin/sdl-config --cflags` -I$(GP2X_CHAINPREFIX)/include
-	SDL_LDFLAGS := `$(GP2X_CHAINPREFIX)/bin/sdl-config --libs` -L$(GP2X_CHAINPREFIX)/lib
-	
-	CC := $(GP2X_CHAIN)gcc
-	STRIP := $(GP2X_CHAIN)strip
-endif
-
-CFLAGS += $(DEBUG_FLAGS) $(SDL_CFLAGS)
-LDFLAGS += $(SDL_LDFLAGS)
-
-SVN_REV := $(shell svnversion src -n)
-ifneq ($(SVN_REV), )
-	ifeq ($(SVN_REV), exported)
-		SVN_REV := unknown
-	endif
-	
-	CFLAGS += -DSVN_REV=\"$(SVN_REV)\"
-endif
-
-####################################################
-
-all : $(TARGET)
-
-OBJS := $(foreach obj, $(OBJS), obj/$(obj))
-
-$(TARGET) : $(OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-ifneq ($(MAKECMDGOALS), clean)
--include $(OBJS:.o=.d)
-endif
-
-obj/%.d : obj/%.o
-obj/%.o : src/%.c
-	$(CC) -o $@ -MMD -c $(CFLAGS) $<
-
-.PHONY : clean
-
-clean :
-	rm -f obj/*.o obj/*.d
-	rm -f $(TARGET)
+#---------------------------------------------------------------------------------
