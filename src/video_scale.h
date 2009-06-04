@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -31,7 +31,7 @@ struct scaler_struct {
 };
 
 extern int scale, scaler;
-extern const struct scaler_struct scalers[9];
+extern const struct scaler_struct scalers[4];
 
 #endif /* VIDEO_SCALE_H */
 

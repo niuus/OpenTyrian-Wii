@@ -57,12 +57,6 @@ const struct scaler_struct scalers[] =
 	{ 1, nn_16,      nn_32,      "None" },
 	{ 2, nn_16,      nn_32,      "2x" },
 	{ 2, scale2x_16, scale2x_32, "Scale2x" },
-	{ 2, NULL,       hq2x_32,    "hq2x" },
-	//{ 3, nn_16,      nn_32,      "3x" },
-	//{ 3, scale3x_16, scale3x_32, "Scale3x" },
-	//{ 3, NULL,       hq3x_32,    "hq3x" },
-	//{ 4, nn_16,      nn_32,      "4x" },
-	//{ 4, NULL,       hq4x_32,    "hq4x" },
 };
 
 void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
@@ -104,40 +98,44 @@ void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 
 void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 {
-	Uint8 *src = src_surface->pixels;
-	Uint16 *dst = dst_surface->pixels;
+	/*Uint8 *src = src_surface->pixels;
+	Uint16 *dst = dst_surface->pixels + (10*dst_surface->pitch);
 	//int src_pitch = src_surface->pitch,
-	    //dst_pitch = dst_surface->pitch;
+	//    dst_pitch = dst_surface->pitch;
 	//const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
 
-	const int dst_height = dst_surface->h,
-	          dst_width = dst_surface->w;
+	const int src_height = src_surface->h,
+				src_width = src_surface->w,
+				dst_height = dst_surface->h,
+				dst_width = dst_surface->w;
 
 	for (int sy = 0; sy < dst_height; sy++)
 	{
 		for (int sx = 0; sx < dst_width; sx++)
 		{
-			const float map_x = sx/2,
-			            map_y = sy*.416;
-			const int trunc_x = map_x, trunc_y = map_y;
 			SDL_Color A, B, C, D, c;
+			const float map_x = sx*src_width/dst_width,
+						map_y = sy*src_height/dst_height;
+			const int trunc_x = map_x, trunc_y = map_y;
 
-			SDL_GetRGB(rgb_palette[src[trunc_y*320+trunc_x]], dst_surface->format, &A.r, &A.g, &A.b);
-			SDL_GetRGB(rgb_palette[src[trunc_y*320+(trunc_x+1)]], dst_surface->format, &B.r, &B.g, &B.b);
-			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*320+trunc_x]], dst_surface->format, &C.r, &C.g, &C.b);
-			SDL_GetRGB(rgb_palette[src[(trunc_y+1)*320+(trunc_x+1)]], dst_surface->format, &D.r, &D.g, &D.b);
+			SDL_GetRGB(rgb_palette[src[((trunc_y*src_width)+trunc_x)]], dst_surface->format, &A.r, &A.g, &A.b);
+			SDL_GetRGB(rgb_palette[src[(((trunc_y+1)*src_width)+trunc_x)]], dst_surface->format, &C.r, &C.g, &C.b);
+			SDL_GetRGB(rgb_palette[src[((trunc_y*src_width)+(trunc_x+1))]], dst_surface->format, &B.r, &B.g, &B.b);
+			SDL_GetRGB(rgb_palette[src[(((trunc_y+1)*src_width)+(trunc_x+1))]], dst_surface->format, &D.r, &D.g, &D.b);
 
 			const float x = map_x - trunc_x,
-			            y = map_y - trunc_y;
-			c.r = (int)((A.r*x + B.r*(1-x))*y + (C.r*x + D.r*(1-x))*(1-y));
-			c.g = (int)((A.g*x + B.g*(1-x))*y + (C.g*x + D.g*(1-x))*(1-y));
-			c.b = (int)((A.b*x + B.b*(1-x))*y + (C.b*x + D.b*(1-x))*(1-y));
+			            y = map_y - trunc_y,
+			            xdif = 1-x,
+			            ydif = 1-y;
+			c.r = (int)((A.r*x + B.r*xdif)*y + (C.r*x + D.r*xdif)*ydif);
+			c.g = (int)((A.g*x + B.g*xdif)*y + (C.g*x + D.g*xdif)*ydif);
+			c.b = (int)((A.b*x + B.b*xdif)*y + (C.b*x + D.b*xdif)*ydif);
 
-			dst[sy*640+sx] = SDL_MapRGB(dst_surface->format, c.r, c.g, c.b);
+			dst[sy*dst_width+sx] = SDL_MapRGB(dst_surface->format, c.r, c.g, c.b);
 		}
-	}
-	/*Uint8 *src = src_surface->pixels, *src_temp,
-	      *dst = dst_surface->pixels, *dst_temp;
+	}*/
+	Uint8 *src = src_surface->pixels, *src_temp,
+	      *dst = dst_surface->pixels + (16*scale*dst_surface->pitch), *dst_temp;
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
@@ -168,7 +166,7 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 			memcpy(dst, dst_temp, dst_pitch);
 			dst += dst_pitch;
 		}
-	}*/
+	}
 }
 
 
@@ -12083,7 +12081,7 @@ void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 {
 	Uint8 *src = src_surface->pixels, *src_temp,
-	      *dst = dst_surface->pixels, *dst_temp;
+	      *dst = dst_surface->pixels + (32*dst_surface->pitch), *dst_temp;
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
@@ -12096,16 +12094,9 @@ void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	Uint16 E0, E1, E2, E3, B, D, E, F, H;
 	for (int y = 0; y < height; y++)
 	{
-		if (y == 0)
-		{
-			src_temp = src;
-			dst_temp = dst + (30*dst_pitch);
-		}
-		else
-		{
-			src_temp = src;
-			dst_temp = dst;
-		}
+		src_temp = src;
+		dst_temp = dst;
+
 		prevline = (y > 0) ? -src_pitch : 0;
 		nextline = (y < height - 1) ? src_pitch : 0;
 
