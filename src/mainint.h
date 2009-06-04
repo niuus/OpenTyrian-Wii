@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -33,6 +33,8 @@ extern JE_word downgradeCost;
 extern JE_boolean performSave;
 extern JE_boolean jumpSection;
 extern JE_boolean useLastBank;
+
+extern char keyboard[37];
 
 extern bool pause_pressed, ingamemenu_pressed;
 

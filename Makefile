@@ -18,8 +18,8 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	opentyrianwii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
-SOURCES		:=	src # src/samplerate
-INCLUDES 	:=  include src # src/samplerate
+SOURCES		:=	src
+INCLUDES 	:=  include src
 
 #---------------------------------------------------------------------------------
 # options for code generation
