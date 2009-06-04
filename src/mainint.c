@@ -1654,7 +1654,7 @@ void JE_highScoreCheck( void )
 				quit = false;
 				cancel = false;
 				strcpy(stemp, "                              ");
-				temp = 0;
+				temp = 1;
 				fadein = true;
 
 				flash = 8 * 16 + 10;
@@ -1742,7 +1742,7 @@ void JE_highScoreCheck( void )
 						switch(lastkey_sym)
 						{
 						case SDLK_RIGHT:
-							if (temp < 14)
+							if (temp < 29)
 							{
 								temp--;
 								stemp[temp] = keyboard[virkey];
@@ -1807,7 +1807,7 @@ void JE_highScoreCheck( void )
 							break;
 						}
 					}
-					if (temp > 14)
+					if (temp > 29)
 						temp = 14;
 				}
 				while (!quit);
