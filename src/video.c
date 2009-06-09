@@ -27,6 +27,8 @@
 
 bool fullscreen_enabled;
 
+bool popkeyon;
+
 SDL_Surface *display_surface;
 
 SDL_Surface *VGAScreen, *VGAScreenSeg;
@@ -37,7 +39,7 @@ void init_video( void )
 {
 	if (SDL_WasInit(SDL_INIT_VIDEO))
 		return;
-
+	popkeyon = false;
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
 	{
 video_error:
@@ -144,8 +146,10 @@ void JE_showVGA( void )
 			break;
 	}
 #endif /* TARGET_GP2X */
-
-	SDL_Flip(display_surface);
+	if (!popkeyon)
+	{
+		SDL_Flip(display_surface);
+	}
 }
 
 // kate: tab-width 4; vim: set noet:

@@ -36,6 +36,7 @@ extern SDL_Surface *display_surface;
 extern SDL_Surface *VGAScreen, *VGAScreenSeg;
 extern SDL_Surface *game_screen;
 extern SDL_Surface *VGAScreen2;
+extern bool popkeyon;
 
 void init_video( void );
 void reinit_video( void );

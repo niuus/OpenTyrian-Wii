@@ -42,6 +42,7 @@
 #include "params.h"
 #include "pcxmast.h"
 #include "picload.h"
+#include "popkey.h"
 #include "setup.h"
 #include "shpmast.h"
 #include "sndmast.h"
@@ -68,7 +69,7 @@ const struct keyTable keys[] =
 		{ SDLK_MINUS, 		'-' },
 		{ SDLK_PERIOD, 		'.' },
 		{ SDLK_COMMA, 		',' },
-		{ SDLK_COLON, 		';' },
+		{ SDLK_COLON, 		':' },
 		{ SDLK_EXCLAIM, 	'!' },
 		{ SDLK_QUESTION, 	'?' },
 		{ SDLK_HASH, 		'#' },
@@ -85,6 +86,7 @@ const struct keyTable keys[] =
 		{ SDLK_SEMICOLON, 	';' },
 		{ SDLK_QUOTEDBL, 	'"' },
 		{ SDLK_QUOTE, 		'\''},
+		{ SDLK_WORLD_95,	'%'	},
 		{ SDLK_a, 			'A' },
 		{ SDLK_b, 			'B' },
 		{ SDLK_c, 			'C' },
@@ -1588,7 +1590,13 @@ void JE_highScoreCheck( void )
 	JE_byte a, b, c, q, z = 0;
 	JE_byte episodenum = pItems[P_EPISODE];
 	char buffer[256];
-	int virkey = 0;
+	int rowmax[4] =
+	{
+			 9,
+			 9,
+			 9,
+			 3
+	};
 
 	for (q = 1; q <= 2; q++)
 	{
@@ -1651,10 +1659,12 @@ void JE_highScoreCheck( void )
 				play_song(33);
 
 				/* Enter Thy name */
+				init_popkey();
+				popkeyon = true;
 				quit = false;
 				cancel = false;
 				strcpy(stemp, "                              ");
-				temp = 1;
+				temp = 0;
 				fadein = true;
 
 				flash = 8 * 16 + 10;
@@ -1678,15 +1688,15 @@ void JE_highScoreCheck( void )
 					if (twoPlayerMode)
 					{
 						sprintf(buffer, "%s %s", miscText[48 + z-1], miscText[54-1]);
-						JE_textShade(60, 55, buffer, 11, 4, FULL_SHADE);
+						JE_textShade(100, 65, buffer, 11, 4, FULL_SHADE);
 					}
 					else
 					{
-						JE_textShade(60, 55, miscText[54-1], 11, 4, FULL_SHADE);
+						JE_textShade(100, 65, miscText[54-1], 11, 4, FULL_SHADE);
 					}
 
 					sprintf(buffer, "%s %d", miscText[38-1], tempscore);
-					JE_textShade(70, 70, buffer, 11, 4, FULL_SHADE);
+					JE_textShade(70, 55, buffer, 11, 4, FULL_SHADE);
 
 					do
 					{
@@ -1695,10 +1705,10 @@ void JE_highScoreCheck( void )
 
 						strncpy(tempstr, stemp, temp);
 						tempstr[temp] = '\0';
-						JE_outText(65, 89, tempstr, 8, 3);
-						tempW = 65 + JE_textWidth(tempstr, TINY_FONT);
-						JE_barShade(tempW + 2, 90, tempW + 6, 95);
-						JE_bar(tempW + 1, 89, tempW + 5, 94, flash);
+						JE_outText(66, 75, tempstr, 8, 3);
+						tempW = 66 + JE_textWidth(tempstr, TINY_FONT);
+						JE_barShade(tempW + 2, 76, tempW + 6, 81);
+						JE_bar(tempW + 1, 75, tempW + 5, 80, flash);
 
 						for (int i = 0; i < 14; i++)
 						{
@@ -1711,6 +1721,7 @@ void JE_highScoreCheck( void )
 								JE_fadeColor (15);
 								fadein = false;
 							}
+							popkey(126, 200);
 							JE_mouseReplace();
 
 							push_joysticks_as_keyboard();
@@ -1725,7 +1736,7 @@ void JE_highScoreCheck( void )
 					if (!playing)
 						play_song(31);
 
-					if (mouseButton > 0)
+					/*if (mouseButton > 0)
 					{
 						if (mouseX > 56 && mouseX < 142 && mouseY > 123 && mouseY < 149)
 						{
@@ -1736,54 +1747,169 @@ void JE_highScoreCheck( void )
 							quit = true;
 							cancel = true;
 						}
-					}
-					else if (newkey)
+					}*/
+					if (newkey)
 					{
 						switch(lastkey_sym)
 						{
 						case SDLK_RIGHT:
-							if (temp < 29)
+							lastrow = row;
+							if (board == 1 && row == 1 && (key == 8))
 							{
-								temp--;
-								stemp[temp] = keyboard[virkey];
-								temp += 2;
+								break;
 							}
+							else if (row == 2 && key == 8)
+							{
+								key = 1;
+							}
+							else if (row == 3 && key == 3)
+							{
+								key = 0;
+							}
+							else if (key < rowmax[row])
+								key++;
+							else
+								key = 0;
 							break;
 						case SDLK_UP:
-							if (virkey == 36)
+							lastrow = row;
+							if (row == 3 && (key == 0 || key == 9))
 							{
-								virkey = 0;
+								row = 1;
+								lastrow = 2;
+							}
+							else if (row > 0)
+							{
+								row--;
 							}
 							else
 							{
-								virkey++;
+								row = 3;
 							}
-							temp--;
-							stemp[temp] = keyboard[virkey];
-							temp++;
+							if (row == 2 && lastrow == 3)
+							{
+								switch (key)
+								{
+								case 0:
+									break;
+								case 1:
+									key = 2;
+									break;
+								case 2:
+									key = 6;
+									break;
+								case 3:
+									key = 7;
+									break;
+								}
+							}
+							else if (row == 3 && lastrow == 0)
+							{
+								switch (key)
+								{
+								case 0:
+								case 1:
+									key = 0;
+									break;
+								case 2:
+								case 3:
+								case 4:
+								case 5:
+									key = 1;
+									break;
+								case 6:
+									key = 2;
+									break;
+								case 7:
+								case 8:
+								case 9:
+									key = 3;
+									break;
+								}
+							}
 							break;
 						case SDLK_DOWN:
-							if (virkey == 0)
+							lastrow = row;
+							if (row == 1 && (key == 0 || key == 9))
 							{
-								virkey = 36;
+								row = 3;
+								lastrow = 2;
+							}
+							else if (row < 3)
+							{
+								row++;
 							}
 							else
 							{
-								virkey--;
+								row = 0;
 							}
-							temp--;
-							stemp[temp] = keyboard[virkey];
-							temp++;
+							if (row == 3 && lastrow == 2)
+							{
+								switch (key)
+								{
+								case 0:
+								case 1:
+									key = 0;
+									break;
+								case 2:
+								case 3:
+								case 4:
+								case 5:
+									key = 1;
+									break;
+								case 6:
+									key = 2;
+									break;
+								case 7:
+								case 8:
+								case 9:
+									key = 3;
+									break;
+								}
+							}
+							else if (row == 0 && lastrow == 3)
+							{
+								switch (key)
+								{
+								case 0:
+									break;
+								case 1:
+									key = 2;
+									break;
+								case 2:
+									key = 6;
+									break;
+								case 3:
+									key = 7;
+									break;
+								}
+							}
 							break;
 						case SDLK_LEFT:
+							lastrow = row;
+							if (board == 1 && row == 1 && (key == 8 || key == 9))
+							{
+								key = 7;
+							}
+							else if (row == 2 && key == 1)
+							{
+								key = 8;
+							}
+							else if (row == 3 && key == 0)
+							{
+								key = 3;
+							}
+							else if (key > 0)
+								key--;
+							else key = 9;
+							break;
 						case SDLK_BACKSPACE:
 						case SDLK_DELETE:
-							if (temp > 1)
+							if (temp > 0)
 							{
-								temp -= 2;
-								stemp[temp] = '\0';
+								temp--;
+								stemp[temp] = ' ';
 								JE_playSampleNum(S_CURSOR);
-								temp++;
 							}
 							break;
 						case SDLK_ESCAPE:
@@ -1791,26 +1917,77 @@ void JE_highScoreCheck( void )
 							cancel = true;
 							break;
 						case SDLK_RETURN:
-							quit = true;
-							break;
+							if(row == 3)
+							{
+								if (key == 0)
+								{
+									board ^= 1;
+									break;
+								}
+								else if (key == 1)
+								{
+									stemp[temp] = ' ';
+									temp++;
+									break;
+								}
+								else if (key == 2)
+								{
+									quit = true;
+									break;
+								}
+								else if (key == 3)
+								{
+									quit = true;
+									JE_playSampleNum(S_SPRING);
+									break;
+								}
+								break;
+							}
+							else if (row == 1)
+							{
+								if (board == 0 && key == 9)
+								{
+									if (temp > 0)
+									{
+										temp--;
+										stemp[temp] = ' ';
+										JE_playSampleNum(S_CURSOR);
+									}
+									break;
+								}
+								else if (board == 1 && (key == 8 || key == 9))
+								{
+									if (temp > 0)
+									{
+										temp--;
+										stemp[temp] = ' ';
+										JE_playSampleNum(S_CURSOR);
+									}
+									break;
+								}
+							}
+							getkey();
+							JE_playSampleNum(S_CURSOR);
 						default:
 							for (int i = 0; i < keyTableSize; i++)
 							{
 								if (keys[i].sym == lastkey_sym)
 								{
-									temp--;
 									JE_playSampleNum(S_CURSOR);
 									stemp[temp] = keys[i].name;
-									temp += 2;
+									temp++;
 								}
 							}
 							break;
 						}
 					}
 					if (temp > 29)
-						temp = 14;
+						temp = 29;
 				}
 				while (!quit);
+
+				popkeyon = false;
+				close_popkey();
 
 				if (!cancel)
 				{
@@ -2527,8 +2704,13 @@ void JE_operation( JE_byte slot )
 	JE_boolean quit;
 	char stemp[21];
 	char tempStr[51];
-	char new;
-	int virkey = 0;
+	int rowmax[4] =
+	{
+			 9,
+			 9,
+			 9,
+			 3
+	};
 
 	if (!performSave)
 	{
@@ -2547,11 +2729,9 @@ void JE_operation( JE_byte slot )
 		memcpy(stemp, saveFiles[slot-1].name, strlen(saveFiles[slot-1].name));
 		temp = strlen(stemp);
 		while (stemp[temp-1] == ' ' && --temp)
-			{
-				stemp[temp] = '\0';
-			};
-
-		temp++;
+		{
+			stemp[temp] = '\0';
+		};
 
 		flash = 8 * 16 + 10;
 
@@ -2559,30 +2739,32 @@ void JE_operation( JE_byte slot )
 
 		JE_barShade(65, 55, 255, 155);
 
+		init_popkey();
+
 		do
 		{
 			service_SDL_events(true);
 
+			popkeyon = false;
+
 			blit_shape(VGAScreenSeg, 50, 50, OPTION_SHAPES, 35);  // message box
 
-			JE_textShade(60, 55, miscText[1-1], 11, 4, DARKEN);
-			JE_textShade(70, 70, levelName, 11, 4, DARKEN);
+			popkeyon = true;
+
+			JE_textShade(70, 55, miscText[1-1], 11, 4, DARKEN);
+			JE_textShade(175, 55, levelName, 11, 4, DARKEN);
 
 			do
 			{
-				//temp = strlen(stemp);
-				//while (stemp[temp-1] == ' ' && --temp);
-
-				//temp++;
 				flash = (flash == 8 * 16 + 10) ? 8 * 16 + 2 : 8 * 16 + 10;
 				temp3 = (temp3 == 6) ? 2 : 6;
 
 				strcpy(tempStr, miscText[2-1]);
 				strncat(tempStr, stemp, temp);
-				JE_outText(65, 89, tempStr, 8, 3);
-				tempW = 65 + JE_textWidth(tempStr, TINY_FONT);
+				JE_outText(75, 65, tempStr, 8, 3);
+				tempW = 75 + JE_textWidth(tempStr, TINY_FONT);
 				JE_barShade(tempW + 2, 90, tempW + 6, 95);
-				JE_bar(tempW + 1, 89, tempW + 5, 94, flash);
+				JE_bar(tempW + 1, 65, tempW + 5, 70, flash);
 
 				for (int i = 0; i < 14; i++)
 				{
@@ -2590,6 +2772,7 @@ void JE_operation( JE_byte slot )
 
 					JE_mouseStart();
 					JE_showVGA();
+					popkey(126, 200);
 					JE_mouseReplace();
 
 					push_joysticks_as_keyboard();
@@ -2598,11 +2781,10 @@ void JE_operation( JE_byte slot )
 					if (newkey || newmouse)
 						break;
 				}
-
 			}
 			while (!newkey && !newmouse);
 
-			if (mouseButton > 0)
+			/*if (mouseButton > 0)
 			{
 				if (mouseX > 56 && mouseX < 142 && mouseY > 123 && mouseY < 149)
 				{
@@ -2615,54 +2797,169 @@ void JE_operation( JE_byte slot )
 					quit = true;
 					JE_playSampleNum(S_SPRING);
 				}
-			}
-			else if (newkey)
+			}*/
+			if (newkey)
 			{
 				switch(lastkey_sym)
 				{
 				case SDLK_RIGHT:
-					if (temp < 14)
+					lastrow = row;
+					if (board == 1 && row == 1 && (key == 8))
 					{
-						temp--;
-						stemp[temp] = keyboard[virkey];
-						temp += 2;
+						break;
 					}
+					else if (row == 2 && key == 8)
+					{
+						key = 1;
+					}
+					else if (row == 3 && key == 3)
+					{
+						key = 0;
+					}
+					else if (key < rowmax[row])
+						key++;
+					else
+						key = 0;
 					break;
 				case SDLK_UP:
-					if (virkey == 36)
+					lastrow = row;
+					if (row == 3 && (key == 0 || key == 9))
 					{
-						virkey = 0;
+						row = 1;
+						lastrow = 2;
+					}
+					else if (row > 0)
+					{
+						row--;
 					}
 					else
 					{
-						virkey++;
+						row = 3;
 					}
-					temp--;
-					stemp[temp] = keyboard[virkey];
-					temp++;
+					if (row == 2 && lastrow == 3)
+					{
+						switch (key)
+						{
+						case 0:
+							break;
+						case 1:
+							key = 2;
+							break;
+						case 2:
+							key = 6;
+							break;
+						case 3:
+							key = 7;
+							break;
+						}
+					}
+					else if (row == 3 && lastrow == 0)
+					{
+						switch (key)
+						{
+						case 0:
+						case 1:
+							key = 0;
+							break;
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+							key = 1;
+							break;
+						case 6:
+							key = 2;
+							break;
+						case 7:
+						case 8:
+						case 9:
+							key = 3;
+							break;
+						}
+					}
 					break;
 				case SDLK_DOWN:
-					if (virkey == 0)
+					lastrow = row;
+					if (row == 1 && (key == 0 || key == 9))
 					{
-						virkey = 36;
+						row = 3;
+						lastrow = 2;
+					}
+					else if (row < 3)
+					{
+						row++;
 					}
 					else
 					{
-						virkey--;
+						row = 0;
 					}
-					temp--;
-					stemp[temp] = keyboard[virkey];
-					temp++;
+					if (row == 3 && lastrow == 2)
+					{
+						switch (key)
+						{
+						case 0:
+						case 1:
+							key = 0;
+							break;
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+							key = 1;
+							break;
+						case 6:
+							key = 2;
+							break;
+						case 7:
+						case 8:
+						case 9:
+							key = 3;
+							break;
+						}
+					}
+					else if (row == 0 && lastrow == 3)
+					{
+						switch (key)
+						{
+						case 0:
+							break;
+						case 1:
+							key = 2;
+							break;
+						case 2:
+							key = 6;
+							break;
+						case 3:
+							key = 7;
+							break;
+						}
+					}
 					break;
 				case SDLK_LEFT:
+					lastrow = row;
+					if (board == 1 && row == 1 && (key == 8 || key == 9))
+					{
+						key = 7;
+					}
+					else if (row == 2 && key == 1)
+					{
+						key = 8;
+					}
+					else if (row == 3 && key == 0)
+					{
+						key = 3;
+					}
+					else if (key > 0)
+						key--;
+					else key = 9;
+					break;
 				case SDLK_BACKSPACE:
 				case SDLK_DELETE:
-					if (temp > 1)
+					if (temp > 0)
 					{
-						temp -= 2;
-						stemp[temp] = '\0';
+						temp--;
+						stemp[temp] = ' ';
 						JE_playSampleNum(S_CURSOR);
-						temp++;
 					}
 					break;
 				case SDLK_ESCAPE:
@@ -2670,20 +2967,68 @@ void JE_operation( JE_byte slot )
 					JE_playSampleNum(S_SPRING);
 					break;
 				case SDLK_RETURN:
-					quit = true;
-					JE_saveGame(slot, stemp);
-					drawGameSaved = true;
-					JE_playSampleNum(S_SELECT);
-					break;
+					if(row == 3)
+					{
+						if (key == 0)
+						{
+							board ^= 1;
+							break;
+						}
+						else if (key == 1)
+						{
+							stemp[temp] = ' ';
+							temp++;
+							break;
+						}
+						else if (key == 2)
+						{
+							quit = true;
+							JE_saveGame(slot, stemp);
+							drawGameSaved = true;
+							JE_playSampleNum(S_SELECT);
+							break;
+						}
+						else if (key == 3)
+						{
+							quit = true;
+							JE_playSampleNum(S_SPRING);
+							break;
+						}
+						break;
+					}
+					else if (row == 1)
+					{
+						if (board == 0 && key == 9)
+						{
+							if (temp > 0)
+							{
+								temp--;
+								stemp[temp] = ' ';
+								JE_playSampleNum(S_CURSOR);
+							}
+							break;
+						}
+						else if (board == 1 && (key == 8 || key == 9))
+						{
+							if (temp > 0)
+							{
+								temp--;
+								stemp[temp] = ' ';
+								JE_playSampleNum(S_CURSOR);
+							}
+							break;
+						}
+					}
+					getkey();
+					JE_playSampleNum(S_CURSOR);
 				default:
 					for (int i = 0; i < keyTableSize; i++)
 					{
 						if (keys[i].sym == lastkey_sym)
 						{
-							temp--;
 							JE_playSampleNum(S_CURSOR);
 							stemp[temp] = keys[i].name;
-							temp += 2;
+							temp++;
 						}
 					}
 					break;
@@ -2694,7 +3039,7 @@ void JE_operation( JE_byte slot )
 		}
 		while (!quit);
 	}
-
+	close_popkey();
 	wait_noinput(false, true, false);
 }
 
