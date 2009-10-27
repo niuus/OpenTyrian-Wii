@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -16,56 +16,49 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include "file.h"
 #include "opentyr.h"
-#include "picload.h"
-
-#include "error.h"
-#include "nortvars.h"
 #include "palette.h"
 #include "pcxmast.h"
+#include "picload.h"
 #include "video.h"
 
 #include <string.h>
 
-
-JE_boolean notyetloadedpcx;
-JE_boolean notYetLoadedPCX = true;
-
 void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 {
-	JE_word x;
-	JE_byte *buf = malloc(64000);
-	FILE *PCXfile;
-
-	int i;
-	JE_byte *p;
-	Uint8 *s; /* screen pointer, 8-bit specific */
-
-	s = (Uint8 *)VGAScreen->pixels;
-
 	PCXnumber--;
-
-	JE_resetFile(&PCXfile, "tyrian.pic");
-
-	/*Same as old AnalyzePic*/
-	if (notYetLoadedPCX)
+	
+	FILE *f = dir_fopen_die(data_dir(), "tyrian.pic", "rb");
+	
+	static bool first = true;
+	if (first)
 	{
-		notYetLoadedPCX = false;
-		efread(&x, sizeof(JE_word), 1, PCXfile);
-		for (x = 0; x < PCX_NUM; x++)
+		first = false;
+		
+		Uint16 temp;
+		efread(&temp, sizeof(Uint16), 1, f);
+		for (int i = 0; i < PCX_NUM; i++)
 		{
-			efread(&pcxpos[x], sizeof(JE_longint), 1, PCXfile);
+			efread(&pcxpos[i], sizeof(JE_longint), 1, f);
 		}
-		fseek(PCXfile, 0, SEEK_END);
-		pcxpos[PCX_NUM] = ftell(PCXfile);
+		
+		pcxpos[PCX_NUM] = ftell_eof(f);
 	}
-
-	fseek(PCXfile, pcxpos[PCXnumber], SEEK_SET);
-	efread(buf, sizeof(JE_byte), pcxpos[PCXnumber + 1] - pcxpos[PCXnumber], PCXfile);
-	fclose(PCXfile);
-
-	p = (JE_byte *)buf;
-	for (i = 0; i < 320 * 200; )
+	
+	unsigned int size = pcxpos[PCXnumber + 1] - pcxpos[PCXnumber];
+	Uint8 *buffer = malloc(size);
+	
+	fseek(f, pcxpos[PCXnumber], SEEK_SET);
+	efread(buffer, sizeof(Uint8), size, f);
+	fclose(f);
+	
+	Uint8 *p = buffer;
+	Uint8 *s; /* screen pointer, 8-bit specific */
+	
+	s = (Uint8 *)VGAScreen->pixels;
+	
+	for (int i = 0; i < 320 * 200; )
 	{
 		if ((*p & 0xc0) == 0xc0)
 		{
@@ -82,13 +75,13 @@ void JE_loadPic( JE_byte PCXnumber, JE_boolean storepal )
 			s += VGAScreen->pitch - 320;
 		}
 	}
-
+	
+	free(buffer);
+	
 	memcpy(colors, palettes[pcxpal[PCXnumber]], sizeof(colors));
-	free(buf);
+	
 	if (storepal)
-	{
-		JE_updateColorsFast(colors);
-	}
+		set_palette(colors, 0, 255);
 }
 
 // kate: tab-width 4; vim: set noet:
