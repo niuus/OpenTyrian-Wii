@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -19,12 +19,10 @@
 #ifndef LOUDNESS_H
 #define LOUDNESS_H
 
+#include "fmopl.h"
 #include "opentyr.h"
 
-#include "fmopl.h"
-
 #include "SDL.h"
-
 
 #define SFX_CHANNELS 8
 

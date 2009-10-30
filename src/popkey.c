@@ -1,5 +1,4 @@
 #include "opentyr.h"
-#include "newshape.h"
 
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_rotozoom.h>
@@ -8,7 +7,7 @@
 #include "config.h"
 #include "editship.h"
 #include "episodes.h"
-#include "error.h"
+#include "file.h"
 #include "fonthand.h"
 #include "helptext.h"
 #include "helptext.h"
@@ -19,7 +18,6 @@
 #include "menus.h"
 #include "mtrand.h"
 #include "network.h"
-#include "newshape.h"
 #include "nortsong.h"
 #include "nortvars.h"
 #include "palette.h"
@@ -30,6 +28,7 @@
 #include "setup.h"
 #include "shpmast.h"
 #include "sndmast.h"
+#include "sprite.h"
 #include "varz.h"
 #include "vga256d.h"
 #include "video.h"

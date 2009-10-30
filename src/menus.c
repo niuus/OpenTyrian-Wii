@@ -16,18 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
-#include "menus.h"
-
 #include "config.h"
 #include "episodes.h"
 #include "fonthand.h"
 #include "keyboard.h"
-#include "newshape.h"
+#include "menus.h"
 #include "nortsong.h"
+#include "opentyr.h"
 #include "palette.h"
 #include "picload.h"
 #include "setup.h"
+#include "sprite.h"
 #include "video.h"
 
 char episode_name[6][31], difficulty_name[7][21], gameplay_name[5][26];
@@ -51,7 +50,7 @@ bool select_gameplay( void )
 		
 		if (fade_in)
 		{
-			JE_fadeColor(10);
+			fade_palette(colors, 10, 0, 255);
 			fade_in = false;
 		}
 		
@@ -84,11 +83,11 @@ bool select_gameplay( void )
 				{
 					JE_playSampleNum(S_SPRING);
 					/* TODO: NETWORK */
-					printf("error: networking via menu not implemented\n");
+					fprintf(stderr, "error: networking via menu not implemented\n");
 					break;
 				}
 				JE_playSampleNum(S_SELECT);
-				JE_fadeBlack(10);
+				fade_black(10);
 				
 				onePlayerAction = (gameplay == 2);
 				twoPlayerMode = (gameplay == 3);
@@ -97,7 +96,7 @@ bool select_gameplay( void )
 			case SDLK_ESCAPE:
 				JE_playSampleNum(S_SPRING);
 				/* fading handled elsewhere
-				JE_fadeBlack(10); */
+				fade_black(10); */
 				
 				return false;
 				
@@ -129,7 +128,7 @@ bool select_episode( void )
 		
 		if (fade_in)
 		{
-			JE_fadeColor(10);
+			fade_palette(colors, 10, 0, 255);
 			fade_in = false;
 		}
 		
@@ -164,7 +163,7 @@ bool select_episode( void )
 					break;
 				}
 				JE_playSampleNum(S_SELECT);
-				JE_fadeBlack(10);
+				fade_black(10);
 				
 				JE_initEpisode(episode);
 				pItems[P_EPISODE] = episodeNum;
@@ -173,7 +172,7 @@ bool select_episode( void )
 			case SDLK_ESCAPE:
 				JE_playSampleNum(S_SPRING);
 				/* fading handled elsewhere
-				JE_fadeBlack(10); */
+				fade_black(10); */
 				
 				return false;
 				
@@ -205,7 +204,7 @@ bool select_difficulty( void )
 		
 		if (fade_in)
 		{
-			JE_fadeColor(10);
+			fade_palette(colors, 10, 0, 255);
 			fade_in = false;
 		}
 		
@@ -247,7 +246,7 @@ bool select_difficulty( void )
 			case SDLK_RETURN:
 				JE_playSampleNum(S_SELECT);
 				/* fading handled elsewhere
-				JE_fadeBlack(10); */
+				fade_black(10); */
 				
 				if (difficultyLevel == 6)
 				{
@@ -260,7 +259,7 @@ bool select_difficulty( void )
 			case SDLK_ESCAPE:
 				JE_playSampleNum(S_SPRING);
 				/* fading handled elsewhere
-				JE_fadeBlack(10); */
+				fade_black(10); */
 				
 				return false;
 				

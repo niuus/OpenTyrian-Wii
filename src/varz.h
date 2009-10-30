@@ -19,9 +19,9 @@
 #ifndef VARZ_H
 #define VARZ_H
 
-#include "opentyr.h"
-
 #include "episodes.h"
+#include "opentyr.h"
+#include "sprite.h"
 
 #include <stdbool.h>
 
@@ -68,7 +68,7 @@ struct JE_SingleEnemyType
 	JE_byte     aniactive;
 	JE_byte     animax;
 	JE_byte     aniwhenfire;
-	void       *shapeseg;
+	Sprite2_array *sprite2s;
 	JE_shortint exrev, eyrev;
 	JE_integer  exccadd, eyccadd;
 	JE_byte     exccwmax, eyccwmax;
@@ -190,7 +190,7 @@ typedef struct {
 	JE_byte shotTrail;
 	JE_word shotGr, shotAni, shotAniMax;
 	Uint8 shotDmg;
-	JE_byte shotBlastFilter, chainReaction, playerNumber, aimAtEnemy, aimDelay, aimDelayMax, fill[1];
+	JE_byte shotBlastFilter, chainReaction, playerNumber, aimAtEnemy, aimDelay, aimDelayMax;
 } PlayerShotDataType;
 
 typedef struct {
@@ -329,20 +329,15 @@ extern JE_byte shadowyDist;
 extern JE_byte purpleBallsRemaining[2];
 extern JE_boolean playerAlive, playerAliveB;
 extern JE_byte playerStillExploding, playerStillExploding2;
-extern JE_byte *eShapes1, *eShapes2, *eShapes3, *eShapes4, *eShapes5, *eShapes6;
-extern JE_byte *shapesC1, *shapes6, *shapes9, *shapesW2;
-extern JE_word eShapes1Size, eShapes2Size, eShapes3Size, eShapes4Size, eShapes5Size, eShapes6Size, shapesC1Size, shapes6Size, shapes9Size, shapesW2Size;
 extern JE_byte sAni;
 extern JE_integer sAniX, sAniY, sAniXNeg, sAniYNeg;
 extern JE_integer baseSpeedOld, baseSpeedOld2, baseSpeed, baseSpeedB, baseSpeed2, baseSpeed2B, baseSpeedKeyH, baseSpeedKeyV;
 extern JE_boolean keyMoveWait;
-extern JE_boolean makeMouseDelay;
 extern JE_word playerInvulnerable1, playerInvulnerable2;
 extern JE_integer lastPXShotMove, lastPYShotMove;
-extern JE_integer PXB, PYB, lastPXB, lastPYB, lastPX2B, lastPY2B, PXChangeB, PYChangeB, lastTurnB, lastTurn2B, tempLastTurn2B;
+extern JE_integer PXB, PYB, lastPX2B, lastPY2B, PXChangeB, PYChangeB, lastTurnB, lastTurn2B;
 extern JE_byte stopWaitXB, stopWaitYB;
-extern JE_word mouseXB, mouseYB;
-extern JE_integer PX, PY, lastPX, lastPY, lastPX2, lastPY2, PXChange, PYChange, lastTurn, lastTurn2, tempLastTurn2;
+extern JE_integer PX, PY, lastPX2, lastPY2, PXChange, PYChange, lastTurn, lastTurn2;
 extern JE_byte stopWaitX, stopWaitY;
 extern JE_integer PYHist[3], PYHistB[3];
 extern JE_word option1Draw, option2Draw, option1Item, option2Item;
@@ -361,7 +356,6 @@ extern JE_word neat;
 extern rep_explosion_type rep_explosions[MAX_REPEATING_EXPLOSIONS];
 extern superpixel_type superpixels[MAX_SUPERPIXELS];
 extern unsigned int last_superpixel;
-extern JE_word megaDataOfs, megaData2Ofs, megaData3Ofs;
 extern JE_word avail;
 extern JE_word tempCount;
 extern JE_integer tempI, tempI2, tempI3, tempI4, tempI5;
@@ -374,7 +368,7 @@ extern JE_word tempW, tempW2, tempW3, tempW4, tempW5, tempOfs;
 extern JE_boolean doNotSaveBackup;
 extern JE_boolean tempSpecial;
 extern JE_word x, y;
-extern JE_integer a, b, c, d, z;
+extern JE_integer a, b, c, d;
 extern JE_byte playerNum;
 extern JE_byte **BKwrap1to, **BKwrap2to, **BKwrap3to, **BKwrap1, **BKwrap2, **BKwrap3;
 extern JE_byte min, max;
@@ -383,10 +377,10 @@ extern JE_word specialWeaponWpn;
 extern JE_boolean linkToPlayer;
 extern JE_integer baseArmor, baseArmor2;
 extern JE_word shipGr, shipGr2;
-extern JE_byte *shipGrPtr, *shipGr2ptr;
+extern Sprite2_array *shipGrPtr, *shipGr2ptr;
 
 void JE_getShipInfo( void );
-JE_word JE_SGr( JE_word ship, JE_byte **ptr );
+JE_word JE_SGr( JE_word ship, Sprite2_array **ptr );
 
 void JE_calcPurpleBall( JE_byte playernum );
 void JE_drawOptions( void );
@@ -395,12 +389,12 @@ void JE_tyrianHalt( JE_byte code ); /* This ends the game */
 void JE_initPlayerShot( JE_word portnum, JE_byte temp, JE_word px, JE_word py,
                         JE_word mousex, JE_word mousey,
                         JE_word wpnum, JE_byte playernum );
-void JE_specialComplete( JE_byte playernum, JE_integer *armor, JE_shortint *shield, JE_byte specialType );
+void JE_specialComplete( JE_byte playernum, JE_integer *armor, JE_byte specialType );
 void JE_doSpecialShot( JE_byte playernum, JE_integer *armor, JE_shortint *shield );
 
 void JE_powerUp( JE_byte port );
 void JE_wipeShieldArmorBars( void );
-JE_byte JE_playerDamage( JE_word tempX, JE_word tempY, JE_byte temp,
+JE_byte JE_playerDamage( JE_byte temp,
                          JE_integer *PX, JE_integer *PY,
                          JE_boolean *playerAlive,
                          JE_byte *playerStillExploding,

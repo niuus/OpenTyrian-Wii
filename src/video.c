@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
 #include "keyboard.h"
+#include "opentyr.h"
 #include "palette.h"
 #include "video.h"
 #include "video_scale.h"
@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-bool fullscreen_enabled;
+bool fullscreen_enabled = false;
 
 bool popkeyon;
 
@@ -35,6 +35,8 @@ SDL_Surface *VGAScreen, *VGAScreenSeg;
 SDL_Surface *game_screen;
 SDL_Surface *VGAScreen2;
 
+SDL_Surface *tempScreenSeg = NULL;
+
 void init_video( void )
 {
 	if (SDL_WasInit(SDL_INIT_VIDEO))
@@ -42,37 +44,35 @@ void init_video( void )
 	popkeyon = false;
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
 	{
-video_error:
-		printf("error: failed to initialize SDL video: %s\n", SDL_GetError());
+		fprintf(stderr, "error: failed to initialize SDL video: %s\n", SDL_GetError());
 		exit(1);
 	}
-
+	
 	SDL_WM_SetCaption("OpenTyrian (ctrl-backspace to kill)", NULL);
-
+	
 #ifndef TARGET_GP2X
 	VGAScreen = VGAScreenSeg = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
 #endif /* TARGET_GP2X */
-
+	
 	reinit_video();
-
+	
 	SDL_FillRect(display_surface, NULL, 0x0);
-
+	
 	VGAScreen2 = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
 	game_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
-
+	
 	SDL_LockSurface(VGAScreen);
 }
 
 void reinit_video( void )
 {
-	FILE *video = fopen("sd:/tyrainvideo.txt", "wb+");
 #ifdef TARGET_GP2X
 	if (display_surface)
 		return;
-
+	
 	scaler = 0;
 #endif /* TARGET_GP2X */
-
+	
 	scale = scalers[scaler].scale;
 
 	int w = 640,
@@ -87,37 +87,36 @@ void reinit_video( void )
 #else /* TARGET_GP2X */
 	bpp = 8;
 #endif /* TARGET_GP2X */
-
+	
 	display_surface = SDL_SetVideoMode(w, h, bpp, flags);
-
+	
 	if (display_surface == NULL)
 	{
-		fprintf(video, "error: failed to initialize SDL video: %s\n", SDL_GetError());
+		fprintf(stderr, "error: failed to initialize SDL video: %s\n", SDL_GetError());
 		exit(1);
 	} else {
-		fprintf(video, "initialized SDL video: %dx%dx%d\n", w, h, bpp);
+		printf("initialized SDL video: %dx%dx%d\n", w, h, bpp);
 	}
-	fclose(video);
-
+	
 #ifdef TARGET_GP2X
 	VGAScreen = VGAScreenSeg = display_surface;
 #endif /* TARGET_GP2X */
-
+	
 	input_grab();
-
+	
 	JE_showVGA();
 }
 
 void deinit_video( void )
 {
 	SDL_UnlockSurface(VGAScreen);
-
+	
 #ifndef TARGET_GP2X
 	SDL_FreeSurface(VGAScreenSeg);
 #endif /* TARGET_GP2X */
 	SDL_FreeSurface(VGAScreen2);
 	SDL_FreeSurface(game_screen);
-
+	
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 

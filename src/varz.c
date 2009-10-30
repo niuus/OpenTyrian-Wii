@@ -16,9 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
-#include "varz.h"
-
 #include "config.h"
 #include "editship.h"
 #include "episodes.h"
@@ -26,13 +23,16 @@
 #include "lds_play.h"
 #include "loudness.h"
 #include "mainint.h"
+#include "mouse.h"
 #include "mtrand.h"
 #include "network.h"
-#include "newshape.h"
 #include "nortsong.h"
+#include "nortvars.h"
+#include "opentyr.h"
+#include "sprite.h"
+#include "varz.h"
 #include "vga256d.h"
 #include "video.h"
-
 
 JE_integer tempDat, tempDat2, tempDat3;
 JE_boolean tempb2;
@@ -311,47 +311,22 @@ JE_byte purpleBallsRemaining[2]; /* [1..2] */
 JE_boolean playerAlive, playerAliveB;
 JE_byte playerStillExploding, playerStillExploding2;
 
-JE_byte *eShapes1 = NULL,
-        *eShapes2 = NULL,
-        *eShapes3 = NULL,
-        *eShapes4 = NULL,
-        *eShapes5 = NULL,
-        *eShapes6 = NULL;
-JE_byte *shapesC1 = NULL,
-        *shapes6  = NULL,
-        *shapes9  = NULL,
-        *shapesW2 = NULL;
-
-JE_word eShapes1Size,
-        eShapes2Size,
-        eShapes3Size,
-        eShapes4Size,
-        eShapes5Size,
-        eShapes6Size,
-        shapesC1Size,
-        shapes6Size,
-        shapes9Size,
-        shapesW2Size;
-
 JE_byte sAni;
 JE_integer sAniX, sAniY, sAniXNeg, sAniYNeg;  /* X,Y ranges of field of hit */
 JE_integer baseSpeedOld, baseSpeedOld2, baseSpeed, baseSpeedB, baseSpeed2, baseSpeed2B,
            baseSpeedKeyH, baseSpeedKeyV;
 JE_boolean keyMoveWait;
 
-JE_boolean makeMouseDelay;
-
 JE_word playerInvulnerable1, playerInvulnerable2;
 
 JE_integer lastPXShotMove, lastPYShotMove;
 
-JE_integer PXB, PYB, lastPXB, lastPYB, lastPX2B, lastPY2B, PXChangeB, PYChangeB,
-           lastTurnB, lastTurn2B, tempLastTurn2B;
+JE_integer PXB, PYB, lastPX2B, lastPY2B, PXChangeB, PYChangeB,
+           lastTurnB, lastTurn2B;
 JE_byte stopWaitXB, stopWaitYB;
-JE_word mouseXB, mouseYB;
 
-JE_integer PX, PY, lastPX, lastPY, lastPX2, lastPY2, PXChange, PYChange,
-           lastTurn, lastTurn2, tempLastTurn2;
+JE_integer PX, PY, lastPX2, lastPY2, PXChange, PYChange,
+           lastTurn, lastTurn2;
 JE_byte stopWaitX, stopWaitY;
 
 JE_integer PYHist[3], PYHistB[3]; /* [1..3] */
@@ -393,9 +368,6 @@ rep_explosion_type rep_explosions[MAX_REPEATING_EXPLOSIONS]; /* [1..20] */
 superpixel_type superpixels[MAX_SUPERPIXELS]; /* [0..MaxSP] */
 unsigned int last_superpixel;
 
-/*MegaData*/
-JE_word megaDataOfs, megaData2Ofs, megaData3Ofs;
-
 /*Temporary Numbers*/
 JE_word avail;
 JE_word tempCount;
@@ -415,7 +387,7 @@ JE_boolean doNotSaveBackup;
 JE_boolean tempSpecial;
 
 JE_word x, y;
-JE_integer a, b, c, d, z;
+JE_integer a, b, c, d;
 JE_byte playerNum;
 
 JE_byte **BKwrap1to, **BKwrap2to, **BKwrap3to,
@@ -429,14 +401,14 @@ JE_boolean  linkToPlayer;
 
 JE_integer baseArmor, baseArmor2;
 JE_word shipGr, shipGr2;
-JE_byte *shipGrPtr, *shipGr2ptr;
+Sprite2_array *shipGrPtr, *shipGr2ptr;
 
 void JE_getShipInfo( void )
 {
 	JE_boolean extraShip, extraShip2;
 
-	shipGrPtr = shapes9;
-	shipGr2ptr = shapes9;
+	shipGrPtr = &shapes9;
+	shipGr2ptr = &shapes9;
 
 	powerAdd  = powerSys[pItems[P_GENERATOR]].power;
 
@@ -485,7 +457,7 @@ void JE_getShipInfo( void )
 	}
 }
 
-JE_word JE_SGr( JE_word ship, JE_byte **ptr )
+JE_word JE_SGr( JE_word ship, Sprite2_array **ptr )
 {
 	const JE_word GR[15] /* [1..15] */ = {233, 157, 195, 271, 81, 0, 119, 5, 43, 81, 119, 157, 195, 233, 271};
 
@@ -586,9 +558,9 @@ void JE_drawOptions( void )
 		JE_c_bar(284, option2Draw, 284 + 28, option2Draw + 15, 0);
 
 	if (options[option1Item].icongr > 0)
-		blit_shape(VGAScreenSeg, 284, option1Draw, OPTION_SHAPES, options[option1Item].icongr - 1);  // left sidekick
+		blit_sprite(VGAScreenSeg, 284, option1Draw, OPTION_SHAPES, options[option1Item].icongr - 1);  // left sidekick
 	if (options[option2Item].icongr > 0)
-		blit_shape(VGAScreenSeg, 284, option2Draw, OPTION_SHAPES, options[option2Item].icongr - 1);  // right sidekick
+		blit_sprite(VGAScreenSeg, 284, option2Draw, OPTION_SHAPES, options[option2Item].icongr - 1);  // right sidekick
 
 	if (option1Draw > 0)
 		JE_barDrawDirect(284, option1Draw + 13, option1AmmoMax, 112, option1Ammo, 2, 2);
@@ -625,7 +597,7 @@ void JE_drawOptionLevel( void )
 
 void JE_tyrianHalt( JE_byte code )
 {
-	//deinit_audio();
+	deinit_audio();
 	deinit_video();
 	deinit_joysticks();
 
@@ -637,11 +609,10 @@ void JE_tyrianHalt( JE_byte code )
 	megaData2 = NULL;
 	free(megaData3);
 	megaData3 = NULL;
-
+	
 	free_main_shape_tables();
-
-	free(shapes6);
-	shapes6 = NULL;
+	
+	free_sprite2s(&shapes6);
 
 	for (int i = 0; i < SAMPLE_COUNT; i++)
 	{
@@ -687,7 +658,7 @@ void JE_tyrianHalt( JE_byte code )
 	}
 
 	SDL_Quit();
-	exit(0);
+	exit(code);
 }
 
 void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, JE_word mouseX, JE_word mouseY, JE_word wpNum, JE_byte playerNum )
@@ -901,7 +872,7 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 	}
 }
 
-void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_shortint *shield, JE_byte specialType )
+void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialType )
 {
 	nextSpecialWait = 0;
 	switch (special[specialType].stype)
@@ -1096,9 +1067,9 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 	if (pItems[P_SPECIAL] > 0)
 	{
 		if (shotRepeat[9-1] == 0 && specialWait == 0 && flareDuration < 2 && zinglonDuration < 2)
-			JE_drawShape2(47, 4, 94, shapes9);
+			blit_sprite2(VGAScreen, 47, 4, shapes9, 94);
 		else
-			JE_drawShape2(47, 4, 93, shapes9);
+			blit_sprite2(VGAScreen, 47, 4, shapes9, 93);
 	}
 
 	if (shotRepeat[9-1] > 0)
@@ -1150,7 +1121,7 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 		shotMultiPos[11-1] = 0;
 		if (tempB)
 		{
-			JE_specialComplete(playerNum, armor, shield, temp);
+			JE_specialComplete(playerNum, armor, temp);
 		}
 		SFExecuted[playerNum-1] = 0;
 
@@ -1175,7 +1146,7 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 		else if (shotRepeat[9-1] == 0 && !fireButtonHeld && !(flareDuration > 0) && specialWait == 0)
 		{
 			fireButtonHeld = true;
-			JE_specialComplete(playerNum, armor, shield, pItems[P_SPECIAL]);
+			JE_specialComplete(playerNum, armor, pItems[P_SPECIAL]);
 		}
 
 	}  /*Main End*/
@@ -1432,8 +1403,7 @@ void JE_wipeShieldArmorBars( void )
 	}
 }
 
-JE_byte JE_playerDamage( JE_word tempX, JE_word tempY,
-                         JE_byte temp,
+JE_byte JE_playerDamage( JE_byte temp,
                          JE_integer *PX, JE_integer *PY,
                          JE_boolean *playerAlive,
                          JE_byte *playerStillExploding,
@@ -1575,9 +1545,9 @@ void JE_doSP( JE_word x, JE_word y, JE_word num, JE_byte explowidth, JE_byte col
 {
 	for (temp = 0; temp < num; temp++)
 	{
-		JE_real tempr = ((float)mt_rand() / RAND_MAX) * (M_PI * 2);
-		signed int tempy = round(cos(tempr) * ((float)mt_rand() / RAND_MAX) * explowidth);
-		signed int tempx = round(sin(tempr) * ((float)mt_rand() / RAND_MAX) * explowidth);
+		JE_real tempr = mt_rand_lt1() * (M_PI * 2);
+		signed int tempy = round(cos(tempr) * mt_rand_1() * explowidth);
+		signed int tempx = round(sin(tempr) * mt_rand_1() * explowidth);
 
 		if (++last_superpixel >= MAX_SUPERPIXELS)
 			last_superpixel = 0;

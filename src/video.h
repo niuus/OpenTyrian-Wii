@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -37,6 +37,8 @@ extern SDL_Surface *VGAScreen, *VGAScreenSeg;
 extern SDL_Surface *game_screen;
 extern SDL_Surface *VGAScreen2;
 extern bool popkeyon;
+
+extern SDL_Surface *tempScreenSeg; // TODO: get rid of it!
 
 void init_video( void );
 void reinit_video( void );

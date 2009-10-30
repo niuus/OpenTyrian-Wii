@@ -16,13 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "xmas.h"
-#include "fonthand.h"
+#include "font.h"
 #include "keyboard.h"
-#include "newshape.h"
 #include "palette.h"
 #include "setup.h"
+#include "sprite.h"
 #include "video.h"
+#include "xmas.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -37,25 +37,29 @@ bool xmas_time( void )
 
 bool xmas_prompt( void )
 {
-	const char *xmas_text[] = {
+	const char *prompt[] =
+	{
 		"Christmas has been detected.",
 		"Activate Christmas?",
+	};
+	const char *choice[] =
+	{
 		"Yes",
-		"No"
+		"No",
 	};
 	
-	JE_updateColorsFast(palettes[0]);
+	set_palette(palettes[0], 0, 255);
 	
-	JE_outTextAdjust(JE_fontCenter(xmas_text[0], SMALL_FONT_SHAPES), 85, xmas_text[0], 4, -2, SMALL_FONT_SHAPES, true);
-	JE_outTextAdjust(JE_fontCenter(xmas_text[1], SMALL_FONT_SHAPES), 100, xmas_text[1], 2, -2, SMALL_FONT_SHAPES, false);
+	for (int i = 0; i < COUNTOF(prompt); ++i)
+		draw_font_hv(VGAScreen, 320 / 2, 85 + 15 * i, prompt[i], normal_font, centered, (i % 2) ? 2 : 4, -2);
 	
 	int selection = 0;
 	
 	bool decided = false;
 	while (!decided)
 	{
-		JE_outTextAdjust(JE_fontCenter(xmas_text[2], SMALL_FONT_SHAPES) - 20, 120, xmas_text[2], 15, (selection == 0) ? -2 : -4, SMALL_FONT_SHAPES, true);
-		JE_outTextAdjust(JE_fontCenter(xmas_text[3], SMALL_FONT_SHAPES) + 20, 120, xmas_text[3], 15, (selection == 1) ? -2 : -4, SMALL_FONT_SHAPES, true);
+		for (int i = 0; i < COUNTOF(choice); ++i)
+			draw_font_hv(VGAScreen, 320 / 2 - 20 + 40 * i, 120, choice[i], normal_font, centered, 15, (selection == i) ? -2 : -4);
 		
 		JE_showVGA();
 		

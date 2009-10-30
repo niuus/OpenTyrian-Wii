@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -16,42 +16,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
-#include "nortsong.h"
-
-#include "error.h"
+#include "file.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "loudness.h"
 #include "musmast.h"
+#include "nortsong.h"
+#include "opentyr.h"
 #include "params.h"
 #include "sndmast.h"
 #include "vga256d.h"
 
 #include "SDL.h"
 
-
-JE_word w1;
-//JE_AweType * awe_data = malloc(35000);
-/*JE_word tempw;*/
-JE_word w2;
-JE_byte sberror;
-JE_byte sysintcount;
-JE_byte sbint;
-//JE_AweType * awe_code = malloc(35000);
-void * oldvector;
-JE_byte midiport;
-JE_byte sysintwait;
-JE_word sbport;
-//JE_DigiMixType * digimix = malloc(0x4ff);
-JE_byte midierror;
-JE_longint address;
-JE_word intcount;
-JE_word dspversion;
-const char hexa[17] = "0123456789ABCDEF";
-
 Uint32 target, target2;
-JE_boolean mixEnable = false;
+
 JE_boolean notYetLoadedSound = true;
 
 JE_word frameCount, frameCount2, frameCountMax;
@@ -59,10 +38,11 @@ JE_word frameCount, frameCount2, frameCountMax;
 JE_byte *digiFx[SAMPLE_COUNT] = { NULL }; /* [1..soundnum + 9] */
 JE_word fxSize[SAMPLE_COUNT]; /* [1..soundnum + 9] */
 
-
 JE_word tyrMusicVolume, fxVolume;
 JE_word fxPlayVol;
 JE_word tempVolume;
+
+JE_word speed; /* JE: holds timer speed for 70Hz */
 
 float jasondelay = 1000.0f / (1193180.0f / 0x4300);
 
@@ -118,17 +98,18 @@ void wait_delayorinput( JE_boolean keyboard, JE_boolean mouse, JE_boolean joysti
 	}
 }
 
-void JE_loadSndFile( char *effects_sndfile, char *voices_sndfile )
+void JE_loadSndFile( const char *effects_sndfile, const char *voices_sndfile )
 {
-	FILE *fi;
 	JE_byte y, z;
 	JE_word x;
 	JE_longint templ;
 	JE_longint sndPos[2][SAMPLE_COUNT + 1];
 	JE_word sndNum;
 
+	FILE *fi;
+	
 	/* SYN: Loading offsets into TYRIAN.SND */
-	JE_resetFile(&fi, effects_sndfile);
+	fi = dir_fopen_die(data_dir(), effects_sndfile, "rb");
 	efread(&sndNum, sizeof(sndNum), 1, fi);
 
 	for (x = 0; x < sndNum; x++)
@@ -150,8 +131,8 @@ void JE_loadSndFile( char *effects_sndfile, char *voices_sndfile )
 	fclose(fi);
 
 	/* SYN: Loading offsets into VOICES.SND */
-	JE_resetFile(&fi, voices_sndfile);
-
+	fi = dir_fopen_die(data_dir(), voices_sndfile, "rb");
+	
 	efread(&sndNum, sizeof(sndNum), 1, fi);
 
 	for (x = 0; x < sndNum; x++)
@@ -204,7 +185,7 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 {
 	int music_temp = *music + music_delta,
 	    sample_temp = *sample + sample_delta;
-
+	
 	if (music_delta)
 	{
 		if (music_temp > 255)
@@ -218,7 +199,7 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 			JE_playSampleNum(S_CLINK);
 		}
 	}
-
+	
 	if (sample_delta)
 	{
 		if (sample_temp > 255)
@@ -232,12 +213,12 @@ void JE_changeVolume( JE_word *music, int music_delta, JE_word *sample, int samp
 			JE_playSampleNum(S_CLINK);
 		}
 	}
-
+	
 	*music = music_temp;
 	*sample = sample_temp;
-
+	
 	JE_calcFXVol();
-
+	
 	set_volume(*music, *sample);
 }
 

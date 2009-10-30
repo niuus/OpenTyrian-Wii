@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -35,7 +35,7 @@ unsigned char lastkey_char;
 Uint8 lastmouse_but;
 Uint16 lastmouse_x, lastmouse_y;
 JE_boolean mouse_pressed[3] = {false, false, false};
-Uint16 mouse_x, mouse_y, mouse_xrel, mouse_yrel;
+Uint16 mouse_x, mouse_y;
 
 int numkeys;
 Uint8 *keysactive;
@@ -63,7 +63,7 @@ void wait_input( JE_boolean keyboard, JE_boolean mouse, JE_boolean joystick )
 		SDL_Delay(SDL_POLL_INTERVAL);
 		push_joysticks_as_keyboard();
 		service_SDL_events(false);
-
+		
 		if (isNetworkGame)
 			network_check();
 	}
@@ -77,7 +77,7 @@ void wait_noinput( JE_boolean keyboard, JE_boolean mouse, JE_boolean joystick )
 		SDL_Delay(SDL_POLL_INTERVAL);
 		poll_joysticks();
 		service_SDL_events(false);
-
+		
 		if (isNetworkGame)
 			network_check();
 	}
@@ -101,7 +101,7 @@ void input_grab( void )
 #else /* TARGET_GP2X */
 	input_grabbed = input_grab_enabled || fullscreen_enabled;
 #endif /* TARGET_GP2X */
-
+	
 	SDL_ShowCursor(input_grabbed ? SDL_DISABLE : SDL_ENABLE);
 #ifdef NDEBUG
 	SDL_WM_GrabInput(input_grabbed ? SDL_GRAB_ON : SDL_GRAB_OFF);
@@ -119,26 +119,27 @@ JE_word JE_mousePosition( JE_word *mouseX, JE_word *mouseY )
 void set_mouse_position( int x, int y )
 {
 	if (input_grabbed)
+	{
 		SDL_WarpMouse(x * scale, y * scale);
+		mouse_x = x;
+		mouse_y = y;
+	}
 }
 
 void service_SDL_events( JE_boolean clear_new )
 {
 	SDL_Event ev;
-
+	
 	if (clear_new)
 		newkey = newmouse = false;
-
+	
 	while (SDL_PollEvent(&ev))
 	{
 		switch (ev.type)
 		{
 			case SDL_MOUSEMOTION:
-				break;
 				mouse_x = ev.motion.x / scale;
 				mouse_y = ev.motion.y / scale;
-				mouse_xrel = ev.motion.xrel / scale;
-				mouse_yrel = ev.motion.yrel / scale;
 				break;
 			case SDL_KEYDOWN:
 				if (ev.key.keysym.mod & KMOD_CTRL)
@@ -150,7 +151,7 @@ void service_SDL_events( JE_boolean clear_new )
 						SDL_Quit();
 						exit(1);
 					}
-
+					
 					/* <ctrl><f10> toggle input grab */
 					if (ev.key.keysym.sym == SDLK_F10)
 					{
@@ -159,7 +160,7 @@ void service_SDL_events( JE_boolean clear_new )
 						break;
 					}
 				}
-
+				
 				if (ev.key.keysym.mod & KMOD_ALT)
 				{
 					/* <alt><enter> toggle fullscreen */
@@ -169,19 +170,19 @@ void service_SDL_events( JE_boolean clear_new )
 						reinit_video();
 						break;
 					}
-
+					
 					/* <alt><tab> disable input grab and fullscreen */
 					if (ev.key.keysym.sym == SDLK_TAB)
 					{
 						input_grab_enabled = false;
 						input_grab();
-
+						
 						fullscreen_enabled = false;
 						reinit_video();
 						break;
 					}
 				}
-
+				
 				newkey = true;
 				lastkey_sym = ev.key.keysym.sym;
 				lastkey_mod = ev.key.keysym.mod;
@@ -192,7 +193,6 @@ void service_SDL_events( JE_boolean clear_new )
 				keydown = false;
 				return;
 			case SDL_MOUSEBUTTONDOWN:
-				break;
 				if (!input_grabbed)
 				{
 					input_grab_enabled = !input_grab_enabled;
@@ -200,7 +200,6 @@ void service_SDL_events( JE_boolean clear_new )
 					break;
 				}
 			case SDL_MOUSEBUTTONUP:
-				break;
 				if (ev.type == SDL_MOUSEBUTTONDOWN)
 				{
 					newmouse = true;

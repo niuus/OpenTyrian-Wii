@@ -16,22 +16,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
-#include "scroller.h"
-
 #include "fonthand.h"
 #include "joystick.h"
 #include "jukebox.h"
 #include "keyboard.h"
 #include "loudness.h"
 #include "mtrand.h"
-#include "newshape.h"
 #include "nortsong.h"
+#include "nortvars.h"
+#include "opentyr.h"
 #include "palette.h"
+#include "scroller.h"
+#include "sprite.h"
 #include "varz.h"
 #include "vga256d.h"
 #include "video.h"
-
 
 const struct about_text_type about_text[] =
 {
@@ -41,12 +40,11 @@ const struct about_text_type about_text[] =
 	{0x0b, "one planet at a time..."},
 	{0x00, ""},
 	{0x00, ""},
-	{0x30, "----- ~Developers~ -----"}, /* in alphabetical order */
+	{0x30, "----- ~Developers~ -----"},
 	{0x00, ""},
-	{0x03, "Mindless"},
-	{0x06, "mwolson"},
-	{0x04, "syntaxglitch"},
-	{0x07, "yuriks"},
+	{0x03, "Carl Reinke // Mindless"},
+	{0x07, "Yuri Schlesner // yuriks"},
+	{0x04, "Casey McCann // syntaxglitch"},
 	{0x00, ""},
 	{0x00, ""},
 	{0x30, "----- ~Thanks~ -----"},
@@ -139,7 +137,7 @@ void scroller_sine( const struct about_text_type text[] )
 		}
 	}
 	
-	JE_fadeBlack(10);
+	fade_black(10);
 	
 	wait_noinput(true, true, true);
 	
@@ -156,7 +154,7 @@ void scroller_sine( const struct about_text_type text[] )
 			for (int i = 0; i < MAX_COINS/2; i++)
 			{
 				struct coin_type *coin = &coins[i];
-				JE_drawShape2(coin->x, coin->y, coin_defs[coin->type].shape_num + coin->cur_frame, eShapes5);
+				blit_sprite2(VGAScreen, coin->x, coin->y, eShapes5, coin_defs[coin->type].shape_num + coin->cur_frame);
 			}
 		}
 
@@ -213,7 +211,7 @@ void scroller_sine( const struct about_text_type text[] )
 			for (int i = MAX_COINS/2; i < MAX_COINS; i++)
 			{
 				struct coin_type *coin = &coins[i];
-				JE_drawShape2(coin->x, coin->y, coin_defs[coin->type].shape_num + coin->cur_frame, eShapes5);
+				blit_sprite2(VGAScreen, coin->x, coin->y, eShapes5, coin_defs[coin->type].shape_num + coin->cur_frame);
 			}
 		}
 
@@ -292,7 +290,7 @@ void scroller_sine( const struct about_text_type text[] )
 				}
 				beer[i].y += beer[i].vy;
 				
-				JE_drawShape2x2(beer[i].x, beer[i].y, BEER_SHAPE, eShapes5);
+				blit_sprite2x2(VGAScreen, beer[i].x, beer[i].y, eShapes5, BEER_SHAPE);
 			}
 		}
 		
@@ -301,14 +299,16 @@ void scroller_sine( const struct about_text_type text[] )
 		if (fade_in)
 		{
 			fade_in = false;
-			JE_fadeColor(10);
-			JE_setPalette(254, 255, 255, 255);
+			fade_palette(colors, 10, 0, 255);
+			
+			SDL_Color white = { 255, 255, 255 };
+			set_colors(white, 254, 254);
 		}
 		
 		wait_delay();
 	}
 	
-	JE_fadeBlack(10);
+	fade_black(10);
 }
 
 // kate: tab-width 4; vim: set noet:

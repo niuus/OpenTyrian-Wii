@@ -16,18 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "opentyr.h"
-#include "network.h"
-
 #include "episodes.h"
 #include "fonthand.h"
 #include "helptext.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "mainint.h"
-#include "newshape.h"
+#include "network.h"
 #include "nortvars.h"
+#include "opentyr.h"
 #include "picload.h"
+#include "sprite.h"
 #include "varz.h"
 #include "video.h"
 
@@ -36,6 +35,13 @@
 
 #include <assert.h>
 
+/*                              HERE BE DRAGONS!
+ * 
+ * When I wrote this code I thought it was wonderful... that thought was very
+ * wrong.  It works, but good luck understanding how... I don't anymore.
+ * 
+ * Hopefully it'll be rewritten some day.
+ */
 
 #define NET_VERSION       2            // increment whenever networking changes might create incompatability
 #define NET_PORT          1333         // UDP
@@ -51,7 +57,7 @@
 bool isNetworkGame = false;
 int network_delay = 1 + 1;  // minimum is 1 + 0
 
-char *network_opponent_host = 0;
+char *network_opponent_host = NULL;
 
 Uint16 network_player_port = NET_PORT,
        network_opponent_port = NET_PORT;
@@ -77,7 +83,7 @@ UDPpacket *packet_state_in[NET_PACKET_QUEUE] = { NULL },
 Uint16 last_state_in_sync = 0, last_state_out_sync = 0;
 Uint32 last_state_in_tick = 0;
 
-bool connected = false, quit = false;
+static bool connected = false, quit = false;
 
 
 JE_integer thisPlayerNum = 0;  /* Player number on this PC (1 or 2) */
@@ -89,9 +95,6 @@ JE_boolean moveOk;
 /* Special Requests */
 JE_boolean pauseRequest, skipLevelRequest, helpRequest, nortShipRequest;
 JE_boolean yourInGameMenuRequest, inGameMenuRequest;
-
-JE_boolean portConfigChange, portConfigDone;
-
 
 // prepare new packet for sending
 void network_prepare( Uint16 type )
@@ -112,7 +115,7 @@ bool network_send( int len )
 		packet_copy(packet_out[i], packet_out_temp);
 	} else {
 		// connection is probably bad now
-		printf("warning: outbound packet queue overflow\n");
+		fprintf(stderr, "warning: outbound packet queue overflow\n");
 		return false;
 	}
 	
@@ -316,7 +319,7 @@ int network_check( void )
 						break;
 						
 					default:
-						printf("warning: bad packet %d received\n", SDLNet_Read16(&packet_temp->data[0]));
+						fprintf(stderr, "warning: bad packet %d received\n", SDLNet_Read16(&packet_temp->data[0]));
 						return 0;
 						break;
 				}
@@ -372,7 +375,7 @@ void network_state_prepare( void )
 {
 	if (packet_state_out[0])
 	{
-		printf("warning: state packet overwritten (previous packet remains unsent)\n");
+		fprintf(stderr, "warning: state packet overwritten (previous packet remains unsent)\n");
 	} else {
 		packet_state_out[0] = SDLNet_AllocPacket(NET_PACKET_SIZE);
 		packet_state_out[0]->len = 28;
@@ -585,17 +588,17 @@ connect_reset:
 connect_again:
 	if (SDLNet_Read16(&packet_in[0]->data[4]) != NET_VERSION)
 	{
-		printf("error: network version did not match opponent's\n");
+		fprintf(stderr, "error: network version did not match opponent's\n");
 		network_tyrian_halt(4, true);
 	}
 	if (SDLNet_Read16(&packet_in[0]->data[6]) != network_delay)
 	{
-		printf("error: network delay did not match opponent's\n");
+		fprintf(stderr, "error: network delay did not match opponent's\n");
 		network_tyrian_halt(5, true);
 	}
 	if (SDLNet_Read16(&packet_in[0]->data[10]) == thisPlayerNum)
 	{
-		printf("error: player number conflicts with opponent's\n");
+		fprintf(stderr, "error: player number conflicts with opponent's\n");
 		network_tyrian_halt(6, true);
 	}
 	
@@ -661,7 +664,7 @@ void network_tyrian_halt( int err, bool attempt_sync )
 	if (err >= COUNTOF(err_msg))
 		err = 0;
 	
-	JE_fadeBlack(10);
+	fade_black(10);
 	
 	tempScreenSeg = VGAScreen = VGAScreenSeg;
 	
@@ -669,7 +672,7 @@ void network_tyrian_halt( int err, bool attempt_sync )
 	JE_dString(JE_fontCenter(err_msg[err], SMALL_FONT_SHAPES), 140, err_msg[err], SMALL_FONT_SHAPES);
 	
 	JE_showVGA();
-	JE_fadeColor(10);
+	fade_palette(colors, 10, 0, 255);
 	
 	if (attempt_sync)
 	{
@@ -688,7 +691,7 @@ void network_tyrian_halt( int err, bool attempt_sync )
 			SDL_Delay(16);
 	}
 	
-	JE_fadeBlack(10);
+	fade_black(10);
 	
 	SDLNet_Quit();
 	
@@ -701,20 +704,20 @@ int network_init( void )
 	
 	if (network_delay * 2 > NET_PACKET_QUEUE - 2)
 	{
-		printf("error: network delay would overflow packet queue\n");
+		fprintf(stderr, "error: network delay would overflow packet queue\n");
 		return -4;
 	}
 	
 	if (SDLNet_Init() == -1)
 	{
-		printf("SDLNet_Init: %s\n", SDLNet_GetError());
+		fprintf(stderr, "error: SDLNet_Init: %s\n", SDLNet_GetError());
 		return -1;
 	}
 	
 	socket = SDLNet_UDP_Open(network_player_port);
 	if (!socket)
 	{
-		printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		fprintf(stderr, "error: SDLNet_UDP_Open: %s\n", SDLNet_GetError());
 		return -2;
 	}
 	

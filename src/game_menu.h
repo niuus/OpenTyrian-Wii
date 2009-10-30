@@ -26,7 +26,10 @@ typedef JE_byte JE_MenuChoiceType[MAX_MENU];
 
 JE_longint JE_cashLeft( void );
 void JE_itemScreen( void );
-void JE_loadCubes( void );
+
+void load_cubes( void );
+bool load_cube( int cube_slot, int cube_index );
+
 void JE_drawItem( JE_byte itemType, JE_word itemNum, JE_word x, JE_word y );
 void JE_drawMenuHeader( void );
 void JE_drawMenuChoices( void );
@@ -48,7 +51,7 @@ void JE_drawScore( void );
 void JE_menuFunction( JE_byte select );
 void JE_funkyScreen( void );
 void JE_weaponSimUpdate( void );
-void JE_weaponViewFrame( JE_byte testshotnum );
+void JE_weaponViewFrame( void );
 
 #endif // GAME_MENU_H
 

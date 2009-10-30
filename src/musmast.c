@@ -1,4 +1,4 @@
-/*
+/* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -62,8 +62,8 @@ const char musicFile[MUSIC_NUM][13] =
 	/* 36 */  "TYR4-3.DAT",    /* SARAH */
 	/* 37 */  "TYR4-2.DAT",    /* MAGFIELD */
 	/* 38 */  "TYR4-0.DAT",    /* ROCKME */
-	/* 39 */  "TYR4-4.DAT",    /* QUEST FOR PEACE */
-	/* 40 */  "TYR4-5.DAT",    /* COMPOSITION */
+	/* 39 */  "TYR4-4.DAT",    /* quiet music */
+	/* 40 */  "TYR4-5.DAT",    /* piano */
 	/* 41 */  "TYR-BEER.DAT"   /* BEER */
 };
 

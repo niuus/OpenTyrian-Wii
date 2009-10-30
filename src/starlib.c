@@ -1,4 +1,4 @@
-/* 
+/*
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
  * Copyright (C) 2007-2009  The OpenTyrian Development Team
  *
@@ -25,12 +25,9 @@
 
 #include <ctype.h>
 
-
+int tempX, tempY;
 JE_boolean run;
 struct JE_StarType star[starlib_MAX_STARS];
-
-JE_integer tempW;
-JE_integer tempX, tempY;
 
 JE_byte setup;
 JE_word stepCounter;
@@ -47,8 +44,6 @@ JE_word changeTime;
 JE_boolean doChange;
 
 JE_boolean grayB;
-
-JE_integer x;
 
 JE_integer starlib_speed;
 JE_shortint speedChange;
@@ -71,119 +66,85 @@ void JE_starlib_main( void )
 
 	starlib_speed += speedChange;
 
-	/* ASM starts */
-	/* ***START THE LOOP*** */
-star_loop:
-	stars = star;
-	i = starlib_MAX_STARS;
 
-	/* ***START OF EACH PIXEL*** */
-next_star:
-	off = (stars->lastX)+(stars->lastY)*320;
-
-	/* ***CLEAR PIXEL*** */
-	surf = VGAScreen->pixels;
-
-	if (off >= 640 && off < (320*200)-640)
+	for(stars = star, i = starlib_MAX_STARS; i > 0; stars++, i--)
 	{
-		surf[off] = 0; /* Shade Level 0 */
+		/* Make a pointer to the screen... */
+		surf = VGAScreen->pixels;
 
-		surf[off-1] = 0; /* Shade Level 1, 2 */
-		surf[off+1] = 0;
-		surf[off-2] = 0;
-		surf[off+2] = 0;
+		/* Calculate the offset to where we wish to draw */
+		off = (stars->lastX)+(stars->lastY)*320;
 
-		surf[off-320] = 0;
-		surf[off+320] = 0;
-		surf[off-640] = 0;
-		surf[off+640] = 0;
+
+		/* We don't want trails in our star field.  Erase the old graphic */
+		if (off >= 640 && off < (320*200)-640)
+		{
+			surf[off] = 0; /* Shade Level 0 */
+
+			surf[off-1] = 0; /* Shade Level 1, 2 */
+			surf[off+1] = 0;
+			surf[off-2] = 0;
+			surf[off+2] = 0;
+
+			surf[off-320] = 0;
+			surf[off+320] = 0;
+			surf[off-640] = 0;
+			surf[off+640] = 0;
+		}
+
+		/* Move star */
+		tempZ = stars->spZ;
+		tempX = (stars->spX / tempZ) + 160;
+		tempY = (stars->spY / tempZ) + 100;
+		tempZ -=  starlib_speed;
+
+
+		/* If star is out of range, make a new one */
+		if (tempZ <=  0 ||
+		    tempY ==  0 || tempY > 198 ||
+		    tempX > 318 || tempX <   1)
+		{
+			stars->spZ = 500;
+
+			JE_newStar();
+
+			stars->spX = tempX;
+			stars->spY = tempY;
+		}
+		else /* Otherwise, update & draw it */
+		{
+			stars->lastX = tempX;
+			stars->lastY = tempY;
+			stars->spZ = tempZ;
+
+			off = tempX+tempY*320;
+
+			if (grayB)
+			{
+				tempCol = tempZ >> 1;
+			} else {
+				tempCol = pColor+((tempZ >> 4) & 31);
+			}
+
+			/* Draw the pixel! */
+			if (off >= 640 && off < (320*200)-640)
+			{
+				surf[off] = tempCol;
+
+				tempCol += 72;
+				surf[off-1] = tempCol;
+				surf[off+1] = tempCol;
+				surf[off-320] = tempCol;
+				surf[off+320] = tempCol;
+
+				tempCol += 72;
+				surf[off-2] = tempCol;
+				surf[off+2] = tempCol;
+				surf[off-640] = tempCol;
+				surf[off+640] = tempCol;
+			}
+		}
 	}
-
-	tempZ = stars->spZ;
-
-	/* Here's the StarType offsets:
-	 *
-	 * SPX   0
-	 * SPY   2
-	 * SPZ   4
-	 * LastX 6
-	 * LastY 8
-	 */
-
-	tempX = (stars->spX / tempZ) + 160;
-	tempY = (stars->spY / tempZ) + 100;
-
-	tempZ -= starlib_speed;
-
-	if (tempZ <= 0)
-	{
-		goto new_star;
-	}
-
-	if (tempY == 0 || tempY > 198)
-	{
-		goto new_star;
-	}
-
-	if (tempX > 318 || tempX < 1)
-	{
-		goto new_star;
-	}
-
-	/* Update current star */
-	stars->lastX = tempX;
-	stars->lastY = tempY;
-	stars->spZ = tempZ;
-
-	/* Now, WriteSuperPixel */
-	/* Let's find the location */
-	off = tempX+tempY*320;
-
-	if (grayB)
-	{
-		tempCol = tempZ >> 1;
-	} else {
-		tempCol = pColor+((tempZ >> 4) & 31);
-	}
-
-draw_pixel:
-	/* Draw the pixel! */
-	if (off >= 640 && off < (320*200)-640)
-	{
-		surf[off] = tempCol;
-
-		tempCol += 72;
-		surf[off-1] = tempCol;
-		surf[off+1] = tempCol;
-		surf[off-320] = tempCol;
-		surf[off+320] = tempCol;
-
-		tempCol += 72;
-		surf[off-2] = tempCol;
-		surf[off+2] = tempCol;
-		surf[off-640] = tempCol;
-		surf[off+640] = tempCol;
-	}
-
-	goto star_end;
-
-new_star:
-	stars->spZ = 500;
-
-	JE_newStar();
-
-	stars->spX = tempX;
-	stars->spY = tempY;
-
-star_end:
-	stars++;
-	i--;
-	if (i > 0)
-	{
-		goto next_star;
-	}
-
-	/* ASM ends */
 
 	if (newkey)
 	{
@@ -244,7 +205,7 @@ star_end:
 				JE_resetValues();
 				break;
 			case 'S':
-				nspVarVarInc = (mt_rand()/(float)RAND_MAX) * 0.01 - 0.005;
+				nspVarVarInc = mt_rand_1() * 0.01 - 0.005;
 				break;
 			case 'X':
 			case 27:
@@ -285,21 +246,14 @@ star_end:
 
 	if ((mt_rand() % 1000) == 1)
 	{
-		nspVarVarInc = (mt_rand()/(float)RAND_MAX) * 0.01 - 0.005;
+		nspVarVarInc = mt_rand_1() * 0.01 - 0.005;
 	}
 
 	nspVarInc += nspVarVarInc;
 }
 
-void JE_makeGray( void )
-{
-	/* YKS: Not used anywhere. */
-	STUB();
-}
-
 void JE_wackyCol( void )
 {
-	JE_byte a, b, c;
 	/* YKS: Does nothing */
 }
 
@@ -316,7 +270,7 @@ void JE_starlib_init( void )
 		doChange = true;
 
 		/* RANDOMIZE; */
-		for (x = 0; x < starlib_MAX_STARS; x++)
+		for (int x = 0; x < starlib_MAX_STARS; x++)
 		{
 			star[x].spX = (mt_rand() % 64000) - 32000;
 			star[x].spY = (mt_rand() % 40000) - 20000;

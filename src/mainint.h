@@ -19,10 +19,10 @@
 #ifndef MAININT_H
 #define MAININT_H
 
-#include "opentyr.h"
-
 #include "config.h"
+#include "opentyr.h"
 #include "palette.h"
+#include "sprite.h"
 
 extern bool button[4]; // fire, left fire, right fire, mode swap
 
@@ -40,11 +40,11 @@ extern bool pause_pressed, ingamemenu_pressed;
 
 /*void JE_textMenuWait ( JE_word waittime, JE_boolean dogamma );*/
 
-void JE_drawTextWindow( char *text );
+void JE_drawTextWindow( const char *text );
 void JE_initPlayerData( void );
 void JE_highScoreScreen( void );
 void JE_gammaCorrect_func( JE_byte *col, JE_real r );
-void JE_gammaCorrect( palette_t *colorBuffer, JE_byte gamma );
+void JE_gammaCorrect( Palette *colorBuffer, JE_byte gamma );
 JE_boolean JE_gammaCheck( void );
 /* void JE_textMenuWait( JE_word *waitTime, JE_boolean doGamma ); /!\ In setup.h */
 void JE_loadOrderingInfo( void );
@@ -62,7 +62,6 @@ bool replay_demo_keys( void );
 bool read_demo_keys( void );
 
 void JE_SFCodes( JE_byte playerNum_, JE_integer PX_, JE_integer PY_, JE_integer mouseX_, JE_integer mouseY_, JE_PItemsType pItems_ );
-void JE_func( JE_byte col );
 void JE_sort( void );
 
 long weapon_upgrade_cost( long base_cost, unsigned int power );
@@ -71,28 +70,23 @@ JE_longint JE_getValue( JE_byte itemType, JE_word itemNum );
 JE_longint JE_totalScore( JE_longint score, JE_PItemsType pitems );
 
 void JE_drawPortConfigButtons( void );
-void JE_outCharGlow( JE_word x, JE_word y, char *s );
+void JE_outCharGlow( JE_word x, JE_word y, const char *s );
 JE_boolean JE_getPassword( void );
 
 void JE_playCredits( void );
 void JE_endLevelAni( void );
 void JE_drawCube( JE_word x, JE_word y, JE_byte filter, JE_byte brightness );
 void JE_handleChat( void );
-JE_boolean JE_getNumber( char *s, JE_byte *x );
+bool str_pop_int( char *str, int *val );
 void JE_loadScreen( void );
 void JE_operation( JE_byte slot );
 void JE_inGameDisplays( void );
 void JE_mainKeyboardInput( void );
 void JE_pauseGame( void );
 
-void JE_loadCompShapesB( JE_byte **shapes, FILE *f, JE_word shapeSize );
-
-void JE_loadMainShapeTables( char *shpfile );
-void free_main_shape_tables( void );
-
-void JE_playerMovement( JE_byte inputDevice, JE_byte playerNum, JE_word shipGr, JE_byte *shapes9ptr, JE_integer *armorLevel, JE_integer *baseArmor, JE_shortint *shield, JE_shortint *shieldMax, JE_word *playerInvulnerable, JE_integer *PX, JE_integer *PY, JE_integer *lastPX, JE_integer *lastPY, JE_integer *lastPX2, JE_integer *lastPY2, JE_integer *PXChange, JE_integer *PYChange, JE_integer *lastTurn, JE_integer *lastTurn2, JE_integer *tempLastTurn2, JE_byte *stopWaitX, JE_byte *stopWaitY, JE_word *mouseX, JE_word *mouseY, JE_boolean *playerAlive, JE_byte *playerStillExploding, JE_PItemsType pItems );
+void JE_playerMovement( JE_byte inputDevice, JE_byte playerNum, JE_word shipGr, Sprite2_array *shapes9ptr_, JE_integer *armorLevel, JE_integer *baseArmor, JE_shortint *shield, JE_shortint *shieldMax, JE_word *playerInvulnerable, JE_integer *PX, JE_integer *PY, JE_integer *lastPX2, JE_integer *lastPY2, JE_integer *PXChange, JE_integer *PYChange, JE_integer *lastTurn, JE_integer *lastTurn2, JE_byte *stopWaitX, JE_byte *stopWaitY, JE_word *mouseX, JE_word *mouseY, JE_boolean *playerAlive, JE_byte *playerStillExploding, JE_PItemsType pItems );
 void JE_mainGamePlayerFunctions( void );
-char *JE_getName( JE_byte pnum );
+const char *JE_getName( JE_byte pnum );
 
 void JE_playerCollide( JE_integer *px, JE_integer *py, JE_integer *lastTurn, JE_integer *lastTurn2,
                        JE_longint *score, JE_integer *armorLevel, JE_shortint *shield, JE_boolean *playerAlive,
