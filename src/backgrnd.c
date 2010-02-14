@@ -39,9 +39,8 @@ intptr_t mapXbpPos, mapX2bpPos, mapX3bpPos;
 JE_byte map1YDelay, map1YDelayMax, map2YDelay, map2YDelayMax;
 
 
-SDL_Surface *smoothiesScreen;
 JE_boolean  anySmoothies;
-JE_byte     SDAT[9]; /* [1..9] */
+JE_byte     smoothie_data[9]; /* [1..9] */
 
 void JE_darkenBackground( JE_word neat )  /* wild detail level */
 {
@@ -64,6 +63,7 @@ void JE_darkenBackground( JE_word neat )  /* wild detail level */
 void blit_background_row( SDL_Surface *surface, int x, int y, Uint8 **map )
 {
 	assert(surface->format->BitsPerPixel == 8);
+	
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
@@ -109,6 +109,7 @@ void blit_background_row( SDL_Surface *surface, int x, int y, Uint8 **map )
 void blit_background_row_blend( SDL_Surface *surface, int x, int y, Uint8 **map )
 {
 	assert(surface->format->BitsPerPixel == 8);
+	
 	Uint8 *pixels = (Uint8 *)surface->pixels + (y * surface->pitch) + x,
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
@@ -313,104 +314,155 @@ void JE_filterScreen( JE_shortint col, JE_shortint int_)
 
 void JE_checkSmoothies( void )
 {
-	anySmoothies = false;
-	if ((processorType > 2 && (smoothies[1-1] || smoothies[2-1])) || (processorType > 1 && (smoothies[3-1] || smoothies[4-1] || smoothies[5-1])))
-	{
-		anySmoothies = true;
-		JE_initSmoothies();
-	}
+	anySmoothies = (processorType > 2 && (smoothies[1-1] || smoothies[2-1])) || (processorType > 1 && (smoothies[3-1] || smoothies[4-1] || smoothies[5-1]));
 }
 
-void JE_initSmoothies( void )
+void lava_filter( SDL_Surface *dst, SDL_Surface *src )
 {
-	smoothiesScreen = VGAScreen2;
-}
-
-void JE_smoothies1( void ) /*Lava Effect*/
-{
-	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
-	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
-	int i, j, temp;
+	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
 	
-	s += game_screen->pitch * 185 - 1;
-	src += game_screen->pitch * 185 - 1;
+	/* we don't need to check for over-reading the pixel surfaces since we only
+	 * read from the top 185+1 scanlines, and there should be 320 */
 	
-	for (i = 185 * game_screen->pitch; i; i -= 8)
+	const int dst_pitch = dst->pitch;
+	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
+	const Uint8 * const dst_pixel_ll = (Uint8 *)dst->pixels;  // lower limit
+	
+	const int src_pitch = src->pitch;
+	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
+	const Uint8 * const src_pixel_ll = (Uint8 *)src->pixels;  // lower limit
+	
+	int w = 320 * 185 - 1;
+	
+	for (int y = 185 - 1; y >= 0; --y)
 	{
-		temp = (((i - 1) >> 9) & 15) - 8;
-		temp = (temp < 0 ? -temp : temp) - 1;
+		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
+		src_pixel -= (src_pitch - 320);  // in case pitch is not 320
 		
-		for (j = 8; j; j--)
+		for (int x = 320 - 1; x >= 0; x -= 8)
 		{
-			Uint8 temp_s = (*(src + temp) & 0x0f) * 2;
-			temp_s += *(s + temp + game_screen->pitch) & 0x0f;
-			temp_s += (i + temp < game_screen->pitch) ? 0 : *(s + temp - game_screen->pitch) & 0x0f;
-			*s = (temp_s >> 2) | 0x70;
-			s--;
-			src--;
-		}
-	}
-	VGAScreen = game_screen;
-}
-
-void JE_smoothies2( void ) /*Water effect*/
-{
-	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
-	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
-	int i, j, temp;
-
-	s += game_screen->pitch * 185 - 1;
-	src += game_screen->pitch * 185 - 1;
-
-	for (i = 185 * game_screen->pitch; i; i -= 8)
-	{
-		temp = (((i - 1) >> 10) & 7) - 4;
-		temp = (temp < 0 ? -temp : temp) - 1;
-		
-		for (j = 8; j; j--)
-		{
-			if (*src & 0x30)
+			int waver = abs(((w >> 9) & 0x0f) - 8) - 1;
+			w -= 8;
+			
+			for (int xi = 8 - 1; xi >= 0; --xi)
 			{
-				Uint8 temp_s = *src & 0x0f;
-				temp_s += *(s + temp + game_screen->pitch) & 0x0f;
-				*s = (temp_s >> 1) | (SDAT[2-1] << 4);
-			} else
-				*s = *src;
-			s--;
-			src--;
+				--dst_pixel;
+				--src_pixel;
+				
+				// value is average value of source pixel (2x), destination pixel above, and destination pixel below (all with waver)
+				// hue is red
+				Uint8 value = 0;
+				
+				if (src_pixel + waver >= src_pixel_ll)
+					value += (*(src_pixel + waver) & 0x0f) * 2;
+				value += *(dst_pixel + waver + dst_pitch) & 0x0f;
+				if (dst_pixel + waver - dst_pitch >= dst_pixel_ll)
+					value += *(dst_pixel + waver - dst_pitch) & 0x0f;
+				
+				*dst_pixel = (value / 4) | 0x70;
+			}
 		}
 	}
-	VGAScreen = game_screen;
 }
 
-void JE_smoothies3( void ) /* iced motion blur */
+void water_filter( SDL_Surface *dst, SDL_Surface *src )
 {
-	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
-	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
-	int i;
+	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
 	
-	for (i = 184 * game_screen->pitch; i; i--)
+	Uint8 hue = smoothie_data[1] << 4;
+	
+	/* we don't need to check for over-reading the pixel surfaces since we only
+	 * read from the top 185+1 scanlines, and there should be 320 */
+	
+	const int dst_pitch = dst->pitch;
+	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
+	
+	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
+	
+	int w = 320 * 185 - 1;
+	
+	for (int y = 185 - 1; y >= 0; --y)
 	{
-		*s = ((((*src & 0x0f) + (*s & 0x0f)) >> 1) & 0x0f) | 0x80;
-		s++;
-		src++;
+		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
+		src_pixel -= (src->pitch - 320);  // in case pitch is not 320
+		
+		for (int x = 320 - 1; x >= 0; x -= 8)
+		{
+			int waver = abs(((w >> 10) & 0x07) - 4) - 1;
+			w -= 8;
+			
+			for (int xi = 8 - 1; xi >= 0; --xi)
+			{
+				--dst_pixel;
+				--src_pixel;
+				
+				// pixel is copied from source if not blue
+				// otherwise, value is average of value of source pixel and destination pixel below (with waver)
+				if ((*src_pixel & 0x30) == 0)
+				{
+					*dst_pixel = *src_pixel;
+				}
+				else
+				{
+					Uint8 value = *src_pixel & 0x0f;
+					value += *(dst_pixel + waver + dst_pitch) & 0x0f;
+					*dst_pixel = (value / 2) | hue;
+				}
+			}
+		}
 	}
-	VGAScreen = game_screen;
 }
 
-void JE_smoothies4( void ) /* motion blur */
+void iced_blur_filter( SDL_Surface *dst, SDL_Surface *src )
 {
-	Uint8 *s = game_screen->pixels; /* screen pointer, 8-bit specific */
-	Uint8 *src = VGAScreen->pixels; /* screen pointer, 8-bit specific */
-	int i;
+	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
 	
-	for (i = 184 * game_screen->pitch; i; i--)
+	Uint8 *dst_pixel = dst->pixels;
+	const Uint8 *src_pixel = src->pixels;
+	
+	for (int y = 0; y < 184; ++y)
 	{
-		*s = ((((*src & 0x0f) + (*s & 0x0f)) >> 1) & 0x0f) | (*src & 0xf0);
-		s++;
-		src++;
+		for (int x = 0; x < 320; ++x)
+		{
+			// value is average value of source pixel and destination pixel
+			// hue is icy blue
+			
+			const Uint8 value = (*src_pixel & 0x0f) + (*dst_pixel & 0x0f);
+			*dst_pixel = (value / 2) | 0x80;
+			
+			++dst_pixel;
+			++src_pixel;
+		}
+		
+		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
+		src_pixel += (src->pitch - 320);  // in case pitch is not 320
 	}
-	VGAScreen = game_screen;
+}
+
+void blur_filter( SDL_Surface *dst, SDL_Surface *src )
+{
+	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
+	
+	Uint8 *dst_pixel = dst->pixels;
+	const Uint8 *src_pixel = src->pixels;
+	
+	for (int y = 0; y < 184; ++y)
+	{
+		for (int x = 0; x < 320; ++x)
+		{
+			// value is average value of source pixel and destination pixel
+			// hue is source pixel hue
+			
+			const Uint8 value = (*src_pixel & 0x0f) + (*dst_pixel & 0x0f);
+			*dst_pixel = (value / 2) | (*src_pixel & 0xf0);
+			
+			++dst_pixel;
+			++src_pixel;
+		}
+		
+		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
+		src_pixel += (src->pitch - 320);  // in case pitch is not 320
+	}
 }
 
 // kate: tab-width 4; vim: set noet:

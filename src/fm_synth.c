@@ -32,7 +32,7 @@ void opl_update( OPLSAMPLE *buf, int samples )
 
 void opl_init( void )
 {
-	YM3812Init(1, 3579545, 64000);
+	YM3812Init(1, 3579545, 32000);
 }
 
 void opl_deinit( void )

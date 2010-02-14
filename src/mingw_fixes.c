@@ -16,13 +16,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <mingw_fixes.h>
+#include "mingw_fixes.h"
 
-#ifndef strchrnul
 char *strchrnul( const char *s, int c )
 {
 	for (; *s != c && *s != '\0'; ++s)
 		;
 	return (char *)s;
 }
-#endif

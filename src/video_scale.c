@@ -1,8 +1,9 @@
 /* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
- * Copyright (C) 2007-2009  The OpenTyrian Development Team
- * hq2x, hq3x, hq4x Copyright (C) 2003 MaxSt ( maxst@hiend3d.com )
- * Scale2x, Scale3x Copyright (C) 2001, 2002, 2003, 2004 Andrea Mazzoleni
+ * Copyright (C) 2007-2010  The OpenTyrian Development Team
+ * 
+ * Scale2x, Scale3x
+ * Copyright (C) 2001, 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,22 +27,23 @@
 
 #include <assert.h>
 
-void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale );
-void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale );
+void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface );
+void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface );
 
-void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale );
-void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale );
+void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface );
+void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface );
 
-int scale, scaler = 1;
+int scaler = 1;  // default is Scale2x
+
 
 const struct scaler_struct scalers[] =
 {
-	{ 1, nn_16,      nn_32,      "None" },
-	{ 2, nn_16,      nn_32,      "2x" },
-	{ 2, scale2x_16, scale2x_32, "Scale2x" }
+	{ 2 * vga_width, 2 * vga_height, 16, nn_16,      nn_32,      "2x" },
+	{ 2 * vga_width, 2 * vga_height, 16, scale2x_16, scale2x_32, "Scale2x" }
 };
 
-void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
+
+void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface )
 {
 	Uint8 *src = src_surface->pixels, *src_temp,
 	      *dst = dst_surface->pixels, *dst_temp;
@@ -50,7 +52,9 @@ void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	const int dst_Bpp = 4;         // dst_surface->format->BytesPerPixel
 	
 	const int height = vga_height, // src_surface->h
-	          width = vga_width;   // src_surface->w
+	          width = vga_width,   // src_surface->w
+	          scale = dst_surface->w / width;
+	assert(scale == dst_surface->h / height);
 	
 	for (int y = height; y > 0; y--)
 	{
@@ -78,16 +82,18 @@ void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	}
 }
 
-void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
+void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface )
 {
 	Uint8 *src = src_surface->pixels, *src_temp,
-	      *dst = dst_surface->pixels + (dst_surface->h - vga_height*scale)/2*dst_surface->pitch, *dst_temp;
+	      *dst = dst_surface->pixels+40*dst_surface->pitch, *dst_temp;
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel
 	
 	const int height = vga_height, // src_surface->h
-	          width = vga_width;   // src_surface->w
+	          width = vga_width,   // src_surface->w
+	          scale = dst_surface->w / width;
+	assert(scale == dst_surface->h / height);
 	
 	for (int y = height; y > 0; y--)
 	{
@@ -115,10 +121,9 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	}
 }
 
-void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
+
+void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface )
 {
-	(void)scale;
-	
 	Uint8 *src = src_surface->pixels, *src_temp,
 	      *dst = dst_surface->pixels, *dst_temp;
 	int src_pitch = src_surface->pitch,
@@ -170,12 +175,10 @@ void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
 	}
 }
 
-void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface, int scale )
+void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface )
 {
-	(void)scale;
-	
 	Uint8 *src = src_surface->pixels, *src_temp,
-	      *dst = dst_surface->pixels + (dst_surface->h - vga_height*scale)/2*dst_surface->pitch, *dst_temp;
+	      *dst = dst_surface->pixels+40*dst_surface->pitch, *dst_temp;
 	int src_pitch = src_surface->pitch,
 	    dst_pitch = dst_surface->pitch;
 	const int dst_Bpp = 2;         // dst_surface->format->BytesPerPixel

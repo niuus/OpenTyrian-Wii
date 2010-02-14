@@ -20,27 +20,31 @@
 #define OPENTYR_H
 
 #include "SDL.h"
-#include <math.h> /* For the ROUND() macro */
+
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void printDebug(char *text, FILE *debugFile);
-
-#define STUB() printf("TODO: %s:%d %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__)
-
-/* Gets number of elements in an array.
- * !!! USE WITH ARRAYS ONLY !!! */
-#define COUNTOF(x) (sizeof(x) / sizeof *(x))
+#define COUNTOF(x) (sizeof(x) / sizeof *(x))  // use only on arrays!
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI    3.14159265358979323846  // pi
 #endif
 #ifndef M_PI_2
-#define M_PI_2 1.57079632679489661923
+#define M_PI_2  1.57079632679489661923  // pi/2
+#endif
+#ifndef M_PI_4
+#define M_PI_4  0.78539816339744830962  // pi/4
 #endif
 
+typedef unsigned int uint;
+typedef unsigned long ulong;
+
+// Pascal types, yuck.
 typedef Sint32 JE_longint;
 typedef Sint16 JE_integer;
 typedef Sint8  JE_shortint;
@@ -48,13 +52,22 @@ typedef Uint16 JE_word;
 typedef Uint8  JE_byte;
 typedef bool   JE_boolean;
 typedef char   JE_char;
-typedef double JE_real;
+typedef float  JE_real;
 
-extern const char *opentyrian_str, *opentyrian_version;
+struct keyTable {
+        SDLKey sym;
+        char name;
+};
 
 char *strnztcpy( char *to, const char *from, size_t count );
 
+extern const char *opentyrian_str, *opentyrian_version;
+
+extern char errorTemp[255];
+
 void opentyrian_menu( void );
+
+int errorOut( char *error );
 
 #endif /* OPENTYR_H */
 

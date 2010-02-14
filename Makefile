@@ -25,7 +25,7 @@ INCLUDES 	:=  include src
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS  = 	-g -O2 -Wall $(MACHDEP) $(INCLUDE) \
+CFLAGS  = 	-g0 -O2 -DNDEBUG -Wall $(MACHDEP) $(INCLUDE) \
 			-fomit-frame-pointer -Wno-strict-aliasing \
 			-DWORDS_BIGENDIAN -std=gnu99 -fgnu89-inline
 CXXFLAGS	= $(CFLAGS)
@@ -41,7 +41,7 @@ LIBS	:=	 -L/mingw/lib -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -ljpeg -lpng -
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CURDIR)
+LIBDIRS	:= 
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional

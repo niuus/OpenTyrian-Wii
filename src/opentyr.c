@@ -18,10 +18,11 @@
  */
 #include <fat.h>
 #include "config.h"
+#include "destruct.h"
 #include "editship.h"
 #include "episodes.h"
 #include "file.h"
-#include "fonthand.h"
+#include "font.h"
 #include "helptext.h"
 #include "hg_revision.h"
 #include "joystick.h"
@@ -53,25 +54,19 @@
 #include <stdlib.h>
 #include <time.h>
 
-void printDebug(char *text, FILE *debugFile)
-{
-	//FILE *debugFile = fopen("debug.txt", "w");
-	//fseek(debugFile, 0, SEEK_END);
-	fprintf(debugFile, "%s", text);
-	//fclose(debugFile);
-}
-
 const char *opentyrian_str = "OpenTyrian",
            *opentyrian_version = "Classic (" HG_REV ")";
 const char *opentyrian_menu_items[] =
 {
 	"About OpenTyrian",
-	"Toggle Fullscreen",
+	//"Toggle Fullscreen",
 	"Scaler: None",
 	/* "Play Destruct", */
 	"Jukebox",
 	"Return to Main Menu"
 };
+
+char errorTemp[255];
 
 /* zero-terminated strncpy */
 char *strnztcpy( char *to, const char *from, size_t count )
@@ -87,17 +82,16 @@ void opentyrian_menu( void )
 	bool quit = false, fade_in = true;
 	
 	int temp_scaler = scaler;
-	char buffer[100];
 	
 	fade_black(10);
 	JE_loadPic(13, false);
-
-	JE_outTextAdjust(JE_fontCenter(opentyrian_str, FONT_SHAPES), 5, opentyrian_str, 15, -3, FONT_SHAPES, false);
-
+	
+	draw_font_hv(VGAScreen, VGAScreen->w / 2, 5, opentyrian_str, large_font, centered, 15, -3);
+	
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->pitch * VGAScreen2->h);
-
+	
 	JE_showVGA();
-
+	
 	play_song(36); // A Field for Mag
 	
 	do
@@ -107,6 +101,7 @@ void opentyrian_menu( void )
 		for (int i = 0; i <= maxSel; i++)
 		{
 			const char *text = opentyrian_menu_items[i];
+			char buffer[100];
 			
 			if (i == 1) /* Scaler */
 			{
@@ -114,9 +109,7 @@ void opentyrian_menu( void )
 				text = buffer;
 			}
 			
-			JE_outTextAdjust(JE_fontCenter(text, SMALL_FONT_SHAPES),
-			                 (i != maxSel) ? (i * 16 + 32) : 118, text,
-			                 15, (i != sel ? -4 : -2), SMALL_FONT_SHAPES, true);
+			draw_font_hv_shadow(VGAScreen, VGAScreen->w / 2, (i != maxSel) ? i * 16 + 32 : 118, text, normal_font, centered, 15, (i != sel) ? -4 : -2, false, 2);
 		}
 		
 		JE_showVGA();
@@ -195,17 +188,25 @@ void opentyrian_menu( void )
 							break;
 						/*case 1: // Fullscreen
 							JE_playSampleNum(S_SELECT);
-
-							fullscreen_enabled = !fullscreen_enabled;
-							reinit_video();
+							
+							if (!init_scaler(scaler, !fullscreen_enabled) && // try new fullscreen state
+							    !init_any_scaler(!fullscreen_enabled) &&     // try any scaler in new fullscreen state
+							    !init_scaler(scaler, fullscreen_enabled))    // revert on fail
+							{
+								exit(EXIT_FAILURE);
+							}
 							break;*/
 						case 1: /* Scaler */
 							JE_playSampleNum(S_SELECT);
 							
 							if (scaler != temp_scaler)
 							{
-								scaler = temp_scaler;
-								reinit_video();
+								if (!init_scaler(temp_scaler, fullscreen_enabled) &&   // try new scaler
+								    !init_scaler(temp_scaler, !fullscreen_enabled) &&  // try other fullscreen state
+								    !init_scaler(scaler, fullscreen_enabled))          // revert on fail
+								{
+									exit(EXIT_FAILURE);
+								}
 							}
 							break;
 						case 2: /* Jukebox */
@@ -235,11 +236,24 @@ void opentyrian_menu( void )
 	} while (!quit);
 }
 
+int errorOut( char *error )
+{
+	FILE *eFile = fopen("sd:/apps/OpenTyrianWii/error.txt", "a");
+
+	fputs(error, eFile);
+
+	fclose(eFile);
+
+	return 0;
+}
+
 int main( int argc, char *argv[] )
 {
-	fatInitDefault();
-	FILE *debugFile = fopen("debug.txt", "w");
 	mt_srand(time(NULL));
+
+	fatInitDefault();
+
+	remove("sd:/apps/OpenTyrianWii/error.txt");
 
 	printf("\nWelcome to... >> %s %s <<\n\n", opentyrian_str, opentyrian_version);
 
@@ -251,14 +265,21 @@ int main( int argc, char *argv[] )
 	
 	if (SDL_Init(0))
 	{
-		char error[50];
-		sprintf(error, "Failed to initialize SDL: %s\n", SDL_GetError());
-		printDebug(error, debugFile);
+		//printf(error, "Failed to initialize SDL: %s\n", SDL_GetError());
+		sprintf(errorTemp, "Failed to initialize SDL: %s\n", SDL_GetError());
+		errorOut(errorTemp);
 		return -1;
+	}
+	else
+	{
+		sprintf(errorTemp, "SDL successfully initialized.\n");
+		errorOut(errorTemp);
 	}
 	
 	JE_loadConfiguration();
-
+	
+	xmas = xmas_time();  // arg handler may override
+	
 	JE_paramCheck(argc, argv);
 
 	JE_scanForEpisodes();
@@ -268,22 +289,17 @@ int main( int argc, char *argv[] )
 	init_joysticks();
 	printf("assuming mouse detected\n"); // SDL can't tell us if there isn't one
 	
-	xmas |= xmas_time();
 	if (xmas && (!dir_file_exists(data_dir(), "tyrianc.shp") || !dir_file_exists(data_dir(), "voicesc.snd")))
 	{
 		xmas = false;
 		
 		fprintf(stderr, "warning: Christmas is missing.\n");
 	}
-	printDebug("Christmas Mode determined.\n", debugFile);
 	
 	JE_loadPals();
-	printDebug("Palettes loaded.", debugFile);
 	JE_loadMainShapeTables(xmas ? "tyrianc.shp" : "tyrian.shp");
-	printDebug("Shape tables loaded.\n", debugFile);
-	
+	errorOut("MainShapeTables loaded.\n");
 	tempScreenSeg = VGAScreen;
-	printDebug("tempScreenSeg = VGAScreen\n", debugFile);
 	if (xmas && !xmas_prompt())
 	{
 		xmas = false;
@@ -291,7 +307,7 @@ int main( int argc, char *argv[] )
 		free_main_shape_tables();
 		JE_loadMainShapeTables("tyrian.shp");
 	}
-	printDebug("Shape tables reloaded.\n", debugFile);
+	
 	
 	/* Default Options */
 	youAreCheating = false;
@@ -303,14 +319,10 @@ int main( int argc, char *argv[] )
 		printf("initializing SDL audio...\n");
 		
 		init_audio();
-
-		printDebug("Audio inited.\n", debugFile);
 		
 		load_music();
-		printDebug("Music loaded.\n", debugFile);
 		
 		JE_loadSndFile("tyrian.snd", xmas ? "voicesc.snd" : "voices.snd");
-		printDebug("Sound file loaded.\n", debugFile);
 	}
 	else
 	{
@@ -319,10 +331,6 @@ int main( int argc, char *argv[] )
 	
 	if (record_demo)
 		printf("demo recording enabled (input limited to keyboard)\n");
-
-	megaData1 = malloc(sizeof(*megaData1));
-	megaData2 = malloc(sizeof(*megaData2));
-	megaData3 = malloc(sizeof(*megaData3));
 
 	JE_loadExtraShapes();  /*Editship*/
 
@@ -337,14 +345,31 @@ int main( int argc, char *argv[] )
 		}
 	}
 	
-
-	printDebug("Initialization completed.  Calling JE_main.\n", debugFile);
-
-	JE_main();
+#ifdef NDEBUG
+	if (!isNetworkGame)
+		intro_logos();
+#endif
 	
-	// typically we don't get here, see JE_tyrianHalt()
-	deinit_video();
-	deinit_joysticks();
+	for (; ; )
+	{
+		JE_initPlayerData();
+		JE_sortHighScores();
+		
+		if (JE_titleScreen(true))
+			break;  // user quit from title screen
+		
+		if (loadDestruct)
+		{
+			JE_destructGame();
+			loadDestruct = false;
+		}
+		else
+		{
+			JE_main();
+		}
+	}
+	
+	JE_tyrianHalt(0);
 	
 	return 0;
 }

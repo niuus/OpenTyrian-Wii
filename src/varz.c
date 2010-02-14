@@ -35,7 +35,6 @@
 #include "video.h"
 
 JE_integer tempDat, tempDat2, tempDat3;
-JE_boolean tempb2;
 
 const JE_byte SANextShip[SA + 2] /* [0..SA + 1] */ = { 3, 9, 6, 2, 5, 1, 4, 3, 7 }; // 0 -> 3 -> 2 -> 6 -> 4 -> 5 -> 1 -> 9 -> 7
 const JE_word SASpecialWeapon[SA] /* [1..SA] */  = { 7, 8, 9, 10, 11, 12, 13 };
@@ -202,21 +201,15 @@ JE_word curLoc; /*Current Pixel location of background 1*/
 
 JE_boolean firstGameOver, gameLoaded, enemyStillExploding;
 
-/* Error Checking */
-JE_word tempSS;
-
 
 /* Destruction Ratio */
 JE_word totalEnemy;
 JE_word enemyKilled;
 
-/* Buffer */
-JE_Map1Buffer *map1BufferTop, *map1BufferBot;
-
 /* Shape/Map Data - All in one Segment! */
-struct JE_MegaDataType1 *megaData1 = NULL;
-struct JE_MegaDataType2 *megaData2 = NULL;
-struct JE_MegaDataType3 *megaData3 = NULL;
+struct JE_MegaDataType1 megaData1;
+struct JE_MegaDataType2 megaData2;
+struct JE_MegaDataType3 megaData3;
 
 /* Secret Level Display */
 JE_byte flash;
@@ -254,8 +247,6 @@ JE_boolean editShip1, editShip2;
 JE_boolean globalFlags[10]; /* [1..10] */
 JE_byte levelSong;
 
-JE_boolean drawGameSaved;
-
 /* DESTRUCT game */
 JE_boolean loadDestruct;
 
@@ -264,14 +255,13 @@ JE_word mapOrigin, mapPNum;
 JE_byte mapPlanet[5], mapSection[5]; /* [1..5] */
 
 /* Interface Constants */
-JE_boolean loadTitleScreen = true;
 JE_boolean moveTyrianLogoUp;
 JE_boolean skipStarShowVGA;
 
 /*EnemyData*/
 JE_EnemyType enemy;
 JE_EnemyAvailType enemyAvail;
-JE_word enemyAvailOfs, topEnemyAvailOfs, groundEnemyAvailOfs, groundEnemyAvailOfs2, enemyOffset;
+JE_word enemyOffset;
 JE_word enemyOnScreen;
 JE_byte enemyShapeTables[6]; /* [1..6] */
 JE_boolean uniqueEnemy;
@@ -294,9 +284,6 @@ JE_boolean  spraySpecial;
 JE_byte     doIced;
 JE_boolean  infiniteShot;
 
-JE_byte superBomb[2]; /* [1..2] */
-
-JE_integer tempShotX, tempShotY;
 PlayerShotDataType playerShotData[MAX_PWEAPON + 1]; /* [1..MaxPWeapon+1] */
 
 JE_byte chain;
@@ -305,44 +292,8 @@ JE_byte chain;
 JE_boolean allPlayersGone; /*Both players dead and finished exploding*/
 
 JE_byte shotAvail[MAX_PWEAPON]; /* [1..MaxPWeapon] */   /*0:Avail 1-255:Duration left*/
-JE_byte shadowyDist;
-JE_byte purpleBallsRemaining[2]; /* [1..2] */
+const uint shadowYDist = 10;
 
-JE_boolean playerAlive, playerAliveB;
-JE_byte playerStillExploding, playerStillExploding2;
-
-JE_byte sAni;
-JE_integer sAniX, sAniY, sAniXNeg, sAniYNeg;  /* X,Y ranges of field of hit */
-JE_integer baseSpeedOld, baseSpeedOld2, baseSpeed, baseSpeedB, baseSpeed2, baseSpeed2B,
-           baseSpeedKeyH, baseSpeedKeyV;
-JE_boolean keyMoveWait;
-
-JE_word playerInvulnerable1, playerInvulnerable2;
-
-JE_integer lastPXShotMove, lastPYShotMove;
-
-JE_integer PXB, PYB, lastPX2B, lastPY2B, PXChangeB, PYChangeB,
-           lastTurnB, lastTurn2B;
-JE_byte stopWaitXB, stopWaitYB;
-
-JE_integer PX, PY, lastPX2, lastPY2, PXChange, PYChange,
-           lastTurn, lastTurn2;
-JE_byte stopWaitX, stopWaitY;
-
-JE_integer PYHist[3], PYHistB[3]; /* [1..3] */
-
-/*JE_shortint optionMoveX[10], optionMoveY[10]; \* [1..10] *\ */
-JE_word option1Draw, option2Draw, option1Item, option2Item;
-JE_byte option1AmmoMax, option2AmmoMax;
-JE_word option1AmmoRechargeWait, option2AmmoRechargeWait,
-        option1AmmoRechargeWaitMax, option2AmmoRechargeWaitMax;
-JE_integer option1Ammo, option2Ammo;
-JE_integer optionAni1, optionAni2, optionCharge1, optionCharge2, optionCharge1Wait, optionCharge2Wait,
-           option1X, option1LastX, option1Y, option1LastY,
-           option2X, option2LastX, option2Y, option2LastY,
-           option1MaxX, option1MinX, option2MaxX, option2MinX,
-           option1MaxY, option1MinY, option2MaxY, option2MinY;
-JE_boolean optionAni1Go, optionAni2Go, option1Stop, option2Stop;
 JE_real optionSatelliteRotate;
 
 JE_integer optionAttachmentMove;
@@ -350,9 +301,6 @@ JE_boolean optionAttachmentLinked, optionAttachmentReturn;
 
 
 JE_byte chargeWait, chargeLevel, chargeMax, chargeGr, chargeGrWait;
-
-JE_boolean playerHNotReady;
-JE_word playerHX[20], playerHY[20]; /* [1..20] */
 
 JE_word neat;
 
@@ -369,37 +317,26 @@ superpixel_type superpixels[MAX_SUPERPIXELS]; /* [0..MaxSP] */
 unsigned int last_superpixel;
 
 /*Temporary Numbers*/
-JE_word avail;
-JE_word tempCount;
-JE_integer tempI, tempI2, tempI3, tempI4, tempI5;
+JE_integer tempI, tempI2, tempI3, tempI4;
 JE_longint tempL;
-JE_real tempR, tempR2;
-/*JE_integer tempX, tempY;*/
 
-JE_boolean tempB;
 JE_byte temp, temp2, temp3, temp4, temp5, tempPos;
 JE_word tempX, tempY, tempX2, tempY2;
-JE_word tempW, tempW2, tempW3, tempW4, tempW5, tempOfs;
-
+JE_word tempW, tempW2;
 
 JE_boolean doNotSaveBackup;
 
-JE_boolean tempSpecial;
-
 JE_word x, y;
-JE_integer a, b, c, d;
+JE_integer b;
 JE_byte playerNum;
 
 JE_byte **BKwrap1to, **BKwrap2to, **BKwrap3to,
         **BKwrap1, **BKwrap2, **BKwrap3;
 
-JE_byte min, max;
-
 JE_shortint specialWeaponFilter, specialWeaponFreq;
 JE_word     specialWeaponWpn;
 JE_boolean  linkToPlayer;
 
-JE_integer baseArmor, baseArmor2;
 JE_word shipGr, shipGr2;
 Sprite2_array *shipGrPtr, *shipGr2ptr;
 
@@ -410,177 +347,103 @@ void JE_getShipInfo( void )
 	shipGrPtr = &shapes9;
 	shipGr2ptr = &shapes9;
 
-	powerAdd  = powerSys[pItems[P_GENERATOR]].power;
+	powerAdd  = powerSys[player[0].items.generator].power;
 
-	extraShip = pItems[P_SHIP] > 90;
+	extraShip = player[0].items.ship > 90;
 	if (extraShip)
 	{
-		JE_byte base = (pItems[P_SHIP] - 91) * 15;
-		shipGr = JE_SGr(pItems[P_SHIP] - 90, &shipGrPtr);
-		armorLevel = extraShips[base + 7];
-	} else {
-		shipGr = ships[pItems[P_SHIP]].shipgraphic;
-		armorLevel = ships[pItems[P_SHIP]].dmg;
+		JE_byte base = (player[0].items.ship - 91) * 15;
+		shipGr = JE_SGr(player[0].items.ship - 90, &shipGrPtr);
+		player[0].armor = extraShips[base + 7];
+	}
+	else
+	{
+		shipGr = ships[player[0].items.ship].shipgraphic;
+		player[0].armor = ships[player[0].items.ship].dmg;
 	}
 
-	extraShip2 = pItemsPlayer2[P_SHIP] > 90;
+	extraShip2 = player[1].items.ship > 90;
 	if (extraShip2)
 	{
-		JE_byte base2 = (pItemsPlayer2[P_SHIP] - 91) * 15;
-		shipGr2 = JE_SGr(pItemsPlayer2[P_SHIP] - 90, &shipGr2ptr);
-		baseArmor2 = extraShips[base2 + 7]; /* bug? */
-	} else {
+		JE_byte base2 = (player[1].items.ship - 91) * 15;
+		shipGr2 = JE_SGr(player[1].items.ship - 90, &shipGr2ptr);
+		player[1].armor = extraShips[base2 + 7]; /* bug? */
+	}
+	else
+	{
 		shipGr2 = 0;
-		armorLevel2 = 10;
+		player[1].armor = 10;
 	}
-
-	baseArmor = armorLevel;
-	baseArmor2 = armorLevel2;
-
-	if (extraShip)
+	
+	for (uint i = 0; i < COUNTOF(player); ++i)
 	{
-		sAni = 2;
-	} else {
-		sAni = ships[pItems[P_SHIP]].ani;
-	}
-	if (sAni == 0)
-	{
-		sAniX = 12;
-		sAniY = 10;
-		sAniXNeg = -12;
-		sAniYNeg = -10;
-	} else {
-		sAniX = 11;
-		sAniY = 14;
-		sAniXNeg = -11;
-		sAniYNeg = -14;
+		player[i].initial_armor = player[i].armor;
+		
+		
+		uint temp = ((i == 0 && extraShip) ||
+		             (i == 1 && extraShip2)) ? 2 : ships[player[i].items.ship].ani;
+		
+		if (temp == 0)
+		{
+			player[i].shot_hit_area_x = 12;
+			player[i].shot_hit_area_y = 10;
+		}
+		else
+		{
+			player[i].shot_hit_area_x = 11;
+			player[i].shot_hit_area_y = 14;
+		}
 	}
 }
 
 JE_word JE_SGr( JE_word ship, Sprite2_array **ptr )
 {
 	const JE_word GR[15] /* [1..15] */ = {233, 157, 195, 271, 81, 0, 119, 5, 43, 81, 119, 157, 195, 233, 271};
-
-	JE_word tempW = 1;
-
-	tempW = extraShips[(ship - 1) * 15];
+	
+	JE_word tempW = extraShips[(ship - 1) * 15];
 	if (tempW > 7)
-	{
 		*ptr = extraShapes;
-	}
+	
 	return GR[tempW-1];
-}
-
-void JE_calcPurpleBall( JE_byte playernum )
-{
-	static const JE_byte purpleBallMax[12] /* [0..11] */ = {1, 1, 2, 4, 8, 12, 16, 20, 25, 30, 40, 50};
-
-	purpleBallsRemaining[playernum-1] = purpleBallMax[portPower[playernum-1]];
 }
 
 void JE_drawOptions( void )
 {
 	SDL_Surface *temp_surface = VGAScreen;
 	VGAScreen = VGAScreenSeg;
-
-	if (twoPlayerMode)
+	
+	Player *this_player = &player[twoPlayerMode ? 1 : 0];
+	
+	for (uint i = 0; i < COUNTOF(this_player->sidekick); ++i)
 	{
-		option1Draw = 108;
-		option2Draw = 126;
-		if (pItemsPlayer2[P_LEFT_SIDEKICK] == 0)
-			option1Draw = 0;
-		if (pItemsPlayer2[P_RIGHT_SIDEKICK] == 0)
-			option2Draw = 0;
-		option1Item = pItemsPlayer2[P_LEFT_SIDEKICK];
-		option2Item = pItemsPlayer2[P_RIGHT_SIDEKICK];
-		tempX = PXB;
-		tempY = PYB;
+		JE_OptionType *this_option = &options[this_player->items.sidekick[i]];
+		
+		this_player->sidekick[i].ammo = 
+		this_player->sidekick[i].ammo_max = this_option->ammo;
+		
+		this_player->sidekick[i].ammo_refill_ticks =
+		this_player->sidekick[i].ammo_refill_ticks_max = (105 - this_player->sidekick[i].ammo) * 4;
+		
+		this_player->sidekick[i].style = this_option->tr;
+		
+		this_player->sidekick[i].animation_enabled = (this_option->option == 1);
+		this_player->sidekick[i].animation_frame = 0;
+		
+		this_player->sidekick[i].charge = 0;
+		this_player->sidekick[i].charge_ticks = 20;
+		
+		
+		// draw initial sidekick HUD
+		const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i];
+		
+		fill_rectangle_xy(VGAScreenSeg, 284, y, 284 + 28, y + 15, 0);
+		if (this_option->icongr > 0)
+			blit_sprite(VGAScreenSeg, 284, y, OPTION_SHAPES, this_option->icongr - 1);  // sidekick HUD icon
+		draw_segmented_gauge(VGAScreenSeg, 284, y + 13, 112, 2, 2, MAX(1, this_player->sidekick[i].ammo_max / 10), this_player->sidekick[i].ammo);
 	}
-	else
-	{
-		option1Draw = 64;
-		option2Draw = 82;
-		option1Item = pItems[P_LEFT_SIDEKICK];
-		option2Item = pItems[P_RIGHT_SIDEKICK];
-		if (option1Item == 0)
-			option1Draw = 0;
-		if (option2Item == 0)
-			option2Draw = 0;
-		tempX = PX;
-		tempY = PY;
-	}
-	option1X = tempX - 8;
-	option1LastX = 0;
-	option1Y = tempY + 2;
-	option1LastY = 0;
-	option2X = tempX + 8;
-	option2LastX = 0;
-	option2Y = tempY + 2;
-	option2LastY = 0;
-
-	option1Ammo = options[option1Item].ammo;
-	option2Ammo = options[option2Item].ammo;
-
-	optionAni1Go = options[option1Item].option == 1;
-	optionAni2Go = options[option2Item].option == 1;
-	option1Stop  = options[option1Item].stop;
-	option1MaxX  = options[option1Item].opspd;
-	option1MinX  = -option1MaxX;
-	option1MaxY  = options[option1Item].opspd;
-	option1MinY  = -option1MaxY;
-	option2Stop  = options[option2Item].stop;
-	option2MaxX  = options[option2Item].opspd;
-	option2MinX  = -option2MaxX;
-	option2MaxY  = options[option2Item].opspd;
-	option2MinY  = -option2MaxY;
-
-	if (option1Ammo > 0)
-		option1AmmoMax = option1Ammo / 10;
-	else
-		option1AmmoMax = 2;
-	if (option1AmmoMax == 0)
-		option1AmmoMax++;
-	option1AmmoRechargeWaitMax = (105 - option1Ammo) * 4;
-	option1AmmoRechargeWait = option1AmmoRechargeWaitMax;
-
-	if (option2Ammo > 0)
-		option2AmmoMax = option2Ammo / 10;
-	else
-		option2AmmoMax = 2;
-	if (option2AmmoMax == 0)
-		option2AmmoMax++;
-	option2AmmoRechargeWaitMax = (105 - option2Ammo) * 4;
-	option2AmmoRechargeWait = option2AmmoRechargeWaitMax;
-
-	if (option1Draw > 0)
-		JE_c_bar(284, option1Draw, 284 + 28, option1Draw + 15, 0);
-	if (option2Draw > 0)
-		JE_c_bar(284, option2Draw, 284 + 28, option2Draw + 15, 0);
-
-	if (options[option1Item].icongr > 0)
-		blit_sprite(VGAScreenSeg, 284, option1Draw, OPTION_SHAPES, options[option1Item].icongr - 1);  // left sidekick
-	if (options[option2Item].icongr > 0)
-		blit_sprite(VGAScreenSeg, 284, option2Draw, OPTION_SHAPES, options[option2Item].icongr - 1);  // right sidekick
-
-	if (option1Draw > 0)
-		JE_barDrawDirect(284, option1Draw + 13, option1AmmoMax, 112, option1Ammo, 2, 2);
-	if (option2Draw > 0)
-		JE_barDrawDirect(284, option2Draw + 13, option2AmmoMax, 112, option2Ammo, 2, 2);
-
-	if (option1Ammo == 0)
-		option1Ammo = -1;
-	if (option2Ammo == 0)
-		option2Ammo = -1;
-
-	optionAni1 = 1;
-	optionAni2 = 1;
-	optionCharge1Wait = 20;
-	optionCharge2Wait = 20;
-	optionCharge1 = 0;
-	optionCharge2 = 0;
-
+	
 	VGAScreen = temp_surface;
-
+	
 	JE_drawOptionLevel();
 }
 
@@ -590,7 +453,7 @@ void JE_drawOptionLevel( void )
 	{
 		for (temp = 1; temp <= 3; temp++)
 		{
-			JE_c_bar(268, 127 + (temp - 1) * 6, 269, 127 + 3 + (temp - 1) * 6, 193 + ((pItemsPlayer2[P2_SIDEKICK_MODE] - 100) == temp) * 11);
+			fill_rectangle_xy(VGAScreenSeg, 268, 127 + (temp - 1) * 6, 269, 127 + 3 + (temp - 1) * 6, 193 + ((player[1].items.sidekick_level - 100) == temp) * 11);
 		}
 	}
 }
@@ -603,13 +466,6 @@ void JE_tyrianHalt( JE_byte code )
 
 	/* TODO: NETWORK */
 
-	free(megaData1);
-	megaData1 = NULL;
-	free(megaData2);
-	megaData2 = NULL;
-	free(megaData3);
-	megaData3 = NULL;
-	
 	free_main_shape_tables();
 	
 	free_sprite2s(&shapes6);
@@ -661,7 +517,7 @@ void JE_tyrianHalt( JE_byte code )
 	exit(code);
 }
 
-void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, JE_word mouseX, JE_word mouseY, JE_word wpNum, JE_byte playerNum )
+void JE_initPlayerShot( JE_word portNum, uint shot_i, JE_word PX, JE_word PY, JE_word mouseX, JE_word mouseY, JE_word wpNum, JE_byte playerNum )
 {
 	const JE_byte soundChannel[11] /* [1..11] */ = {0, 2, 4, 4, 2, 2, 5, 5, 1, 4, 1};
 
@@ -676,7 +532,7 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 
 				if (weapons[wpNum].sound > 0)
 				{
-					soundQueue[soundChannel[temp-1]] = weapons[wpNum].sound;
+					soundQueue[soundChannel[shot_i]] = weapons[wpNum].sound;
 				}
 
 				/*Rot*/
@@ -695,11 +551,11 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 						return;
 					}
 
-					if (shotMultiPos[temp-1] == weapons[wpNum].max || shotMultiPos[temp-1] > 8)
+					if (shotMultiPos[shot_i] == weapons[wpNum].max || shotMultiPos[shot_i] > 8)
 					{
-						shotMultiPos[temp-1] = 1;
+						shotMultiPos[shot_i] = 1;
 					} else {
-						shotMultiPos[temp-1]++;
+						shotMultiPos[shot_i]++;
 					}
 
 					playerShotData[b].chainReaction = 0;
@@ -742,29 +598,29 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 
 					playerShotData[b].shotTrail = weapons[wpNum].trail;
 
-					if (weapons[wpNum].attack[shotMultiPos[temp-1]-1] > 99 && weapons[wpNum].attack[shotMultiPos[temp-1]-1] < 250)
+					if (weapons[wpNum].attack[shotMultiPos[shot_i]-1] > 99 && weapons[wpNum].attack[shotMultiPos[shot_i]-1] < 250)
 					{
-						playerShotData[b].chainReaction = weapons[wpNum].attack[shotMultiPos[temp-1]-1] - 100;
+						playerShotData[b].chainReaction = weapons[wpNum].attack[shotMultiPos[shot_i]-1] - 100;
 						playerShotData[b].shotDmg = 1;
 					} else {
-						playerShotData[b].shotDmg = weapons[wpNum].attack[shotMultiPos[temp-1]-1];
+						playerShotData[b].shotDmg = weapons[wpNum].attack[shotMultiPos[shot_i]-1];
 					}
 
 					playerShotData[b].shotBlastFilter = weapons[wpNum].shipblastfilter;
 
-					tempI = weapons[wpNum].by[shotMultiPos[temp-1]-1];
+					tempI = weapons[wpNum].by[shotMultiPos[shot_i]-1];
 
 					/*Note: Only front selection used for player shots...*/
 
-					playerShotData[b].shotX = PX + weapons[wpNum].bx[shotMultiPos[temp-1]-1];
+					playerShotData[b].shotX = PX + weapons[wpNum].bx[shotMultiPos[shot_i]-1];
 
 					playerShotData[b].shotY = PY + tempI;
 					playerShotData[b].shotYC = -weapons[wpNum].acceleration;
 					playerShotData[b].shotXC = weapons[wpNum].accelerationx;
 
-					playerShotData[b].shotXM = weapons[wpNum].sx[shotMultiPos[temp-1]-1];
+					playerShotData[b].shotXM = weapons[wpNum].sx[shotMultiPos[shot_i]-1];
 
-					temp2 = weapons[wpNum].del[shotMultiPos[temp-1]-1];
+					temp2 = weapons[wpNum].del[shotMultiPos[shot_i]-1];
 
 					if (temp2 == 121)
 					{
@@ -772,7 +628,7 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 						temp2 = 255;
 					}
 
-					playerShotData[b].shotGr = weapons[wpNum].sg[shotMultiPos[temp-1]-1];
+					playerShotData[b].shotGr = weapons[wpNum].sg[shotMultiPos[shot_i]-1];
 					if (playerShotData[b].shotGr == 0)
 					{
 						shotAvail[b] = 0;
@@ -803,7 +659,7 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 
 					if (temp2 == 99 || temp2 == 100)
 					{
-						tempI = PY - mouseY - weapons[wpNum].sy[shotMultiPos[temp-1]-1];
+						tempI = PY - mouseY - weapons[wpNum].sy[shotMultiPos[shot_i]-1];
 						if (tempI < -4)
 						{
 							tempI = -4;
@@ -814,36 +670,35 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 						}
 						playerShotData[b].shotYM = tempI;
 					} else {
-						if (weapons[wpNum].sy[shotMultiPos[temp-1]-1] == 98)
+						if (weapons[wpNum].sy[shotMultiPos[shot_i]-1] == 98)
 						{
 							playerShotData[b].shotYM = 0;
 							playerShotData[b].shotYC = -1;
 						} else {
-							if (weapons[wpNum].sy[shotMultiPos[temp-1]-1] > 100)
+							if (weapons[wpNum].sy[shotMultiPos[shot_i]-1] > 100)
 							{
-								playerShotData[b].shotYM = weapons[wpNum].sy[shotMultiPos[temp-1]-1];
-								playerShotData[b].shotY -= PYChange;
+								playerShotData[b].shotYM = weapons[wpNum].sy[shotMultiPos[shot_i]-1];
+								playerShotData[b].shotY -= player[playerShotData[b].playerNumber-1].delta_y_shot_move;
 							} else {
-								playerShotData[b].shotYM = -weapons[wpNum].sy[shotMultiPos[temp-1]-1];
+								playerShotData[b].shotYM = -weapons[wpNum].sy[shotMultiPos[shot_i]-1];
 							}
 						}
 					}
 
-					if (weapons[wpNum].sx[shotMultiPos[temp-1]-1] > 100)
+					if (weapons[wpNum].sx[shotMultiPos[shot_i]-1] > 100)
 					{
-						playerShotData[b].shotXM = weapons[wpNum].sx[shotMultiPos[temp-1]-1];
-						playerShotData[b].shotX -= PXChange;
+						playerShotData[b].shotXM = weapons[wpNum].sx[shotMultiPos[shot_i]-1];
+						playerShotData[b].shotX -= player[playerShotData[b].playerNumber-1].delta_x_shot_move;
 						if (playerShotData[b].shotXM == 101)
 						{
-							playerShotData[b].shotY -= PYChange;
+							playerShotData[b].shotY -= player[playerShotData[b].playerNumber-1].delta_y_shot_move;
 						}
 					}
 
 
-					if (weapons[wpNum].aim > 5)
-					{  /*Guided Shot*/
-
-						tempW3 = 65000;
+					if (weapons[wpNum].aim > 5)  /*Guided Shot*/
+					{
+						uint best_dist = 65000;
 						temp3 = 0;
 						/*Find Closest Enemy*/
 						for (x = 0; x < 100; x++)
@@ -851,9 +706,9 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 							if (enemyAvail[x] != 1 && !enemy[x].scoreitem)
 							{
 								y = abs(enemy[x].ex - playerShotData[b].shotX) + abs(enemy[x].ey - playerShotData[b].shotY);
-								if (y < tempW3)
+								if (y < best_dist)
 								{
-									tempW3 = y;
+									best_dist = y;
 									temp3 = x + 1;
 								}
 							}
@@ -861,18 +716,20 @@ void JE_initPlayerShot( JE_word portNum, JE_byte temp, JE_word PX, JE_word PY, J
 						playerShotData[b].aimAtEnemy = temp3;
 						playerShotData[b].aimDelay = 5;
 						playerShotData[b].aimDelayMax = weapons[wpNum].aim - 5;
-					} else {
+					}
+					else
+					{
 						playerShotData[b].aimAtEnemy = 0;
 					}
 
-					shotRepeat[temp-1] = weapons[wpNum].shotrepeat;
+					shotRepeat[shot_i] = weapons[wpNum].shotrepeat;
 				}
 			}
 		}
 	}
 }
 
-void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialType )
+void JE_specialComplete( JE_byte playerNum, JE_byte specialType )
 {
 	nextSpecialWait = 0;
 	switch (special[specialType].stype)
@@ -880,36 +737,34 @@ void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialTy
 		/*Weapon*/
 		case 1:
 			if (playerNum == 1)
-			{
-				JE_initPlayerShot(0, 11, PX, PY, mouseX, mouseY, special[specialType].wpn, playerNum);
-			} else {
-				JE_initPlayerShot(0, 11, PXB, PYB, mouseX, mouseY, special[specialType].wpn, playerNum);
-			}
-			shotRepeat[9-1] = shotRepeat[11-1];
+				JE_initPlayerShot(0, SHOT_SPECIAL2, player[0].x, player[0].y, mouseX, mouseY, special[specialType].wpn, playerNum);
+			else
+				JE_initPlayerShot(0, SHOT_SPECIAL2, player[1].x, player[1].y, mouseX, mouseY, special[specialType].wpn, playerNum);
+			
+			shotRepeat[SHOT_SPECIAL] = shotRepeat[SHOT_SPECIAL2];
 			break;
 		/*Repulsor*/
 		case 2:
 			for (temp = 0; temp < ENEMY_SHOT_MAX; temp++)
+			{
 				if (!enemyShotAvail[temp])
 				{
-					if (PX > enemyShot[temp].sx)
-					{
+					if (player[0].x > enemyShot[temp].sx)
 						enemyShot[temp].sxm--;
-					} else if (PX < enemyShot[temp].sx) {
+					else if (player[0].x < enemyShot[temp].sx)
 						enemyShot[temp].sxm++;
-					}
-					if (PY > enemyShot[temp].sy)
-					{
+					
+					if (player[0].y > enemyShot[temp].sy)
 						enemyShot[temp].sym--;
-					} else if (PY < enemyShot[temp].sy) {
+					else if (player[0].y < enemyShot[temp].sy)
 						enemyShot[temp].sym++;
-					}
 				}
+			}
 			break;
 		/*Zinglon Blast*/
 		case 3:
 			zinglonDuration = 50;
-			shotRepeat[9-1] = 100;
+			shotRepeat[SHOT_SPECIAL] = 100;
 			soundQueue[7] = S_SOUL_OF_ZINGLON;
 			break;
 		/*Attractor*/
@@ -919,14 +774,14 @@ void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialTy
 				if (enemyAvail[temp] != 1 && enemy[temp].scoreitem
 				    && enemy[temp].evalue != 0)
 				{
-					if (PX > enemy[temp].ex)
+					if (player[0].x > enemy[temp].ex)
 						enemy[temp].exc++;
-					else if (PX < enemy[temp].ex)
+					else if (player[0].x < enemy[temp].ex)
 						enemy[temp].exc--;
 
-					if (PY > enemy[temp].ey)
+					if (player[0].y > enemy[temp].ey)
 						enemy[temp].eyc++;
-					else if (PY < enemy[temp].ey)
+					else if (player[0].y < enemy[temp].ey)
 						enemy[temp].eyc--;
 				}
 			}
@@ -956,39 +811,39 @@ void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialTy
 				case 6:
 					specialWeaponFilter = 1;
 					specialWeaponFreq = 7;
-					flareDuration = 200 + portPower[1-1] * 25;
+					flareDuration = 200 + 25 * player[0].items.weapon[FRONT_WEAPON].power;
 					break;
 				case 7:
 					specialWeaponFilter = 3;
 					specialWeaponFreq = 3;
-					flareDuration = 50 + portPower[1-1] * 10;
+					flareDuration = 50 + 10 * player[0].items.weapon[FRONT_WEAPON].power;
 					zinglonDuration = 50;
-					shotRepeat[9-1] = 100;
+					shotRepeat[SHOT_SPECIAL] = 100;
 					soundQueue[7] = S_SOUL_OF_ZINGLON;
 					break;
 				case 8:
 					specialWeaponFilter = -99;
 					specialWeaponFreq = 7;
-					flareDuration = 10 + portPower[1-1];
+					flareDuration = 10 + player[0].items.weapon[FRONT_WEAPON].power;
 					break;
 				case 9:
 					specialWeaponFilter = -99;
 					specialWeaponFreq = 8;
-					flareDuration = portPower[1-1] * 2 + 8;
+					flareDuration = 8 + 2 * player[0].items.weapon[FRONT_WEAPON].power;
 					linkToPlayer = true;
 					nextSpecialWait = special[specialType].pwr;
 					break;
 				case 10:
 					specialWeaponFilter = -99;
 					specialWeaponFreq = 8;
-					flareDuration = 14 + portPower[1-1] * 4;
+					flareDuration = 14 + 4 * player[0].items.weapon[FRONT_WEAPON].power;
 					linkToPlayer = true;
 					break;
 				case 11:
 					specialWeaponFilter = -99;
 					specialWeaponFreq = special[specialType].pwr;
-					flareDuration = 10 + portPower[1-1] * 10;
-					astralDuration = 20 + portPower[1-1] * 10;
+					flareDuration = 10 + 10 * player[0].items.weapon[FRONT_WEAPON].power;
+					astralDuration = 20 + 10 * player[0].items.weapon[FRONT_WEAPON].power;
 					break;
 				case 16:
 					specialWeaponFilter = -99;
@@ -1000,129 +855,119 @@ void JE_specialComplete( JE_byte playerNum, JE_integer *armor, JE_byte specialTy
 			}
 			break;
 		case 12:
-			switch (playerNum)
-			{
-				case 1:
-					playerInvulnerable1 = temp2 * 10;
-					break;
-				case 2:
-					playerInvulnerable2 = temp2 * 10;
-					break;
-			}
+			player[playerNum-1].invulnerable_ticks = temp2 * 10;
+			
 			if (superArcadeMode > 0 && superArcadeMode <= SA)
 			{
-				shotRepeat[9-1] = 250;
-				JE_initPlayerShot(0, 11, PX, PY, mouseX, mouseY, 707, 1);
-				playerInvulnerable1 = 100;
+				shotRepeat[SHOT_SPECIAL] = 250;
+				JE_initPlayerShot(0, SHOT_SPECIAL2, player[0].x, player[0].y, mouseX, mouseY, 707, 1);
+				player[0].invulnerable_ticks = 100;
 			}
 			break;
 		case 13:
-			if (playerNum == 1)
-				*armor += temp2 / 4 + 1;
-			else
-				armorLevel += temp2 / 4 + 1;
-
+			player[0].armor += temp2 / 4 + 1;
+			
 			soundQueue[3] = S_POWERUP;
 			break;
 		case 14:
-			if (playerNum == 2)
-				*armor += temp2 / 4 + 1;
-			else
-				armorLevel2 += temp2 / 4 + 1;
-
+			player[1].armor += temp2 / 4 + 1;
+			
 			soundQueue[3] = S_POWERUP;
 			break;
-		case 17:
+			
+		case 17:  // spawn left or right sidekick
 			soundQueue[3] = S_POWERUP;
-
-			if (pItems[P_LEFT_SIDEKICK] == special[specialType].wpn)
+			
+			if (player[0].items.sidekick[LEFT_SIDEKICK] == special[specialType].wpn)
 			{
-				pItems[P_RIGHT_SIDEKICK] = special[specialType].wpn;
-				shotMultiPos[4] = 0;
+				player[0].items.sidekick[RIGHT_SIDEKICK] = special[specialType].wpn;
+				shotMultiPos[RIGHT_SIDEKICK] = 0;
 			}
 			else
 			{
-				pItems[P_LEFT_SIDEKICK] = special[specialType].wpn;
-				shotMultiPos[3] = 0;
+				player[0].items.sidekick[LEFT_SIDEKICK] = special[specialType].wpn;
+				shotMultiPos[LEFT_SIDEKICK] = 0;
 			}
 
 			tempScreenSeg = VGAScreenSeg;
 			JE_drawOptions();
 			break;
-		case 18:
-			pItems[P_RIGHT_SIDEKICK] = special[specialType].wpn;
-
+			
+		case 18:  // spawn right sidekick
+			player[0].items.sidekick[RIGHT_SIDEKICK] = special[specialType].wpn;
+			
 			tempScreenSeg = VGAScreenSeg;
 			JE_drawOptions();
 
 			soundQueue[4] = S_POWERUP;
 
-			shotMultiPos[4-1] = 0;
+			shotMultiPos[RIGHT_SIDEKICK] = 0;
 			break;
 	}
 }
 
-void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield )
+void JE_doSpecialShot( JE_byte playerNum, uint *armor, uint *shield )
 {
-	if (pItems[P_SPECIAL] > 0)
+	if (player[0].items.special > 0)
 	{
-		if (shotRepeat[9-1] == 0 && specialWait == 0 && flareDuration < 2 && zinglonDuration < 2)
+		if (shotRepeat[SHOT_SPECIAL] == 0 && specialWait == 0 && flareDuration < 2 && zinglonDuration < 2)
 			blit_sprite2(VGAScreen, 47, 4, shapes9, 94);
 		else
 			blit_sprite2(VGAScreen, 47, 4, shapes9, 93);
 	}
 
-	if (shotRepeat[9-1] > 0)
+	if (shotRepeat[SHOT_SPECIAL] > 0)
 	{
-		shotRepeat[9-1]--;
+		--shotRepeat[SHOT_SPECIAL];
 	}
 	if (specialWait > 0)
 	{
 		specialWait--;
 	}
 	temp = SFExecuted[playerNum-1];
-	if (temp > 0 && shotRepeat[9-1] == 0 && flareDuration == 0)
+	if (temp > 0 && shotRepeat[SHOT_SPECIAL] == 0 && flareDuration == 0)
 	{
 		temp2 = special[temp].pwr;
-
-		tempB = true;
+		
+		bool can_afford = true;
+		
 		if (temp2 > 0)
 		{
-			if (temp2 < 98)
+			if (temp2 < 98)  // costs some shield
 			{
 				if (*shield >= temp2)
 					*shield -= temp2;
 				else
-					tempB = false;
+					can_afford = false;
 			}
-			else if (temp2 == 98)
+			else if (temp2 == 98)  // costs all shield
 			{
 				if (*shield < 4)
-					tempB = false;
+					can_afford = false;
 				temp2 = *shield;
 				*shield = 0;
 			}
-			else if (temp2 == 99)
+			else if (temp2 == 99)  // costs half shield
 			{
 				temp2 = *shield / 2;
 				*shield = temp2;
 			}
-			else
+			else  // costs some armor
 			{
 				temp2 -= 100;
 				if (*armor > temp2)
 					*armor -= temp2;
 				else
-					tempB = false;
+					can_afford = false;
 			}
 		}
 
-		shotMultiPos[ 9-1] = 0;
-		shotMultiPos[11-1] = 0;
-		if (tempB)
-		{
-			JE_specialComplete(playerNum, armor, temp);
-		}
+		shotMultiPos[SHOT_SPECIAL] = 0;
+		shotMultiPos[SHOT_SPECIAL2] = 0;
+		
+		if (can_afford)
+			JE_specialComplete(playerNum, temp);
+		
 		SFExecuted[playerNum-1] = 0;
 
 		JE_wipeShieldArmorBars();
@@ -1132,7 +977,7 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 		VGAScreen = game_screen; /* side-effect of game_screen */
 	}
 
-	if (playerNum == 1 && pItems[P_SPECIAL] > 0)
+	if (playerNum == 1 && player[0].items.special > 0)
 	{  /*Main Begin*/
 
 		if (superArcadeMode > 0 && (button[2-1] || button[3-1]))
@@ -1143,10 +988,10 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 		{
 			fireButtonHeld = false;
 		}
-		else if (shotRepeat[9-1] == 0 && !fireButtonHeld && !(flareDuration > 0) && specialWait == 0)
+		else if (shotRepeat[SHOT_SPECIAL] == 0 && !fireButtonHeld && !(flareDuration > 0) && specialWait == 0)
 		{
 			fireButtonHeld = true;
-			JE_specialComplete(playerNum, armor, pItems[P_SPECIAL]);
+			JE_specialComplete(playerNum, player[0].items.special);
 		}
 
 	}  /*Main End*/
@@ -1198,14 +1043,14 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 
 			if (linkToPlayer)
 			{
-				if (shotRepeat[9-1] == 0)
+				if (shotRepeat[SHOT_SPECIAL] == 0)
 				{
-					JE_initPlayerShot(0, 9, PX, PY, mouseX, mouseY, specialWeaponWpn, playerNum);
+					JE_initPlayerShot(0, SHOT_SPECIAL, player[0].x, player[0].y, mouseX, mouseY, specialWeaponWpn, playerNum);
 				}
 			}
 			else
 			{
-				JE_initPlayerShot(0, 9, mt_rand() % 280, mt_rand() % 180, mouseX, mouseY, specialWeaponWpn, playerNum);
+				JE_initPlayerShot(0, SHOT_SPECIAL, mt_rand() % 280, mt_rand() % 180, mouseX, mouseY, specialWeaponWpn, playerNum);
 			}
 
 			if (spraySpecial && b > 0)
@@ -1228,7 +1073,7 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 	else if (flareStart)
 	{
 		flareStart = false;
-		shotRepeat[9-1] = linkToPlayer ? 15 : 200;
+		shotRepeat[SHOT_SPECIAL] = linkToPlayer ? 15 : 200;
 		flareDuration = 0;
 		if (levelFilter == specialWeaponFilter)
 		{
@@ -1242,8 +1087,8 @@ void JE_doSpecialShot( JE_byte playerNum, JE_integer *armor, JE_shortint *shield
 	{
 		temp = 25 - abs(zinglonDuration - 25);
 
-		JE_barBright(PX + 7 - temp,     0, PX + 7 + temp,     184);
-		JE_barBright(PX + 7 - temp - 2, 0, PX + 7 + temp + 2, 184);
+		JE_barBright(player[0].x + 7 - temp,     0, player[0].x + 7 + temp,     184);
+		JE_barBright(player[0].x + 7 - temp - 2, 0, player[0].x + 7 + temp + 2, 184);
 
 		zinglonDuration--;
 		if (zinglonDuration % 5 == 0)
@@ -1358,13 +1203,17 @@ void JE_setupExplosionLarge( JE_boolean enemyGround, JE_byte exploNum, JE_intege
 			JE_setupExplosion(x - 6, y,      0,  8, false, false);
 			JE_setupExplosion(x + 6, y,      0, 10, false, false);
 		}
-
+		
+		bool big;
+		
 		if (exploNum > 10)
 		{
 			exploNum -= 10;
-			tempB = true;
-		} else {
-			tempB = false;
+			big = true;
+		}
+		else
+		{
+			big = false;
 		}
 
 		if (exploNum)
@@ -1377,7 +1226,7 @@ void JE_setupExplosionLarge( JE_boolean enemyGround, JE_byte exploNum, JE_intege
 					rep_explosions[i].delay = 2;
 					rep_explosions[i].x = x;
 					rep_explosions[i].y = y;
-					rep_explosions[i].big = tempB;
+					rep_explosions[i].big = big;
 					break;
 				}
 			}
@@ -1389,77 +1238,78 @@ void JE_wipeShieldArmorBars( void )
 {
 	if (!twoPlayerMode || galagaMode)
 	{
-		JE_c_bar(270, 137, 278, 194 - shield * 2, 0);
-	} else {
-		JE_c_bar(270, 60 - 44, 278, 60, 0);
-		JE_c_bar(270, 194 - 44, 278, 194, 0);
+		fill_rectangle_xy(VGAScreenSeg, 270, 137, 278, 194 - player[0].shield * 2, 0);
+	}
+	else
+	{
+		fill_rectangle_xy(VGAScreenSeg, 270, 60 - 44, 278, 60, 0);
+		fill_rectangle_xy(VGAScreenSeg, 270, 194 - 44, 278, 194, 0);
 	}
 	if (!twoPlayerMode || galagaMode)
 	{
-		JE_c_bar(307, 137, 315, 194 - armorLevel * 2, 0);
-	} else {
-		JE_c_bar(307, 60 - 44, 315, 60, 0);
-		JE_c_bar(307, 194 - 44, 315, 194, 0);
+		fill_rectangle_xy(VGAScreenSeg, 307, 137, 315, 194 - player[0].armor * 2, 0);
+	}
+	else
+	{
+		fill_rectangle_xy(VGAScreenSeg, 307, 60 - 44, 315, 60, 0);
+		fill_rectangle_xy(VGAScreenSeg, 307, 194 - 44, 315, 194, 0);
 	}
 }
 
 JE_byte JE_playerDamage( JE_byte temp,
-                         JE_integer *PX, JE_integer *PY,
-                         JE_boolean *playerAlive,
-                         JE_byte *playerStillExploding,
-                         JE_integer *armorLevel,
-                         JE_shortint *shield )
+                         Player *this_player )
 {
 	int playerDamage = 0;
 	soundQueue[7] = S_SHIELD_HIT;
 
 	/* Player Damage Routines */
-	if (*shield < temp)
+	if (this_player->shield < temp)
 	{
 		playerDamage = temp;
-		temp -= *shield;
-		*shield = 0;
-
+		temp -= this_player->shield;
+		this_player->shield = 0;
+		
 		if (temp > 0)
 		{
 			/*Through Shields - Now Armor */
-			if (*armorLevel < temp)
+			
+			if (this_player->armor < temp)
 			{
-				temp -= *armorLevel;
-				*armorLevel = 0;
-				if (playerAlive && !youAreCheating)
+				temp -= this_player->armor;
+				this_player->armor = 0;
+				
+				if (this_player->is_alive && !youAreCheating)
 				{
 					levelTimer = false;
-					*playerAlive = false;
-					*playerStillExploding = 60;
+					this_player->is_alive = false;
+					this_player->exploding_ticks = 60;
 					levelEnd = 40;
 					tempVolume = tyrMusicVolume;
 					soundQueue[1] = S_EXPLOSION_22;
 				}
-
-				/*Through Armor - Now What? */
 			}
 			else
 			{
-				*armorLevel -= temp;
+				this_player->armor -= temp;
 				soundQueue[7] = S_HULL_HIT;
 			}
 		}
-
-	} else {
-		*shield -= temp;
-
-		JE_setupExplosion(*PX - 17, *PY - 12, 0, 14, false, !twoPlayerMode);
-		JE_setupExplosion(*PX - 5 , *PY - 12, 0, 15, false, !twoPlayerMode);
-		JE_setupExplosion(*PX + 7 , *PY - 12, 0, 16, false, !twoPlayerMode);
-		JE_setupExplosion(*PX + 19, *PY - 12, 0, 17, false, !twoPlayerMode);
-
-		JE_setupExplosion(*PX - 17, *PY + 2, 0,  18, false, !twoPlayerMode);
-		JE_setupExplosion(*PX + 19, *PY + 2, 0,  19, false, !twoPlayerMode);
-
-		JE_setupExplosion(*PX - 17, *PY + 16, 0, 20, false, !twoPlayerMode);
-		JE_setupExplosion(*PX - 5 , *PY + 16, 0, 21, false, !twoPlayerMode);
-		JE_setupExplosion(*PX + 7 , *PY + 16, 0, 22, false, !twoPlayerMode);
+	}
+	else
+	{
+		this_player->shield -= temp;
+		
+		JE_setupExplosion(this_player->x - 17, this_player->y - 12, 0, 14, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x - 5 , this_player->y - 12, 0, 15, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x + 7 , this_player->y - 12, 0, 16, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x + 19, this_player->y - 12, 0, 17, false, !twoPlayerMode);
+		
+		JE_setupExplosion(this_player->x - 17, this_player->y + 2, 0,  18, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x + 19, this_player->y + 2, 0,  19, false, !twoPlayerMode);
+		
+		JE_setupExplosion(this_player->x - 17, this_player->y + 16, 0, 20, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x - 5 , this_player->y + 16, 0, 21, false, !twoPlayerMode);
+		JE_setupExplosion(this_player->x + 7 , this_player->y + 16, 0, 22, false, !twoPlayerMode);
 	}
 
 	JE_wipeShieldArmorBars();
@@ -1471,83 +1321,54 @@ JE_byte JE_playerDamage( JE_byte temp,
 	return playerDamage;
 }
 
-void JE_powerUp( JE_byte port )
+JE_word JE_portConfigs( void )
 {
-	shotMultiPos[port-1] = 0;
-	if (portPower[port-1] < 11 && (pItems[port-1] > 0 || twoPlayerMode))
-		portPower[port-1]++;
-	else
-		score += 1000;
-}
-
-void JE_portConfigs( void )
-{
-	if (twoPlayerMode)
-	{
-		tempW = weaponPort[pItemsPlayer2[P_REAR]].opnum;
-	} else {
-		tempW = weaponPort[pItems[P_REAR]].opnum;
-	}
+	const uint player_index = twoPlayerMode ? 1 : 0;
+	return tempW = weaponPort[player[player_index].items.weapon[REAR_WEAPON].id].opnum;
 }
 
 void JE_drawShield( void )
 {
 	if (twoPlayerMode && !galagaMode)
 	{
-		JE_dBar3(270, 60, round(shield * 0.8f), 144);
-		JE_dBar3(270, 194, round(shield2 * 0.8f), 144);
-	} else {
-		JE_dBar3(270, 194, shield, 144);
-		if (shield != shieldMax)
+		for (uint i = 0; i < COUNTOF(player); ++i)
+			JE_dBar3(270, 60 + 134 * i, roundf(player[i].shield * 0.8f), 144);
+	}
+	else
+	{
+		JE_dBar3(270, 194, player[0].shield, 144);
+		if (player[0].shield != player[0].shield_max)
 		{
-			JE_rectangle(270, 193 - (shieldMax << 1), 278, 193 - (shieldMax << 1), 68); /* <MXD> SEGa000 */
+			const uint y = 193 - (player[0].shield_max * 2);
+			JE_rectangle(270, y, 278, y, 68); /* <MXD> SEGa000 */
 		}
 	}
 }
 
 void JE_drawArmor( void )
 {
-	if (armorLevel > 28)
-	{
-		armorLevel = 28;
-	}
-	if (armorLevel2 > 28)
-	{
-		armorLevel2 = 28;
-	}
-
+	for (uint i = 0; i < COUNTOF(player); ++i)
+		if (player[i].armor > 28)
+			player[i].armor = 28;
+	
 	if (twoPlayerMode && !galagaMode)
 	{
-		JE_dBar3(307, 60, round(armorLevel * 0.8), 224);
-		JE_dBar3(307, 194, round(armorLevel2 * 0.8), 224);
-	} else {
-		JE_dBar3(307, 194, armorLevel, 224);
+		for (uint i = 0; i < COUNTOF(player); ++i)
+			JE_dBar3(307, 60 + 134 * i, roundf(player[i].armor * 0.8f), 224);
 	}
-}
-
-void JE_resetPlayerH( void )
-{
-	for (temp = 0; temp < 20; temp++)
+	else
 	{
-		if (twoPlayerMode)
-		{
-			playerHX[temp] = PXB - (20 - temp);
-			playerHY[temp] = PYB - 18;
-		} else {
-			playerHX[temp] = PX - (20 - temp);
-			playerHY[temp] = PY - 18;
-		}
+		JE_dBar3(307, 194, player[0].armor, 224);
 	}
-	playerHNotReady = false;
 }
 
 void JE_doSP( JE_word x, JE_word y, JE_word num, JE_byte explowidth, JE_byte color ) /* superpixels */
 {
 	for (temp = 0; temp < num; temp++)
 	{
-		JE_real tempr = mt_rand_lt1() * (M_PI * 2);
-		signed int tempy = round(cos(tempr) * mt_rand_1() * explowidth);
-		signed int tempx = round(sin(tempr) * mt_rand_1() * explowidth);
+		JE_real tempr = mt_rand_lt1() * (2 * M_PI);
+		signed int tempy = roundf(cosf(tempr) * mt_rand_1() * explowidth);
+		signed int tempx = roundf(sinf(tempr) * mt_rand_1() * explowidth);
 
 		if (++last_superpixel >= MAX_SUPERPIXELS)
 			last_superpixel = 0;

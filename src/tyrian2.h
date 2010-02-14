@@ -24,6 +24,8 @@
 #include "varz.h"
 #include "helptext.h"
 
+void intro_logos( void );
+
 typedef struct
 {
 	Uint8 link_num;
@@ -41,7 +43,7 @@ void JE_createNewEventEnemy( JE_byte enemytypeofs, JE_word enemyoffset );
 
 void JE_doNetwork( void );
 
-void JE_makeEnemy( struct JE_SingleEnemyType *enemy );
+uint JE_makeEnemy( struct JE_SingleEnemyType *enemy );
 
 void JE_eventJump( JE_word jump );
 
@@ -55,7 +57,7 @@ void JE_starShowVGA( void );
 
 void JE_main( void );
 void JE_loadMap( void );
-void JE_titleScreen( JE_boolean animate );
+bool JE_titleScreen( JE_boolean animate );
 void JE_readTextSync( void );
 void JE_displayText( void );
 

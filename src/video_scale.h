@@ -1,6 +1,6 @@
 /* 
  * OpenTyrian Classic: A modern cross-platform port of Tyrian
- * Copyright (C) 2007-2009  The OpenTyrian Development Team
+ * Copyright (C) 2007-2010  The OpenTyrian Development Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,15 +23,16 @@
 
 #include "SDL.h"
 
-struct scaler_struct {
-	int scale;
-	void (*scaler16)(SDL_Surface *, SDL_Surface *, int);
-	void (*scaler32)(SDL_Surface *, SDL_Surface *, int);
+struct scaler_struct
+{
+	int width, height, min_bpp;
+	void (*scaler16)( SDL_Surface *dst, SDL_Surface *src );
+	void (*scaler32)( SDL_Surface *dst, SDL_Surface *src );
 	const char *name;
 };
 
-extern int scale, scaler;
-extern const struct scaler_struct scalers[3];
+extern int scaler;
+extern const struct scaler_struct scalers[2];
 
 #endif /* VIDEO_SCALE_H */
 

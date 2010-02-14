@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include "cJSON.h"
 #include "config.h"
 #include "file.h"
 #include "joystick.h"
@@ -30,6 +31,9 @@
 
 int joystick_axis_threshold( int j, int value );
 int check_assigned( SDL_Joystick *joystick_handle, const Joystick_assignment assignment[2] );
+
+const char *assignment_to_code( const Joystick_assignment *assignment );
+void code_to_assignment( Joystick_assignment *assignment, const char *buffer );
 
 int joystick_repeat_delay = 300; // milliseconds, repeat delay for buttons
 bool joydown = false;            // any joystick buttons down, updated by poll_joysticks()
@@ -81,7 +85,7 @@ bool joystick_analog_angle( int j, float *angle )
 	
 	if (x != 0)
 	{
-		*angle += atan(-y / x);
+		*angle += atanf(-y / x);
 		*angle += (x < 0) ? -M_PI_2 : M_PI_2;
 		return true;
 	}
@@ -104,7 +108,7 @@ int check_assigned( SDL_Joystick *joystick_handle, const Joystick_assignment ass
 	
 	for (int i = 0; i < 2; i++)
 	{
-		int temp;
+		int temp = 0;
 		
 		switch (assignment[i].type)
 		{
@@ -334,8 +338,8 @@ void reset_joystick_assignments( int j )
 			{
 				joystick[j].assignment[a][1].type = HAT;
 				joystick[j].assignment[a][1].num = 0;
-				joystick[j].assignment[a][0].x_axis = (a == 1 || a == 3);
-				joystick[j].assignment[a][0].negative_axis = (a == 0 || a == 3);
+				joystick[j].assignment[a][1].x_axis = (a == 1 || a == 3);
+				joystick[j].assignment[a][1].negative_axis = (a == 0 || a == 3);
 			}
 		}
 		else
@@ -353,133 +357,177 @@ void reset_joystick_assignments( int j )
 	joystick[j].threshold = 5;
 }
 
-bool load_joystick_assignments( int j )
+cJSON *load_config( void )
 {
-	FILE *f = seek_joystick_assignments(j, true);
+	FILE *f = dir_fopen_warn(get_user_directory(), "joystick.conf", "rb");
+	if (f == NULL)
+		return NULL;
 	
-	if (f == NULL || feof(f))
-		return false;
+	size_t buffer_len = ftell_eof(f);
+	char *buffer = malloc(buffer_len + 1);
 	
-	joystick[j].analog = fgetc(f);
-	joystick[j].sensitivity = fgetc(f);
-	joystick[j].threshold = fgetc(f);
+	fread(buffer, 1, buffer_len, f);
+	buffer[buffer_len] = '\0';
 	
-	for (int a = 0; a < COUNTOF(joystick[j].assignment); a++)
+	fclose(f);
+	
+	cJSON *root = cJSON_Parse(buffer);
+	
+	free(buffer);
+	
+	return root;
+}
+
+void save_config( cJSON *root )
+{
+	FILE *f = dir_fopen_warn(get_user_directory(), "joystick.conf", "w+");
+	if (f == NULL)
+		return;
+	
+	char *buffer = cJSON_Print(root);
+	
+	if (buffer != NULL)
 	{
-		for (int i = 0; i < COUNTOF(*joystick[j].assignment); i++)
-		{
-			joystick[j].assignment[a][i].type = fgetc(f);
-			joystick[j].assignment[a][i].num = (signed char)fgetc(f);
-			joystick[j].assignment[a][i].x_axis = fgetc(f);
-			joystick[j].assignment[a][i].negative_axis = fgetc(f);
-		}
+		fputs(buffer, f);
+		free(buffer);
 	}
 	
 	fclose(f);
+}
+
+bool load_joystick_assignments( int j )
+{
+	cJSON *root = load_config();
+	if (root == NULL)
+		return false;
+	
+	cJSON *config = cJSON_GetObjectItem(root, SDL_JoystickName(j));
+	if (config == NULL)
+	{
+		cJSON_Delete(root);
+		return false;
+	}
+	
+	cJSON *setting;
+	
+	if ((setting = cJSON_GetObjectItem(config, "analog")))
+		joystick[j].analog = (setting->type == cJSON_True);
+	
+	if ((setting = cJSON_GetObjectItem(config, "sensitivity")))
+		joystick[j].sensitivity = setting->valueint;
+	
+	if ((setting = cJSON_GetObjectItem(config, "threshold")))
+		joystick[j].threshold = setting->valueint;
+	
+	if ((setting = cJSON_GetObjectItem(config, "assignments")))
+	{
+		for (int i = 0; i < COUNTOF(joystick->assignment); ++i)
+		{
+			cJSON *assignments = cJSON_GetArrayItem(setting, i);
+			if (assignments == NULL)
+				break;
+			
+			for (int k = 0; k < COUNTOF(*joystick->assignment); ++k)
+			{
+				cJSON *assignment = cJSON_GetArrayItem(assignments, k);
+				if (assignment)
+					code_to_assignment(&joystick[j].assignment[i][k], assignment->valuestring);
+			}
+		}
+	}
+	
+	cJSON_Delete(root);
 	
 	return true;
 }
 
 bool save_joystick_assignments( int j )
 {
-	FILE *f = seek_joystick_assignments(j, false);
+	cJSON *root = load_config();
+	if (root == NULL)
+		root = cJSON_CreateObject();
 	
-	if (f == NULL)
-		return false;
+	cJSON *config = cJSON_CreateOrGetObjectItem(root, SDL_JoystickName(j));
+	cJSON_ForceType(config, cJSON_Object);
 	
-	putc(joystick[j].analog, f);
-	putc(joystick[j].sensitivity, f);
-	putc(joystick[j].threshold, f);
+	cJSON *setting;
 	
-	for (int a = 0; a < COUNTOF(joystick[j].assignment); a++)
+	setting = cJSON_CreateOrGetObjectItem(config, "analog");
+	cJSON_SetBoolean(setting, joystick[j].analog);
+	
+	setting = cJSON_CreateOrGetObjectItem(config, "sensitivity");
+	cJSON_SetNumber(setting, joystick[j].sensitivity);
+	
+	setting = cJSON_CreateOrGetObjectItem(config, "threshold");
+	cJSON_SetNumber(setting, joystick[j].threshold);
+	
+	setting = cJSON_CreateOrGetObjectItem(config, "assignments");
+	cJSON_ForceType(setting, cJSON_Array);
+	cJSON_ClearArray(setting);
+	
+	for (int i = 0; i < COUNTOF(joystick->assignment); ++i)
 	{
-		for (int i = 0; i < COUNTOF(*joystick[j].assignment); i++)
+		cJSON *assignments;
+		cJSON_AddItemToArray(setting, assignments = cJSON_CreateArray());
+		
+		for (int k = 0; k < COUNTOF(*joystick->assignment); ++k)
 		{
-			fputc(joystick[j].assignment[a][i].type, f);
-			fputc(joystick[j].assignment[a][i].num, f);
-			fputc(joystick[j].assignment[a][i].x_axis, f);
-			fputc(joystick[j].assignment[a][i].negative_axis, f);
+			if (joystick[j].assignment[i][k].type == NONE)
+				continue;
+			
+			cJSON_AddItemToArray(assignments, cJSON_CreateString(assignment_to_code(&joystick[j].assignment[i][k])));
 		}
 	}
 	
-	fclose(f);
+	save_config(root);
+	
+	cJSON_Delete(root);
 	
 	return true;
 }
 
-// seeks to a particular joystick's entry in the config file
-// TODO: rewrite this to use a text config instead
-FILE *seek_joystick_assignments( int j, bool read_only )
+// fills buffer with comma separated list of assigned joystick functions
+void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joystick_assignment *assignments )
 {
-	assert(j < joysticks);
+	strncpy(buffer, "", buffer_len);
 	
-	const int joystick_axes = SDL_JoystickNumAxes(joystick[j].handle), joystick_buttons = SDL_JoystickNumButtons(joystick[j].handle);
-	char joystick_xor = 0;
-	
-	const char *joystick_name = SDL_JoystickName(j);
-	for (int i = 0; joystick_name[i] != '\0'; i++)
-		joystick_xor ^= joystick_name[i];
-	
-	const int entry_size = 3 + 3 + COUNTOF(joystick->assignment) * COUNTOF(*joystick->assignment) * 4;
-	
-	FILE *f = dir_fopen_warn(get_user_directory(), "joystick.cfg", read_only ? "rb" : "rb+");
-	
-	if (f != NULL)
+	bool comma = false;
+	for (int i = 0; i < COUNTOF(*joystick->assignment); ++i)
 	{
-		fseek(f, 0, SEEK_END);
-		if (ftell(f) < 1 || (ftell(f) - 1) % entry_size != 0) // wrong size
-		{
-			fclose(f);
-			f = NULL;
-		}
+		if (assignments[i].type == NONE)
+			continue;
+		
+		size_t len = snprintf(buffer, buffer_len, "%s%s",
+		                      comma ? ", " : "",
+		                      assignment_to_code(&assignments[i]));
+		buffer += len;
+		buffer_len -= len;
+		
+		comma = true;
 	}
+}
+
+// reverse of assign_code()
+void code_to_assignment( Joystick_assignment *assignment, const char *buffer )
+{
+	memset(assignment, 0, sizeof(*assignment));
 	
-	if (f != NULL)
-	{
-		fseek(f, 0, SEEK_SET);
-		if (fgetc(f) != joystick_cfg_version) // version mismatch
-		{
-			fclose(f);
-			f = NULL;
-		}
-	}
+	char axis = 0, direction = 0;
 	
-	if (f != NULL)
-	{
-		while (true)
-		{
-			char xor, axes, buttons;
-			
-			xor = fgetc(f);
-			axes = fgetc(f);
-			buttons = fgetc(f);
-			
-			if (feof(f))
-				break;
-			
-			if (xor == joystick_xor && axes == joystick_axes && buttons == joystick_buttons) // found a match
-				return f;
-			
-			fseek(f, -3 + entry_size, SEEK_CUR);
-		}
-	}
+	if (sscanf(buffer, " AX %d%c", &assignment->num, &direction) == 2)
+		assignment->type = AXIS;
+	else if (sscanf(buffer, " BTN %d", &assignment->num) == 1)
+		assignment->type = BUTTON;
+	else if (sscanf(buffer, " H %d%c%c", &assignment->num, &axis, &direction) == 3)
+		assignment->type = HAT;
 	
-	if (!read_only)
-	{
-		if (f == NULL) // create new config
-		{
-			f = dir_fopen_warn(get_user_directory(), "joystick.cfg", "wb+");
-			if (f == NULL)
-				return f;
-			
-			fputc(joystick_cfg_version, f);
-		}
-		fputc(joystick_xor, f);
-		fputc(joystick_axes, f);
-		fputc(joystick_buttons, f);
-	}
+	if (assignment->num == 0)
+		assignment->type = NONE;
+	else
+		--assignment->num;
 	
-	return f;
+	assignment->x_axis = (toupper(axis) == 'X');
+	assignment->negative_axis = (toupper(direction) == '-');
 }
 
 /* gives the short (6 or less characters) identifier for a joystick assignment
@@ -487,7 +535,7 @@ FILE *seek_joystick_assignments( int j, bool read_only )
  * two of these per direction/action is all that can fit on the joystick config screen,
  * assuming two digits for the axis/button/hat number
  */
-const char *joystick_assignment_name( const Joystick_assignment *assignment )
+const char *assignment_to_code( const Joystick_assignment *assignment )
 {
 	static char name[7];
 	

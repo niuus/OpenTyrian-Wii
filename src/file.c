@@ -23,25 +23,20 @@
 #include <errno.h>
 #include <fat.h>
 
-const char *custom_data_dir = "sd:/tyrian";
+//const char *custom_data_dir = ".";
 
 // finds the Tyrian data directory
 const char *data_dir( void )
 {
 	const char *dirs[] =
 	{
-		custom_data_dir,
-		"data",
-#ifdef TARGET_MACOSX
-		tyrian_game_folder(),
-#endif
-		"/usr/share/opentyrian/data"
+		"sd:/tyrian"
 	};
 	
 	static const char *dir = NULL;
 	
 	if (dir != NULL)
-		return dir;
+		dir = NULL;
 	
 	for (int i = 0; i < COUNTOF(dirs); ++i)
 	{
@@ -49,7 +44,6 @@ const char *data_dir( void )
 		if (f)
 		{
 			fclose(f);
-			
 			dir = dirs[i];
 			break;
 		}
@@ -96,9 +90,11 @@ FILE *dir_fopen_die( const char *dir, const char *file, const char *mode )
 	
 	if (f == NULL)
 	{
-		fprintf(stderr, "error: failed to open '%s': %s\n", file, strerror(errno));
-		fprintf(stderr, "error: One or more of the required Tyrian 2.1 data files could not be found.\n"
+		sprintf(errorTemp, "error: failed to open '%s': %s\n", file, strerror(errno));
+		errorOut(errorTemp);
+		sprintf(errorTemp, "error: One or more of the required Tyrian 2.1 data files could not be found.\n"
 		                "       Please read the README file.\n");
+		errorOut(errorTemp);
 		exit(1);
 	}
 	

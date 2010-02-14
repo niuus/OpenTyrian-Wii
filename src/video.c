@@ -32,8 +32,8 @@ bool popkeyon;
 SDL_Surface *display_surface;
 
 SDL_Surface *VGAScreen, *VGAScreenSeg;
-SDL_Surface *game_screen;
 SDL_Surface *VGAScreen2;
+SDL_Surface *game_screen;
 
 SDL_Surface *tempScreenSeg = NULL;
 
@@ -41,6 +41,7 @@ void init_video( void )
 {
 	if (SDL_WasInit(SDL_INIT_VIDEO))
 		return;
+	
 	popkeyon = false;
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
 	{
@@ -48,72 +49,82 @@ void init_video( void )
 		exit(1);
 	}
 	
-	SDL_WM_SetCaption("OpenTyrian (ctrl-backspace to kill)", NULL);
+	SDL_WM_SetCaption("OpenTyrian", NULL);
 	
-#ifndef TARGET_GP2X
 	VGAScreen = VGAScreenSeg = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
-#endif /* TARGET_GP2X */
-	
-	reinit_video();
-	
-	SDL_FillRect(display_surface, NULL, 0x0);
-	
 	VGAScreen2 = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
 	game_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, vga_width, vga_height, 8, 0, 0, 0, 0);
 	
-	SDL_LockSurface(VGAScreen);
+	SDL_FillRect(VGAScreen, NULL, 0);
+	
+	if (!init_scaler(scaler, fullscreen_enabled) &&  // try desired scaler and desired fullscreen state
+	    !init_any_scaler(fullscreen_enabled) &&      // try any scaler in desired fullscreen state
+	    !init_any_scaler(!fullscreen_enabled))       // try any scaler in other fullscreen state
+	{
+		exit(EXIT_FAILURE);
+	}
 }
 
-void reinit_video( void )
+bool init_scaler( int new_scaler, bool fullscreen )
 {
-#ifdef TARGET_GP2X
-	if (display_surface)
-		return;
+	if (new_scaler < 0 || new_scaler >= COUNTOF(scalers))
+		return false;
 	
-	scaler = 0;
-#endif /* TARGET_GP2X */
+	int w = scalers[new_scaler].width,
+	    h = scalers[new_scaler].height;
+	int bpp = 32;
+	int flags = SDL_SWSURFACE | SDL_HWPALETTE | (fullscreen ? SDL_FULLSCREEN : 0);
 	
-	scale = scalers[scaler].scale;
-
-	int w = 640,
-	    h = 480;
-	int bpp = 16;
-	int flags = SDL_SWSURFACE | SDL_HWPALETTE /*| (fullscreen_enabled ? SDL_FULLSCREEN : 0)*/;
-
-#ifndef TARGET_GP2X
 	bpp = SDL_VideoModeOK(w, h, bpp, flags);
-	if (bpp == 24)
-		bpp = 16;
-#else /* TARGET_GP2X */
-	bpp = 8;
-#endif /* TARGET_GP2X */
+	
+	if (bpp < scalers[new_scaler].min_bpp)
+	{
+		// we can't get exactly what we want, but SDL will try to find something close
+		bpp = scalers[new_scaler].min_bpp;
+	}
+	else if (bpp == 24)
+	{
+		// scalers don't support 24 bpp because it's a pain
+		bpp = 32;
+	}
 	
 	display_surface = SDL_SetVideoMode(w, h, bpp, flags);
 	
 	if (display_surface == NULL)
 	{
-		fprintf(stderr, "error: failed to initialize SDL video: %s\n", SDL_GetError());
-		exit(1);
-	} else {
-		printf("initialized SDL video: %dx%dx%d\n", w, h, bpp);
+		fprintf(stderr, "error: failed to initialize video mode %dx%dx%d: %s\n", w, h, bpp, SDL_GetError());
+		return false;
 	}
 	
-#ifdef TARGET_GP2X
-	VGAScreen = VGAScreenSeg = display_surface;
-#endif /* TARGET_GP2X */
+	w = display_surface->w;
+	h = display_surface->h;
+	bpp = display_surface->format->BitsPerPixel;
+	
+	printf("initialized video: %dx%dx%d\n", w, h, bpp);
+	
+	scaler = new_scaler;
+	fullscreen_enabled = fullscreen;
 	
 	input_grab();
 	
 	JE_showVGA();
+	
+	return true;
+}
+
+bool init_any_scaler( bool fullscreen )
+{
+	// attempts all scalers from last to first
+	for (int i = COUNTOF(scalers) - 1; i >= 0; --i)
+		if (init_scaler(i, fullscreen))
+			return true;
+	
+	return false;
 }
 
 void deinit_video( void )
 {
-	SDL_UnlockSurface(VGAScreen);
-	
-#ifndef TARGET_GP2X
 	SDL_FreeSurface(VGAScreenSeg);
-#endif /* TARGET_GP2X */
 	SDL_FreeSurface(VGAScreen2);
 	SDL_FreeSurface(game_screen);
 	
@@ -127,25 +138,27 @@ void JE_clr256( void )
 
 void JE_showVGA( void )
 {
-#ifndef TARGET_GP2X
 	switch (display_surface->format->BitsPerPixel)
 	{
 		case 32:
 			if (scalers[scaler].scaler32 == NULL)
 				scaler = 0;
-			scalers[scaler].scaler16(VGAScreen, display_surface, scale);
+			scalers[scaler].scaler32(VGAScreen, display_surface);
 			break;
 		case 16:
 			if (scalers[scaler].scaler16 == NULL)
 				scaler = 0;
-			scalers[scaler].scaler16(VGAScreen, display_surface, scale);
+			scalers[scaler].scaler16(VGAScreen, display_surface);
+			break;
+		case 8:
+			// only 8-bit scaler is None
+			memcpy(display_surface->pixels, VGAScreen->pixels, display_surface->pitch * display_surface->h);
 			break;
 		default:
 			assert(0);
 			break;
 	}
-#endif /* TARGET_GP2X */
-	if (!popkeyon)
+	if(popkeyon == false)
 	{
 		SDL_Flip(display_surface);
 	}

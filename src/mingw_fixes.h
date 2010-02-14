@@ -19,14 +19,6 @@
 #ifndef MINGW_FIXES_H
 #define MINGW_FIXES_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-#include <string.h>
-
-#ifndef strchrnul
 char *strchrnul( const char *s, int c );
-#endif
 
 #endif // MINGW_FIXES_H

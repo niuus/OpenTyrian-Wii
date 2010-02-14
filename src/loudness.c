@@ -72,7 +72,9 @@ bool init_audio( void )
 		audio_disabled = true;
 		return false;
 	}
-	
+	sprintf(errorTemp, "Byte order: %s\nFrequency: %d\nFormat: %d\n", (SDL_BYTEORDER == SDL_LIL_ENDIAN ? "Little-endian" : "Big-endian"), got.freq, got.format);
+	errorOut(errorTemp);
+
 	printf("\tobtained  %d Hz, %d channels, %d samples\n", got.freq, got.channels, got.samples);
 	
 	SDL_BuildAudioCVT(&audio_cvt, ask.format, ask.channels, ask.freq, got.format, got.channels, got.freq);
@@ -252,13 +254,13 @@ void stop_song( void )
 
 void fade_song( void )
 {
-	STUB();
+	printf("TODO: %s\n", __PRETTY_FUNCTION__);
 }
 
 void set_volume( unsigned int music, unsigned int sample )
 {
-	music_volume = music * (1.5 / 255.0);
-	sample_volume = sample * (1.0 / 255.0);
+	music_volume = music * (1.5f / 255.0f);
+	sample_volume = sample * (1.0f / 255.0f);
 }
 
 void JE_multiSamplePlay(JE_byte *buffer, JE_word size, JE_byte chan, JE_byte vol)
@@ -277,12 +279,12 @@ void JE_multiSamplePlay(JE_byte *buffer, JE_word size, JE_byte chan, JE_byte vol
 
 	for (int i = 0; i < size; i++)
 	{
-		for (int ex = 0; ex < 3; ex++)
+		for (int ex = 0; ex < SAMPLE_SCALING; ex++)
 		{
 #if (BYTES_PER_SAMPLE == 2)
-			channel_buffer[chan][(i * 3) + ex] = (Sint8)buffer[i] << 8;
+			channel_buffer[chan][(i * SAMPLE_SCALING) + ex] = (Sint8)buffer[i] << 8;
 #else  /* BYTES_PER_SAMPLE */
-			channel_buffer[chan][(i * 3) + ex] = (Sint8)buffer[i];
+			channel_buffer[chan][(i * SAMPLE_SCALING) + ex] = (Sint8)buffer[i];
 #endif  /* BYTES_PER_SAMPLE */
 		}
 	}
