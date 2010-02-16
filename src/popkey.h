@@ -33,6 +33,8 @@
 #define BOARD_WIDTH 320
 #define BOARD_HEIGHT 128
 #define BOARD_SCALE 1
+#define OSK_SAVEMENU 0
+#define OSK_HIGHSCORE 1
 
 extern int row, rowmax[4], key, keyTableSize, lastrow, board;
 
@@ -42,6 +44,7 @@ const struct keyTable {
 } keys[58];
 
 void init_popkey (); // Initialize popup keyboard system
+void runPopkey( SDLKey lastkey, int method, char *stemp, bool *quit, int slot, bool *cancel );
 void popkey (int dx, int dy); // Display and run keyboard
 void getkey();
 void popshadow ( SDL_Surface *screen );

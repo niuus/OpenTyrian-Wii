@@ -4,7 +4,7 @@
 #include <SDL/SDL_rotozoom.h>
 
 //#include "backgrnd.h"
-//#include "config.h"
+#include "config.h"
 //#include "editship.h"
 //#include "episodes.h"
 #include "file.h"
@@ -17,7 +17,7 @@
 //#include "menus.h"
 //#include "mtrand.h"
 //#include "network.h"
-//#include "nortsong.h"
+#include "nortsong.h"
 //#include "nortvars.h"
 //#include "palette.h"
 //#include "params.h"
@@ -28,7 +28,7 @@
 //#include "shpmast.h"
 //#include "sndmast.h"
 //#include "sprite.h"
-//#include "varz.h"
+#include "varz.h"
 //#include "vga256d.h"
 #include "video.h"
 
@@ -193,6 +193,268 @@ void popkey(int dx, int dy)
 	SDL_Flip(display_surface);
 
 	SDL_FreeSurface(boardSurf);
+}
+
+void runPopkey( SDLKey lastkey, int method, char *stemp, bool *quit, int slot, bool *cancel )
+{
+	int maxChar;
+	char tempChar;
+	if (method == 0)
+	{
+		maxChar = 13;
+	}
+	else
+	{
+		maxChar = 15;
+	}
+	switch(lastkey_sym)
+	{
+	case SDLK_RIGHT:
+		lastrow = row;
+		if (board == 1 && row == 1 && (key == 8))
+		{
+			break;
+		}
+		else if (row == 2 && key == 8)
+		{
+			key = 1;
+		}
+		else if (row == 3 && key == 3)
+		{
+			key = 0;
+		}
+		else if (key < rowmax[row])
+			key++;
+		else
+			key = 0;
+		break;
+	case SDLK_UP:
+		lastrow = row;
+		if (row == 3 && (key == 0 || key == 9))
+		{
+			row = 1;
+			lastrow = 2;
+		}
+		else if (row > 0)
+		{
+			row--;
+		}
+		else
+		{
+			row = 3;
+		}
+		if (row == 2 && lastrow == 3)
+		{
+			switch (key)
+			{
+			case 0:
+				break;
+			case 1:
+				key = 2;
+				break;
+			case 2:
+				key = 6;
+				break;
+			case 3:
+				key = 7;
+				break;
+			}
+		}
+		else if (row == 3 && lastrow == 0)
+		{
+			switch (key)
+			{
+			case 0:
+			case 1:
+				key = 0;
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+				key = 1;
+				break;
+			case 6:
+				key = 2;
+				break;
+			case 7:
+			case 8:
+			case 9:
+				key = 3;
+				break;
+			}
+		}
+		break;
+	case SDLK_DOWN:
+		lastrow = row;
+		if (row == 1 && (key == 0 || key == 9))
+		{
+			row = 3;
+			lastrow = 2;
+		}
+		else if (row < 3)
+		{
+			row++;
+		}
+		else
+		{
+			row = 0;
+		}
+		if (row == 3 && lastrow == 2)
+		{
+			switch (key)
+			{
+			case 0:
+			case 1:
+				key = 0;
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+				key = 1;
+				break;
+			case 6:
+				key = 2;
+				break;
+			case 7:
+			case 8:
+			case 9:
+				key = 3;
+				break;
+			}
+		}
+		else if (row == 0 && lastrow == 3)
+		{
+			switch (key)
+			{
+			case 0:
+				break;
+			case 1:
+				key = 2;
+				break;
+			case 2:
+				key = 6;
+				break;
+			case 3:
+				key = 7;
+				break;
+			}
+		}
+		break;
+	case SDLK_LEFT:
+		lastrow = row;
+		if (board == 1 && row == 1 && (key == 8 || key == 9))
+		{
+			key = 7;
+		}
+		else if (row == 2 && key == 1)
+		{
+			key = 8;
+		}
+		else if (row == 3 && key == 0)
+		{
+			key = 3;
+		}
+		else if (key > 0)
+			key--;
+		else key = 9;
+		break;
+	case SDLK_BACKSPACE:
+	case SDLK_DELETE:
+		if (temp > 0)
+		{
+			temp--;
+			tempChar = ' ';
+			JE_playSampleNum(S_CURSOR);
+		}
+		break;
+	case SDLK_ESCAPE:
+		*quit = true;
+		if(method == OSK_HIGHSCORE)
+		{
+			*cancel = true;
+		}
+		JE_playSampleNum(S_SPRING);
+		break;
+	case SDLK_RETURN:if(row == 3)
+		{
+			if (key == 0)
+			{
+				board ^= 1;
+				break;
+			}
+			else if (key == 1)
+			{
+				stemp[temp] = ' ';
+				temp++;
+				break;
+			}
+			else if (key == 2)
+			{
+				*quit = true;
+				if (method == OSK_SAVEMENU)
+				{
+					JE_saveGame(slot, stemp);
+				}
+				JE_playSampleNum(S_SELECT);
+				break;
+			}
+			else if (key == 3)
+			{
+				*quit = true;
+				if (method == OSK_HIGHSCORE)
+				{
+					*cancel = true;
+				}
+				JE_playSampleNum(S_SPRING);
+				break;
+			}
+			break;
+		}
+		else if (row == 1)
+		{
+			if (board == 0 && key == 9)
+			{
+				if (temp > 0)
+				{
+					temp--;
+					stemp[temp] = ' ';
+					JE_playSampleNum(S_CURSOR);
+				}
+				break;
+			}
+			else if (board == 1 && (key == 8 || key == 9))
+			{
+				if (temp > 0)
+				{
+					temp--;
+					stemp[temp] = ' ';
+					JE_playSampleNum(S_CURSOR);
+				}
+				break;
+			}
+		}
+		getkey();
+		JE_playSampleNum(S_CURSOR);
+	default:
+		for (int i = 0; i <= keyTableSize; i++)
+		{
+			if (keys[i].sym == lastkey_sym)
+			{
+				if (temp >= maxChar)
+				{
+					temp = maxChar;
+					JE_playSampleNum(S_SPRING);
+					break;
+				}
+				JE_playSampleNum(S_CURSOR);
+				stemp[temp] = keys[i].name;
+				temp++;
+			}
+		}
+		break;
+	}
 }
 
 void getkey()
