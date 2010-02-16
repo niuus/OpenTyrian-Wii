@@ -34,7 +34,12 @@
 #define BOARD_HEIGHT 128
 #define BOARD_SCALE 1
 
-extern int row, key, lastrow, board;
+extern int row, rowmax[4], key, keyTableSize, lastrow, board;
+
+const struct keyTable {
+        SDLKey sym;
+        char name;
+} keys[58];
 
 void init_popkey (); // Initialize popup keyboard system
 void popkey (int dx, int dy); // Display and run keyboard

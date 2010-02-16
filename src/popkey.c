@@ -3,34 +3,33 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_rotozoom.h>
 
-#include "backgrnd.h"
-#include "config.h"
-#include "editship.h"
-#include "episodes.h"
+//#include "backgrnd.h"
+//#include "config.h"
+//#include "editship.h"
+//#include "episodes.h"
 #include "file.h"
-#include "fonthand.h"
-#include "helptext.h"
-#include "helptext.h"
-#include "joystick.h"
+//#include "fonthand.h"
+//#include "helptext.h"
+//#include "joystick.h"
 #include "keyboard.h"
-#include "lds_play.h"
-#include "loudness.h"
-#include "menus.h"
-#include "mtrand.h"
-#include "network.h"
-#include "nortsong.h"
-#include "nortvars.h"
-#include "palette.h"
-#include "params.h"
-#include "pcxmast.h"
-#include "picload.h"
+//#include "lds_play.h"
+//#include "loudness.h"
+//#include "menus.h"
+//#include "mtrand.h"
+//#include "network.h"
+//#include "nortsong.h"
+//#include "nortvars.h"
+//#include "palette.h"
+//#include "params.h"
+//#include "pcxmast.h"
+//#include "picload.h"
 #include "popkey.h"
-#include "setup.h"
-#include "shpmast.h"
-#include "sndmast.h"
-#include "sprite.h"
-#include "varz.h"
-#include "vga256d.h"
+//#include "setup.h"
+//#include "shpmast.h"
+//#include "sndmast.h"
+//#include "sprite.h"
+//#include "varz.h"
+//#include "vga256d.h"
 #include "video.h"
 
 #include <ctype.h>
@@ -45,6 +44,78 @@ int board = 0;
 
 char keytemp[21];
 
+int rowmax[4] =
+{
+	9,
+	9,
+	9,
+	3
+};
+
+int keyTableSize = 57;
+
+const struct keyTable keys[] =
+{
+		{ SDLK_SPACE, 		' ' },
+		{ SDLK_MINUS, 		'-' },
+		{ SDLK_PERIOD, 		'.' },
+		{ SDLK_COMMA, 		',' },
+		{ SDLK_COLON, 		':' },
+		{ SDLK_EXCLAIM, 	'!' },
+		{ SDLK_QUESTION, 	'?' },
+		{ SDLK_HASH, 		'#' },
+		{ SDLK_AT, 			'@' },
+		{ SDLK_DOLLAR, 		'$' },
+		{ SDLK_ASTERISK, 	'*' },
+		{ SDLK_LEFTPAREN, 	'(' },
+		{ SDLK_RIGHTPAREN, 	')' },
+		{ SDLK_SLASH, 		'/' },
+		{ SDLK_EQUALS, 		'=' },
+		{ SDLK_PLUS, 		'+' },
+		{ SDLK_LESS, 		'<' },
+		{ SDLK_GREATER, 	'>' },
+		{ SDLK_SEMICOLON, 	';' },
+		{ SDLK_QUOTEDBL, 	'"' },
+		{ SDLK_QUOTE, 		'\''},
+		{ SDLK_WORLD_95,	'%'	},
+		{ SDLK_a, 			'A' },
+		{ SDLK_b, 			'B' },
+		{ SDLK_c, 			'C' },
+		{ SDLK_d, 			'D' },
+		{ SDLK_e, 			'E' },
+		{ SDLK_f, 			'F' },
+		{ SDLK_g, 			'G' },
+		{ SDLK_h, 			'H' },
+		{ SDLK_i, 			'I' },
+		{ SDLK_j, 			'J' },
+		{ SDLK_k, 			'K' },
+		{ SDLK_l, 			'L' },
+		{ SDLK_m, 			'M' },
+		{ SDLK_n, 			'N' },
+		{ SDLK_o, 			'O' },
+		{ SDLK_p, 			'P' },
+		{ SDLK_q, 			'Q' },
+		{ SDLK_r, 			'R' },
+		{ SDLK_s, 			'S' },
+		{ SDLK_t, 			'T' },
+		{ SDLK_u, 			'U' },
+		{ SDLK_v, 			'V' },
+		{ SDLK_w, 			'W' },
+		{ SDLK_x, 			'X' },
+		{ SDLK_y, 			'Y' },
+		{ SDLK_z, 			'Z' },
+		{ SDLK_0, 			'0' },
+		{ SDLK_1, 			'1' },
+		{ SDLK_2, 			'2' },
+		{ SDLK_3, 			'3' },
+		{ SDLK_4, 			'4' },
+		{ SDLK_5, 			'5' },
+		{ SDLK_6, 			'6' },
+		{ SDLK_7, 			'7' },
+		{ SDLK_8, 			'8' },
+		{ SDLK_9, 			'9' }
+};
+
 int boardStarts[4][2] =
 {
 		{ 126, 155 },
@@ -57,10 +128,15 @@ int row = 3, key = 2, lastrow = 0;
 
 void init_popkey()
 {
-	alphaboardSurf = IMG_Load("sd:/tyrian/popkey/alphaboard.png");
-	numboardSurf = IMG_Load("sd:/tyrian/popkey/numboard.png");
-	cursorL = IMG_Load("sd:/tyrian/popkey/leftcursor.png");
-	cursorR = IMG_Load("sd:/tyrian/popkey/rightcursor.png");
+	char dir[40];
+	sprintf(dir, "%s/popkey/alphaboard.png", data_dir());
+	alphaboardSurf = IMG_Load(dir);
+	sprintf(dir, "%s/popkey/numboard.png", data_dir());
+	numboardSurf = IMG_Load(dir);
+	sprintf(dir, "%s/popkey/leftcursor.png", data_dir());
+	cursorL = IMG_Load(dir);
+	sprintf(dir, "%s/popkey/rightcursor.png", data_dir());
+	cursorR = IMG_Load(dir);
 
 	dispRect.w = DISPLAY_WIDTH;
 	dispRect.h = DISPLAY_HEIGHT;

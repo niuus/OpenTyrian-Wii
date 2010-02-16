@@ -54,11 +54,6 @@ typedef bool   JE_boolean;
 typedef char   JE_char;
 typedef float  JE_real;
 
-struct keyTable {
-        SDLKey sym;
-        char name;
-};
-
 char *strnztcpy( char *to, const char *from, size_t count );
 
 extern const char *opentyrian_str, *opentyrian_version;

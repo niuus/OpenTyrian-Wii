@@ -66,78 +66,6 @@ JE_boolean performSave;
 JE_boolean jumpSection;
 JE_boolean useLastBank; /* See if I want to use the last 16 colors for DisplayText */
 
-int rowmax[4] =
-{
-	9,
-	9,
-	9,
-	3
-};
-
-int keyTableSize = 57;
-
-const struct keyTable keys[] =
-{
-		{ SDLK_SPACE, 		' ' },
-		{ SDLK_MINUS, 		'-' },
-		{ SDLK_PERIOD, 		'.' },
-		{ SDLK_COMMA, 		',' },
-		{ SDLK_COLON, 		':' },
-		{ SDLK_EXCLAIM, 	'!' },
-		{ SDLK_QUESTION, 	'?' },
-		{ SDLK_HASH, 		'#' },
-		{ SDLK_AT, 			'@' },
-		{ SDLK_DOLLAR, 		'$' },
-		{ SDLK_ASTERISK, 	'*' },
-		{ SDLK_LEFTPAREN, 	'(' },
-		{ SDLK_RIGHTPAREN, 	')' },
-		{ SDLK_SLASH, 		'/' },
-		{ SDLK_EQUALS, 		'=' },
-		{ SDLK_PLUS, 		'+' },
-		{ SDLK_LESS, 		'<' },
-		{ SDLK_GREATER, 	'>' },
-		{ SDLK_SEMICOLON, 	';' },
-		{ SDLK_QUOTEDBL, 	'"' },
-		{ SDLK_QUOTE, 		'\''},
-		{ SDLK_WORLD_95,	'%'	},
-		{ SDLK_a, 			'A' },
-		{ SDLK_b, 			'B' },
-		{ SDLK_c, 			'C' },
-		{ SDLK_d, 			'D' },
-		{ SDLK_e, 			'E' },
-		{ SDLK_f, 			'F' },
-		{ SDLK_g, 			'G' },
-		{ SDLK_h, 			'H' },
-		{ SDLK_i, 			'I' },
-		{ SDLK_j, 			'J' },
-		{ SDLK_k, 			'K' },
-		{ SDLK_l, 			'L' },
-		{ SDLK_m, 			'M' },
-		{ SDLK_n, 			'N' },
-		{ SDLK_o, 			'O' },
-		{ SDLK_p, 			'P' },
-		{ SDLK_q, 			'Q' },
-		{ SDLK_r, 			'R' },
-		{ SDLK_s, 			'S' },
-		{ SDLK_t, 			'T' },
-		{ SDLK_u, 			'U' },
-		{ SDLK_v, 			'V' },
-		{ SDLK_w, 			'W' },
-		{ SDLK_x, 			'X' },
-		{ SDLK_y, 			'Y' },
-		{ SDLK_z, 			'Z' },
-		{ SDLK_0, 			'0' },
-		{ SDLK_1, 			'1' },
-		{ SDLK_2, 			'2' },
-		{ SDLK_3, 			'3' },
-		{ SDLK_4, 			'4' },
-		{ SDLK_5, 			'5' },
-		{ SDLK_6, 			'6' },
-		{ SDLK_7, 			'7' },
-		{ SDLK_8, 			'8' },
-		{ SDLK_9, 			'9' }
-};
-
 bool pause_pressed = false, ingamemenu_pressed = false;
 
 /* Draws a message at the bottom text window on the playing screen */
@@ -1957,7 +1885,7 @@ void JE_highScoreCheck( void )
 							getkey();
 							JE_playSampleNum(S_CURSOR);
 						default:
-							for (int i = 0; i < keyTableSize; i++)
+							for (int i = 0; i <= keyTableSize; i++)
 							{
 								if (keys[i].sym == lastkey_sym)
 								{
@@ -3059,7 +2987,7 @@ void JE_operation( JE_byte slot )
 					getkey();
 					JE_playSampleNum(S_CURSOR);
 				default:
-					for (int i = 0; i < keyTableSize; i++)
+					for (int i = 0; i <= keyTableSize; i++)
 					{
 						if (keys[i].sym == lastkey_sym)
 						{
