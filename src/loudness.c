@@ -72,8 +72,8 @@ bool init_audio( void )
 		audio_disabled = true;
 		return false;
 	}
-	sprintf(errorTemp, "Byte order: %s\nFrequency: %d\nFormat: %d\n", (SDL_BYTEORDER == SDL_LIL_ENDIAN ? "Little-endian" : "Big-endian"), got.freq, got.format);
-	errorOut(errorTemp);
+	//sprintf(errorTemp, "Byte order: %s\nFrequency: %d\nFormat: %d\n", (SDL_BYTEORDER == SDL_LIL_ENDIAN ? "Little-endian" : "Big-endian"), got.freq, got.format);
+	//errorOut(errorTemp);
 
 	printf("\tobtained  %d Hz, %d channels, %d samples\n", got.freq, got.channels, got.samples);
 	

@@ -67,7 +67,7 @@ extern char errorTemp[255];
 
 void opentyrian_menu( void );
 
-int errorOut( char *error );
+//int errorOut( char *error );
 
 #endif /* OPENTYR_H */
 

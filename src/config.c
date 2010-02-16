@@ -666,7 +666,8 @@ void JE_decryptSaveTemp( void )
 #ifndef TARGET_MACOSX
 const char *get_user_directory( void )
 {
-	static char user_dir[500] = "/tyrian/userdata";
+	static char user_dir[500];// = "/tyrian/userdata";
+	sprintf(user_dir, "%s/userdata", data_dir());
 	
 	/*if (strlen(user_dir) == 0)
 	{

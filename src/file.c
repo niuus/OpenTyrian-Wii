@@ -30,7 +30,8 @@ const char *data_dir( void )
 {
 	const char *dirs[] =
 	{
-		"sd:/tyrian"
+		"sd:/tyrian",
+		"usb:/tyrian"
 	};
 	
 	static const char *dir = NULL;
@@ -90,11 +91,14 @@ FILE *dir_fopen_die( const char *dir, const char *file, const char *mode )
 	
 	if (f == NULL)
 	{
-		sprintf(errorTemp, "error: failed to open '%s': %s\n", file, strerror(errno));
+		/*sprintf(errorTemp, "error: failed to open '%s': %s\n", file, strerror(errno));
 		errorOut(errorTemp);
 		sprintf(errorTemp, "error: One or more of the required Tyrian 2.1 data files could not be found.\n"
 		                "       Please read the README file.\n");
-		errorOut(errorTemp);
+		errorOut(errorTemp);*/
+		printf("error: failed to open '%s': %s\n", file, strerror(errno));
+		printf("error: One or more of the required Tyrian 2.1 data files could not be found.\n"
+				                "       Please read the README file.\n");
 		exit(1);
 	}
 	

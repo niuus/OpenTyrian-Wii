@@ -236,7 +236,7 @@ void opentyrian_menu( void )
 	} while (!quit);
 }
 
-int errorOut( char *error )
+/*int errorOut( char *error )
 {
 	FILE *eFile = fopen("sd:/apps/OpenTyrianWii/error.txt", "a");
 
@@ -245,7 +245,7 @@ int errorOut( char *error )
 	fclose(eFile);
 
 	return 0;
-}
+}*/
 
 int main( int argc, char *argv[] )
 {
@@ -253,7 +253,7 @@ int main( int argc, char *argv[] )
 
 	fatInitDefault();
 
-	remove("sd:/apps/OpenTyrianWii/error.txt");
+	//remove("sd:/apps/OpenTyrianWii/error.txt");
 
 	printf("\nWelcome to... >> %s %s <<\n\n", opentyrian_str, opentyrian_version);
 
@@ -265,16 +265,16 @@ int main( int argc, char *argv[] )
 	
 	if (SDL_Init(0))
 	{
-		//printf(error, "Failed to initialize SDL: %s\n", SDL_GetError());
-		sprintf(errorTemp, "Failed to initialize SDL: %s\n", SDL_GetError());
-		errorOut(errorTemp);
+		printf("Failed to initialize SDL: %s\n", SDL_GetError());
+		//sprintf(errorTemp, "Failed to initialize SDL: %s\n", SDL_GetError());
+		//errorOut(errorTemp);
 		return -1;
 	}
-	else
-	{
-		sprintf(errorTemp, "SDL successfully initialized.\n");
-		errorOut(errorTemp);
-	}
+	//else
+	//{
+	//	sprintf(errorTemp, "SDL successfully initialized.\n");
+	//	errorOut(errorTemp);
+	//}
 	
 	JE_loadConfiguration();
 	
@@ -298,7 +298,7 @@ int main( int argc, char *argv[] )
 	
 	JE_loadPals();
 	JE_loadMainShapeTables(xmas ? "tyrianc.shp" : "tyrian.shp");
-	errorOut("MainShapeTables loaded.\n");
+	//errorOut("MainShapeTables loaded.\n");
 	tempScreenSeg = VGAScreen;
 	if (xmas && !xmas_prompt())
 	{
