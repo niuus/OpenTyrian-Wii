@@ -1283,7 +1283,11 @@ JE_boolean JE_inGameSetup( void )
 							samples_disabled = false;
 							break;
 						case 3:
-							if (--processorType < 1)
+							if (--processorType < 2)
+							{
+								processorType = 6;
+							}
+							else if (processorType == 5)
 							{
 								processorType = 4;
 							}
@@ -1320,9 +1324,13 @@ JE_boolean JE_inGameSetup( void )
 							samples_disabled = false;
 							break;
 						case 3:
-							if (++processorType > 4)
+							if (++processorType > 6)
 							{
-								processorType = 1;
+								processorType = 2;
+							}
+							else if (processorType == 5)
+							{
+								processorType = 6;
 							}
 							JE_initProcessorType();
 							JE_setNewGameSpeed();

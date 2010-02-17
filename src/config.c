@@ -442,11 +442,11 @@ void JE_initProcessorType( void )
 	/* SYN: Originally this proc looked at your hardware specs and chose appropriate options. We don't care, so I'll just set
 	   decent defaults here. */
 
-	wild = false;
+	wild = true;
 	superWild = false;
 	smoothScroll = true;
 	explosionTransparent = true;
-	filtrationAvail = false;
+	filtrationAvail = true;
 	background2 = true;
 	displayScore = true;
 
@@ -457,14 +457,14 @@ void JE_initProcessorType( void )
 			displayScore = false;
 			explosionTransparent = false;
 			break;
-		case 2: /* 486 - Default */
+		case 2: /* 486 */
+			wild = false;
+			filtrationAvail = false;
 			break;
 		case 3: /* High Detail */
 			smoothScroll = false;
 			break;
-		case 4: /* Pentium */
-			wild = true;
-			filtrationAvail = true;
+		case 4: /* Pentium - Default */
 			break;
 		case 5: /* Nonstandard VGA */
 			smoothScroll = false;
