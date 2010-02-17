@@ -744,7 +744,7 @@ void JE_loadConfiguration( void )
 		background2 = true;
 		tyrMusicVolume = fxVolume = 128;
 		gammaCorrection = 0;
-		processorType = 3;
+		processorType = 4;
 		gameSpeed = 4;
 		
 		fullscreen_enabled = false;
