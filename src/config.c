@@ -716,8 +716,8 @@ void JE_loadConfiguration( void )
 		
 		efread(joyButtonAssign, 1, 4, fi);
 
-		efread(&tyrMusicVolume, 2, 1, fi);
-		efread(&fxVolume, 2, 1, fi);
+		efread(&tyrMusicVolume, 1, 2, fi);
+		efread(&fxVolume, 1, 2, fi);
 
 		efread(&inputDevice[0], 1, 1, fi);
 		efread(&inputDevice[1], 1, 1, fi);
