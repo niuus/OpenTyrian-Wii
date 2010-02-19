@@ -24,15 +24,18 @@
 #include "nortsong.h"
 #include "opentyr.h"
 #include "params.h"
+#include "popkey.h"
 #include "varz.h"
 #include "video.h"
 
 #include <assert.h>
+#include <wiiuse/wpad.h>
 
 int joystick_axis_threshold( int j, int value );
 int check_assigned( SDL_Joystick *joystick_handle, const Joystick_assignment assignment[2] );
 
 const char *assignment_to_code( const Joystick_assignment *assignment );
+const char *joystick_string_to_name( const char *value, int joystickIndex);
 void code_to_assignment( Joystick_assignment *assignment, const char *buffer );
 
 int joystick_repeat_delay = 300; // milliseconds, repeat delay for buttons
@@ -487,7 +490,7 @@ bool save_joystick_assignments( int j )
 }
 
 // fills buffer with comma separated list of assigned joystick functions
-void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joystick_assignment *assignments )
+void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joystick_assignment *assignments, int joystickType )
 {
 	strncpy(buffer, "", buffer_len);
 	
@@ -499,7 +502,7 @@ void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joys
 		
 		size_t len = snprintf(buffer, buffer_len, "%s%s",
 		                      comma ? ", " : "",
-		                      assignment_to_code(&assignments[i]));
+		                      joystick_string_to_name(assignment_to_code(&assignments[i]), joystickType));
 		buffer += len;
 		buffer_len -= len;
 		
@@ -564,6 +567,119 @@ const char *assignment_to_code( const Joystick_assignment *assignment )
 		break;
 	}
 	
+	return name;
+}
+
+const char *joystick_string_to_name( const char *value, int joystickIndex )
+{
+	char temp[8];
+	static char name[30];
+	int joystickType = joystickIndex < 4 ? JOYSTICK_WIIMOTE : JOYSTICK_GCPAD;
+
+	if(strstr(value, "AX") != NULL)
+	{
+		if(strstr(value, "1+"))
+		{
+			sprintf(name, "JOY-R");
+		}
+		else if(strstr(value, "1-"))
+		{
+			sprintf(name, "JOY-L");
+		}
+		else if(strstr(value, "2+"))
+		{
+			sprintf(name, "JOY-D");
+		}
+		else if(strstr(value, "2-"))
+		{
+			sprintf(name, "JOY-U");
+		}
+		else if(strstr(value, "3+"))
+		{
+			sprintf(name, "RJOY-R");
+		}
+		else if(strstr(value, "3-"))
+		{
+			sprintf(name, "RJOY-L");
+		}
+		else if(strstr(value, "4+"))
+		{
+			sprintf(name, "RJOY-D");
+		}
+		else if(strstr(value, "4-"))
+		{
+			sprintf(name, "RJOY-U");
+		}
+	}
+	else if(strstr(value, "BTN") != NULL)
+	{
+		if (joystickType == JOYSTICK_WIIMOTE)
+		{
+			for (int i = 20; i >= 1; i--)
+			{
+				sprintf(temp, "%d", i);
+				if(strstr(value, temp) != NULL)
+				{
+					sprintf(name, "%s", wiimoteButtons[i-1].name);
+					i = 0;
+				}
+			}
+		}
+		else if(joystickType == JOYSTICK_GCPAD)
+		{
+			for (int i = 8; i >= 1; i--)
+			{
+				sprintf(temp, "%d", i);
+				if(strstr(value, temp) != NULL)
+				{
+					sprintf(name, "%s", gcpadButtons[i-1].name);
+					i = 0;
+				}
+			}
+		}
+	}
+	else if(strstr(value, "H") != NULL)
+	{
+		WPADData *joystick = WPAD_Data(joystickIndex);
+		if(joystickType == JOYSTICK_WIIMOTE && (joystick->exp.type == WPAD_EXP_NONE))
+		{
+			if(strstr(value, "Y-"))
+			{
+				sprintf(name, "DPAD-R");
+			}
+			else if(strstr(value, "Y+"))
+			{
+				sprintf(name, "DPAD-L");
+			}
+			else if(strstr(value, "X-"))
+			{
+				sprintf(name, "DPAD-D");
+			}
+			else if(strstr(value, "X+"))
+			{
+				sprintf(name, "DPAD-U");
+			}
+		}
+		else
+		{
+			if(strstr(value, "Y-"))
+			{
+				sprintf(name, "DPAD-U");
+			}
+			else if(strstr(value, "Y+"))
+			{
+				sprintf(name, "DPAD-D");
+			}
+			else if(strstr(value, "X-"))
+			{
+				sprintf(name, "DPAD-L");
+			}
+			else if(strstr(value, "X+"))
+			{
+				sprintf(name, "DPAD-R");
+			}
+		}
+	}
 	return name;
 }
 

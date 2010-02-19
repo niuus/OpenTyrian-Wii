@@ -445,7 +445,7 @@ void JE_itemScreen( void )
 				}
 				else if (i == 0) // joystick number
 				{
-					sprintf(value, "%d", joystick_config + 1);
+					sprintf(value, "%s %d", joystick_config < 4 ? "Wiimote" : "GC Pad", joystick_config < 4 ? joystick_config + 1 : joystick_config - 3);
 				}
 				else if (i == 1) // joystick is analog
 				{
@@ -459,7 +459,8 @@ void JE_itemScreen( void )
 				}
 				else if (i < 14) // assignments
 				{
-					joystick_assignments_to_string(value, sizeof(value), joystick[joystick_config].assignment[i - 4]);
+					joystick_assignments_to_string(value, sizeof(value), joystick[joystick_config].assignment[i - 4], joystick_config);
+					//joystick_string_to_name(value, tempValue, sizeof(tempValue), joystick_config < 4 ? JOYSTICK_WIIMOTE : JOYSTICK_GCPAD);
 				}
 				
 				JE_textShade(236, 38 + i * 8, value, temp / 16, temp % 16 - 8, DARKEN);

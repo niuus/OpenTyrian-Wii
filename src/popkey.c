@@ -52,6 +52,40 @@ int rowmax[4] =
 	3
 };
 
+const struct _joystickButtons wiimoteButtons[] = {
+		{"W-A"},
+		{"W-B"},
+		{"W-1"},
+		{"W-2"},
+		{"W-MINUS"},
+		{"W-PLUS"},
+		{"W-HOME"},
+		{"N-Z"},
+		{"N-C"},
+		{"C-a"},
+		{"C-b"},
+		{"C-x"},
+		{"C-y"},
+		{"C-L"},
+		{"C-R"},
+		{"C-ZL"},
+		{"C-ZR"},
+		{"C-MINUS"},
+		{"C-PLUS"},
+		{"C-HOME"}
+};
+
+const struct _joystickButtons gcpadButtons[] = {
+		{"A"},
+		{"B"},
+		{"X"},
+		{"Y"},
+		{"Z"},
+		{"R"},
+		{"L"},
+		{"START"}
+};
+
 int keyTableSize = 57;
 
 const struct keyTable keys[] =

@@ -64,6 +64,9 @@ typedef struct
 }
 Joystick;
 
+#define JOYSTICK_WIIMOTE 0
+#define JOYSTICK_GCPAD 1
+
 extern int joystick_repeat_delay;
 extern bool joydown;
 extern bool ignore_joystick;
@@ -86,7 +89,7 @@ void reset_joystick_assignments( int j );
 bool load_joystick_assignments( int j );
 bool save_joystick_assignments( int j );
 
-void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joystick_assignment *assignments );
+void joystick_assignments_to_string( char *buffer, size_t buffer_len, const Joystick_assignment *assignments, int joystickType );
 
 bool detect_joystick_assignment( int j, Joystick_assignment *assignment );
 bool joystick_assignment_cmp( const Joystick_assignment *, const Joystick_assignment * );
