@@ -37,6 +37,7 @@
 #include "opentyr.h"
 #include "params.h"
 #include "picload.h"
+#include "popkey.h"
 #include "scroller.h"
 #include "setup.h"
 #include "sprite.h"
@@ -55,13 +56,13 @@
 #include <time.h>
 
 const char *opentyrian_str = "OpenTyrian",
-           *opentyrian_version = "Classic (" HG_REV ")";
+           *opentyrian_version = "Wii (r42)";
 const char *opentyrian_menu_items[] =
 {
 	"About OpenTyrian",
 	//"Toggle Fullscreen",
 	"Scaler: None",
-	/* "Play Destruct", */
+	"Rich mode",
 	"Jukebox",
 	"Return to Main Menu"
 };
@@ -106,6 +107,11 @@ void opentyrian_menu( void )
 			if (i == 1) /* Scaler */
 			{
 				snprintf(buffer, sizeof(buffer), "Scaler: %s", scalers[temp_scaler].name);
+				text = buffer;
+			}
+			if (i == 2) /* Rich Mode */
+			{
+				sprintf(buffer, "Rich Mode: %s", richMode ? "On" : "Off");
 				text = buffer;
 			}
 			
@@ -158,6 +164,10 @@ void opentyrian_menu( void )
 						else
 							JE_playSampleNum(S_CURSOR);
 					}
+					if (sel == 2)
+					{
+						richMode ^= 1;
+					}
 					break;
 				case SDLK_RIGHT:
 					if (sel == 1)
@@ -172,6 +182,10 @@ void opentyrian_menu( void )
 							temp_scaler = 0;
 						else
 							JE_playSampleNum(S_CURSOR);
+					}
+					if (sel == 2)
+					{
+						richMode ^= 1;
 					}
 					break;
 				case SDLK_RETURN:
@@ -197,19 +211,10 @@ void opentyrian_menu( void )
 							}
 							break;*/
 						case 1: /* Scaler */
-							JE_playSampleNum(S_SELECT);
-							
-							if (scaler != temp_scaler)
-							{
-								if (!init_scaler(temp_scaler, fullscreen_enabled) &&   // try new scaler
-								    !init_scaler(temp_scaler, !fullscreen_enabled) &&  // try other fullscreen state
-								    !init_scaler(scaler, fullscreen_enabled))          // revert on fail
-								{
-									exit(EXIT_FAILURE);
-								}
-							}
 							break;
-						case 2: /* Jukebox */
+						case 2: /* richMode */
+							break;
+						case 3: /* Jukebox */
 							JE_playSampleNum(S_SELECT);
 							
 							fade_black(10);
@@ -345,6 +350,8 @@ int main( int argc, char *argv[] )
 		}
 	}
 	
+	init_popkey();
+
 #ifdef NDEBUG
 	if (!isNetworkGame)
 		intro_logos();
