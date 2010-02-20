@@ -191,7 +191,7 @@ bool select_difficulty( void )
 	JE_dString(JE_fontCenter(difficulty_name[0], FONT_SHAPES), 20, difficulty_name[0], FONT_SHAPES);
 	
 	difficultyLevel = 2;
-	int difficulty_max = 3;
+	int difficulty_max = 6;
 	
 	bool fade_in = true;
 	for (; ; )
@@ -211,7 +211,7 @@ bool select_difficulty( void )
 		JE_word temp = 0;
 		JE_textMenuWait(&temp, false);
 		
-		if (SDL_GetModState() & KMOD_SHIFT)
+		/*if (SDL_GetModState() & KMOD_SHIFT)
 		{
 			if ((difficulty_max < 4 && keysactive[SDLK_g]) ||
 			    (difficulty_max == 4 && keysactive[SDLK_RIGHTBRACKET]))
@@ -220,7 +220,7 @@ bool select_difficulty( void )
 			}
 		} else if (difficulty_max == 5 && keysactive[SDLK_l] && keysactive[SDLK_o] && keysactive[SDLK_r] && keysactive[SDLK_d]) {
 			difficulty_max++;
-		}
+		}*/
 		
 		if (newkey)
 		{
