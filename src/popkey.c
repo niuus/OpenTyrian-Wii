@@ -432,6 +432,8 @@ void runPopkey( SDLKey lastkey, int method, char *stemp, bool *quit, int slot, b
 					JE_saveGame(slot, stemp);
 				}
 				JE_playSampleNum(S_SELECT);
+				board = 0;
+				key = 2;
 				break;
 			}
 			else if (key == 3)
@@ -442,6 +444,8 @@ void runPopkey( SDLKey lastkey, int method, char *stemp, bool *quit, int slot, b
 					*cancel = true;
 				}
 				JE_playSampleNum(S_SPRING);
+				board = 0;
+				key = 2;
 				break;
 			}
 			break;
@@ -722,5 +726,4 @@ void close_popkey()
 	SDL_FreeSurface(numboardSurf);
 	SDL_FreeSurface(cursorL);
 	SDL_FreeSurface(cursorR);
-	popkeyon = false;
 }

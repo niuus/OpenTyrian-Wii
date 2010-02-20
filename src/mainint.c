@@ -1519,7 +1519,6 @@ void JE_highScoreCheck( void )
 			
 			{
 				/* Enter Thy name */
-				init_popkey();
 				popkeyon = true;
 				//quit = false;
 				//cancel = false;
@@ -1677,7 +1676,6 @@ void JE_highScoreCheck( void )
 				while (!quit);
 				
 				popkeyon = false;
-				close_popkey();
 
 				if (cancel == false)
 				{
@@ -2413,8 +2411,6 @@ void JE_operation( JE_byte slot )
 		wait_noinput(false, true, false);
 		
 		JE_barShade(65, 55, 255, 155);
-		
-		init_popkey();
 
 		bool quit = false;
 		while (!quit)
@@ -2542,7 +2538,7 @@ void JE_operation( JE_byte slot )
 		}
 		while (!quit);
 	}
-	close_popkey();
+	popkeyon = false;
 	
 	//free(stemp);
 
