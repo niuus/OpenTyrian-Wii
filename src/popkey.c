@@ -1,7 +1,10 @@
+#include "joystick.h"
 #include "opentyr.h"
 
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_rotozoom.h>
+
+#include <wiiuse/wpad.h>
 
 //#include "backgrnd.h"
 #include "config.h"
@@ -157,6 +160,119 @@ int boardStarts[4][2] =
 		{ 126, 219 },
 		{ 126, 251 }
 };
+
+const char *joystick_string_to_name( const char *value, int joystickIndex )
+{
+	char temp[8];
+	static char name[30];
+	int joystickType = joystickIndex < 4 ? JOYSTICK_WIIMOTE : JOYSTICK_GCPAD;
+
+	if(strstr(value, "AX") != NULL)
+	{
+		if(strstr(value, "1+"))
+		{
+			sprintf(name, "JOY-R");
+		}
+		else if(strstr(value, "1-"))
+		{
+			sprintf(name, "JOY-L");
+		}
+		else if(strstr(value, "2+"))
+		{
+			sprintf(name, "JOY-D");
+		}
+		else if(strstr(value, "2-"))
+		{
+			sprintf(name, "JOY-U");
+		}
+		else if(strstr(value, "3+"))
+		{
+			sprintf(name, "RJOY-R");
+		}
+		else if(strstr(value, "3-"))
+		{
+			sprintf(name, "RJOY-L");
+		}
+		else if(strstr(value, "4+"))
+		{
+			sprintf(name, "RJOY-D");
+		}
+		else if(strstr(value, "4-"))
+		{
+			sprintf(name, "RJOY-U");
+		}
+	}
+	else if(strstr(value, "BTN") != NULL)
+	{
+		if (joystickType == JOYSTICK_WIIMOTE)
+		{
+			for (int i = 20; i >= 1; i--)
+			{
+				sprintf(temp, "%d", i);
+				if(strstr(value, temp) != NULL)
+				{
+					sprintf(name, "%s", wiimoteButtons[i-1].name);
+					i = 0;
+				}
+			}
+		}
+		else if(joystickType == JOYSTICK_GCPAD)
+		{
+			for (int i = 8; i >= 1; i--)
+			{
+				sprintf(temp, "%d", i);
+				if(strstr(value, temp) != NULL)
+				{
+					sprintf(name, "%s", gcpadButtons[i-1].name);
+					i = 0;
+				}
+			}
+		}
+	}
+	else if(strstr(value, "H") != NULL)
+	{
+		WPADData *joystick = WPAD_Data(joystickIndex);
+		if(joystickType == JOYSTICK_WIIMOTE && (joystick->exp.type == WPAD_EXP_NONE))
+		{
+			if(strstr(value, "Y-"))
+			{
+				sprintf(name, "DPAD-R");
+			}
+			else if(strstr(value, "Y+"))
+			{
+				sprintf(name, "DPAD-L");
+			}
+			else if(strstr(value, "X-"))
+			{
+				sprintf(name, "DPAD-D");
+			}
+			else if(strstr(value, "X+"))
+			{
+				sprintf(name, "DPAD-U");
+			}
+		}
+		else
+		{
+			if(strstr(value, "Y-"))
+			{
+				sprintf(name, "DPAD-U");
+			}
+			else if(strstr(value, "Y+"))
+			{
+				sprintf(name, "DPAD-D");
+			}
+			else if(strstr(value, "X-"))
+			{
+				sprintf(name, "DPAD-L");
+			}
+			else if(strstr(value, "X+"))
+			{
+				sprintf(name, "DPAD-R");
+			}
+		}
+	}
+	return name;
+}
 
 int row = 3, key = 2, lastrow = 0;
 

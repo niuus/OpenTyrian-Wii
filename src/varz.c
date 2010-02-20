@@ -29,6 +29,7 @@
 #include "nortsong.h"
 #include "nortvars.h"
 #include "opentyr.h"
+#include "popkey.h"
 #include "sprite.h"
 #include "varz.h"
 #include "vga256d.h"

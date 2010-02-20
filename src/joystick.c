@@ -29,7 +29,6 @@
 #include "video.h"
 
 #include <assert.h>
-#include <wiiuse/wpad.h>
 
 int joystick_axis_threshold( int j, int value );
 int check_assigned( SDL_Joystick *joystick_handle, const Joystick_assignment assignment[2] );
@@ -360,47 +359,9 @@ void reset_joystick_assignments( int j )
 	joystick[j].threshold = 5;
 }
 
-cJSON *load_config( void )
-{
-	FILE *f = dir_fopen_warn(get_user_directory(), "joystick.conf", "rb");
-	if (f == NULL)
-		return NULL;
-	
-	size_t buffer_len = ftell_eof(f);
-	char *buffer = malloc(buffer_len + 1);
-	
-	fread(buffer, 1, buffer_len, f);
-	buffer[buffer_len] = '\0';
-	
-	fclose(f);
-	
-	cJSON *root = cJSON_Parse(buffer);
-	
-	free(buffer);
-	
-	return root;
-}
-
-void save_config( cJSON *root )
-{
-	FILE *f = dir_fopen_warn(get_user_directory(), "joystick.conf", "w+");
-	if (f == NULL)
-		return;
-	
-	char *buffer = cJSON_Print(root);
-	
-	if (buffer != NULL)
-	{
-		fputs(buffer, f);
-		free(buffer);
-	}
-	
-	fclose(f);
-}
-
 bool load_joystick_assignments( int j )
 {
-	cJSON *root = load_config();
+	cJSON *root = load_json("joystick.conf");
 	if (root == NULL)
 		return false;
 	
@@ -446,7 +407,7 @@ bool load_joystick_assignments( int j )
 
 bool save_joystick_assignments( int j )
 {
-	cJSON *root = load_config();
+	cJSON *root = load_json("joystick.conf");
 	if (root == NULL)
 		root = cJSON_CreateObject();
 	
@@ -482,7 +443,7 @@ bool save_joystick_assignments( int j )
 		}
 	}
 	
-	save_config(root);
+	save_json(root, "joystick.conf");
 	
 	cJSON_Delete(root);
 	
@@ -567,119 +528,6 @@ const char *assignment_to_code( const Joystick_assignment *assignment )
 		break;
 	}
 	
-	return name;
-}
-
-const char *joystick_string_to_name( const char *value, int joystickIndex )
-{
-	char temp[8];
-	static char name[30];
-	int joystickType = joystickIndex < 4 ? JOYSTICK_WIIMOTE : JOYSTICK_GCPAD;
-
-	if(strstr(value, "AX") != NULL)
-	{
-		if(strstr(value, "1+"))
-		{
-			sprintf(name, "JOY-R");
-		}
-		else if(strstr(value, "1-"))
-		{
-			sprintf(name, "JOY-L");
-		}
-		else if(strstr(value, "2+"))
-		{
-			sprintf(name, "JOY-D");
-		}
-		else if(strstr(value, "2-"))
-		{
-			sprintf(name, "JOY-U");
-		}
-		else if(strstr(value, "3+"))
-		{
-			sprintf(name, "RJOY-R");
-		}
-		else if(strstr(value, "3-"))
-		{
-			sprintf(name, "RJOY-L");
-		}
-		else if(strstr(value, "4+"))
-		{
-			sprintf(name, "RJOY-D");
-		}
-		else if(strstr(value, "4-"))
-		{
-			sprintf(name, "RJOY-U");
-		}
-	}
-	else if(strstr(value, "BTN") != NULL)
-	{
-		if (joystickType == JOYSTICK_WIIMOTE)
-		{
-			for (int i = 20; i >= 1; i--)
-			{
-				sprintf(temp, "%d", i);
-				if(strstr(value, temp) != NULL)
-				{
-					sprintf(name, "%s", wiimoteButtons[i-1].name);
-					i = 0;
-				}
-			}
-		}
-		else if(joystickType == JOYSTICK_GCPAD)
-		{
-			for (int i = 8; i >= 1; i--)
-			{
-				sprintf(temp, "%d", i);
-				if(strstr(value, temp) != NULL)
-				{
-					sprintf(name, "%s", gcpadButtons[i-1].name);
-					i = 0;
-				}
-			}
-		}
-	}
-	else if(strstr(value, "H") != NULL)
-	{
-		WPADData *joystick = WPAD_Data(joystickIndex);
-		if(joystickType == JOYSTICK_WIIMOTE && (joystick->exp.type == WPAD_EXP_NONE))
-		{
-			if(strstr(value, "Y-"))
-			{
-				sprintf(name, "DPAD-R");
-			}
-			else if(strstr(value, "Y+"))
-			{
-				sprintf(name, "DPAD-L");
-			}
-			else if(strstr(value, "X-"))
-			{
-				sprintf(name, "DPAD-D");
-			}
-			else if(strstr(value, "X+"))
-			{
-				sprintf(name, "DPAD-U");
-			}
-		}
-		else
-		{
-			if(strstr(value, "Y-"))
-			{
-				sprintf(name, "DPAD-U");
-			}
-			else if(strstr(value, "Y+"))
-			{
-				sprintf(name, "DPAD-D");
-			}
-			else if(strstr(value, "X-"))
-			{
-				sprintf(name, "DPAD-L");
-			}
-			else if(strstr(value, "X+"))
-			{
-				sprintf(name, "DPAD-R");
-			}
-		}
-	}
 	return name;
 }
 

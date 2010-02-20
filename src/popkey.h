@@ -47,6 +47,8 @@ const struct _joystickButtons {
 	char name[9];
 } wiimoteButtons[20], gcpadButtons[8];
 
+const char *joystick_string_to_name( const char *value, int joystickIndex );
+
 void init_popkey (); // Initialize popup keyboard system
 void runPopkey( SDLKey lastkey, int method, char *stemp, bool *quit, int slot, bool *cancel );
 void popkey (int dx, int dy); // Display and run keyboard

@@ -33,7 +33,7 @@ void nn_16( SDL_Surface *src_surface, SDL_Surface *dst_surface );
 void scale2x_32( SDL_Surface *src_surface, SDL_Surface *dst_surface );
 void scale2x_16( SDL_Surface *src_surface, SDL_Surface *dst_surface );
 
-int scaler = 1;  // default is Scale2x
+int scaler;  // default is Scale2x
 
 
 const struct scaler_struct scalers[] =
@@ -42,6 +42,17 @@ const struct scaler_struct scalers[] =
 	{ 2 * vga_width, 2 * vga_height, 16, scale2x_16, scale2x_32, "Scale2x" }
 };
 
+void set_scaler_by_name( const char *name )
+{
+	for (int i = 0; i < COUNTOF(scalers); ++i)
+	{
+		if (strcmp(name, scalers[i].name) == 0)
+		{
+			scaler = i;
+			break;
+		}
+	}
+}
 
 void nn_32( SDL_Surface *src_surface, SDL_Surface *dst_surface )
 {
