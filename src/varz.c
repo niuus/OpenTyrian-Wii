@@ -463,6 +463,7 @@ void JE_tyrianHalt( JE_byte code )
 	deinit_audio();
 	deinit_video();
 	deinit_joysticks();
+	close_popkey();
 
 	/* TODO: NETWORK */
 
