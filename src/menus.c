@@ -292,13 +292,16 @@ bool game_modes(char **code, int *engageDiff)
 
 	int shipsMax = 6, maxSel = COUNTOF(menuText) - 1, shipSel = 1, sel = 0, engageSel = 0;
 
-	bool fade_in = true, action = false, result = false;
+	bool fade_in = true, action = false, result = false, redraw = true;
 	for(; ; )
 	{
 		//blit_sprite(VGAScreenSeg, 50, 50, OPTION_SHAPES, 35);  // message box
 
-		JE_loadPic(2, false);
-		JE_dString(JE_fontCenter(game_mode, FONT_SHAPES), 20, game_mode, FONT_SHAPES);
+		if(redraw)
+		{
+			JE_loadPic(4, false);
+			JE_dString(JE_fontCenter(game_mode, FONT_SHAPES), 20, game_mode, FONT_SHAPES);
+		}
 
 		for (int i = 0; i <= maxSel; i++)
 		{
@@ -345,6 +348,7 @@ bool game_modes(char **code, int *engageDiff)
 					if(shipSel < 0)
 						shipSel = shipsMax;
 					JE_playSampleNum(S_CURSOR);
+					redraw = true;
 					sprintf(menuText[0], "Arcade: %s", specialName[shipSel]);
 					break;
 				case 1:
@@ -353,6 +357,7 @@ bool game_modes(char **code, int *engageDiff)
 						engageSel = 1;
 					sprintf(menuText[1], "Engage: %s", engageDiffText[engageSel]);
 					JE_playSampleNum(S_CURSOR);
+					redraw = true;
 					break;
 				default:
 					break;
@@ -369,6 +374,7 @@ bool game_modes(char **code, int *engageDiff)
 						shipSel = 0;
 					JE_playSampleNum(S_CURSOR);
 					sprintf(menuText[0], "Arcade: %s", specialName[shipSel]);
+					redraw = true;
 					break;
 				case 1:
 					engageSel++;
@@ -376,6 +382,7 @@ bool game_modes(char **code, int *engageDiff)
 						engageSel = 0;
 					sprintf(menuText[1], "Engage: %s", engageDiffText[engageSel]);
 					JE_playSampleNum(S_CURSOR);
+					redraw = true;
 					break;
 				default:
 					break;
@@ -421,6 +428,7 @@ bool game_modes(char **code, int *engageDiff)
 				break;
 			}
 		}
+		newkey = false;
 		if (action == true)
 			return result;
 	}
