@@ -1730,7 +1730,6 @@ void JE_highScoreCheck( void )
 
 void adjust_difficulty( void )
 {
-	JE_byte newDifficultyLevel;
 	JE_longint temp;
 
 	if (twoPlayerMode)

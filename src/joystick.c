@@ -249,6 +249,8 @@ void push_joysticks_as_keyboard( void )
 			push_key(confirm);
 		if (joystick[j].cancel)
 			push_key(cancel);
+		if (joystick[j].action[2] && joystick[j].action[2])
+			push_key(SDLK_F15);
 		
 		for (int d = 0; d < COUNTOF(joystick[j].direction_pressed); d++)
 		{

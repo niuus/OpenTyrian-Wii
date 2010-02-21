@@ -26,6 +26,7 @@ extern char episode_name[6][31], difficulty_name[7][21], gameplay_name[5][26];
 bool select_gameplay( void );
 bool select_episode( void );
 bool select_difficulty( void );
+bool game_modes( char **code, int *engageDiff );
 
 #endif /* MENUS_H */
 

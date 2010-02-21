@@ -22,8 +22,8 @@
 #include "video.h"
 #include "vga256d.h"
 
-JE_boolean mouseInstalled = true;
-JE_boolean mouse_threeButton = true;
+JE_boolean mouseInstalled = false;
+JE_boolean mouse_threeButton = false;
 
 JE_word lastMouseX, lastMouseY;
 JE_byte mouseCursor;

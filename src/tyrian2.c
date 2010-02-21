@@ -53,6 +53,8 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include <SDL.h>
+
 inline static void blit_enemy( SDL_Surface *surface, unsigned int i, signed int x_offset, signed int y_offset, signed int sprite_offset );
 
 boss_bar_t boss_bar[2];
@@ -3347,7 +3349,9 @@ bool JE_titleScreen( JE_boolean animate )
 
 	const int menunum = 7;
 
-	unsigned int arcade_code_i[SA_ENGAGE] = { 0 };
+	int engageDiff = 6;
+
+	char *arcade_mode = "NONE";
 
 	JE_word waitForDemo;
 	JE_byte menu = 0;
@@ -3537,6 +3541,8 @@ bool JE_titleScreen( JE_boolean animate )
 			if (waitForDemo == 1)
 				play_demo = true;
 
+			bool comboPressed = false;
+
 			if (newkey)
 			{
 				switch (lastkey_sym)
@@ -3555,115 +3561,120 @@ bool JE_titleScreen( JE_boolean animate )
 						menu++;
 					JE_playSampleNum(S_CURSOR);
 					break;
+				case SDLK_F15:
+					comboPressed = true;
+					break;
 				default:
 					break;
 				}
 			}
 
-			for (unsigned int i = 0; i < SA_ENGAGE; i++)
+			if(comboPressed)
 			{
-				if (toupper(lastkey_char) == specialName[i][arcade_code_i[i]])
-					arcade_code_i[i]++;
-				else
-					arcade_code_i[i] = 0;
-
-				if (arcade_code_i[i] > 0 && arcade_code_i[i] == strlen(specialName[i]))
+				if (game_modes(&arcade_mode, &engageDiff))
 				{
-					if (i+1 == SA_DESTRUCT)
+					for (unsigned int i = 0; i < SA_ENGAGE; i++)
 					{
-						loadDestruct = true;
-					}
-					else if (i+1 == SA_ENGAGE)
-					{
-						/* SuperTyrian */
-
-						JE_playSampleNum(V_DATA_CUBE);
-						JE_whoa();
-
-						initialDifficulty = keysactive[SDLK_SCROLLOCK] ? 6 : 8;
-
-						JE_clr256();
-						JE_outText(10, 10, "Cheat codes have been disabled.", 15, 4);
-						if (initialDifficulty == 8)
-							JE_outText(10, 20, "Difficulty level has been set to Lord of Game.", 15, 4);
-						else
-							JE_outText(10, 20, "Difficulty level has been set to Suicide.", 15, 4);
-						JE_outText(10, 30, "It is imperative that you discover the special codes.", 15, 4);
-						if (initialDifficulty == 8)
-							JE_outText(10, 40, "(Next time, for an easier challenge hold down SCROLL LOCK.)", 15, 4);
-						JE_outText(10, 60, "Prepare to play...", 15, 4);
-
-						char buf[10+1+15+1];
-						snprintf(buf, sizeof(buf), "%s %s", miscTextB[4], pName[0]);
-						JE_dString(JE_fontCenter(buf, FONT_SHAPES), 110, buf, FONT_SHAPES);
-
-						play_song(16);
-						JE_playSampleNum(V_DANGER);
-						JE_showVGA();
-
-						wait_noinput(true, false, true);
-						wait_input(true, false, true);
-
-						JE_initEpisode(1);
-						constantDie = false;
-						superTyrian = true;
-						onePlayerAction = true;
-						gameLoaded = true;
-						difficultyLevel = initialDifficulty;
-						
-						player[0].cash = 0;
-
-						player[0].items.ship = 13;                     // The Stalker 21.126
-						player[0].items.weapon[FRONT_WEAPON].id = 39;  // Atomic RailGun
-					}
-					else
-					{
-						player[0].items.ship = SAShip[i];
-
-						fade_black(10);
-						if (select_episode() && select_difficulty())
+						if(strcmp(arcade_mode, specialName[i]) == 0)
 						{
-							/* Start special mode! */
-							fade_black(10);
-							JE_loadPic(1, false);
-							JE_clr256();
-							JE_dString(JE_fontCenter(superShips[0], FONT_SHAPES), 30, superShips[0], FONT_SHAPES);
-							JE_dString(JE_fontCenter(superShips[i+1], SMALL_FONT_SHAPES), 100, superShips[i+1], SMALL_FONT_SHAPES);
-							tempW = ships[player[0].items.ship].shipgraphic;
-							if (tempW != 1)
-								blit_sprite2x2(VGAScreen, 148, 70, shapes9, tempW);
-
-							JE_showVGA();
-							fade_palette(colors, 50, 0, 255);
-
-							wait_input(true, false, true);
-
-							twoPlayerMode = false;
-							onePlayerAction = true;
-							superArcadeMode = i+1;
-							gameLoaded = true;
-							initialDifficulty = ++difficultyLevel;
-							
-							player[0].cash = 0;
-
-							player[0].items.weapon[FRONT_WEAPON].id = SAWeapon[i][0];
-							player[0].items.special = SASpecialWeapon[i];
-							if (superArcadeMode == SA_NORTSHIPZ)
+							if (i + 1 == SA_DESTRUCT)
 							{
-								for (uint i = 0; i < COUNTOF(player[0].items.sidekick); ++i)
-									player[0].items.sidekick[i] = 24;  // Companion Ship Quicksilver
+								loadDestruct = true;
 							}
-						}
-						else
-						{
-							redraw = true;
-							fadeIn = true;
+							else if (i + 1 == SA_ENGAGE)
+							{
+								// SuperTyrian
+
+								JE_playSampleNum(V_DATA_CUBE);
+								JE_whoa();
+
+								initialDifficulty = engageDiff; //keysactive[SDLK_SCROLLOCK] ? 6 : 8;
+
+								JE_clr256();
+								JE_outText(10, 10, "Cheat codes have been disabled.", 15, 4);
+								if (initialDifficulty == 8)
+									JE_outText(10, 20, "Difficulty level has been set to Lord of Game.", 15, 4);
+								else
+									JE_outText(10, 20, "Difficulty level has been set to Suicide.", 15, 4);
+								JE_outText(10, 30, "It is imperative that you discover the special codes.", 15, 4);
+								//if (initialDifficulty == 8)
+								//	JE_outText(10, 40, "(Next time, for an easier challenge hold down SCROLL LOCK.)", 15, 4);
+								JE_outText(10, 60, "Prepare to play...", 15, 4);
+
+								char buf[10+1+15+1];
+								snprintf(buf, sizeof(buf), "%s %s", miscTextB[4], pName[0]);
+								JE_dString(JE_fontCenter(buf, FONT_SHAPES), 110, buf, FONT_SHAPES);
+
+								play_song(16);
+								JE_playSampleNum(V_DANGER);
+								JE_showVGA();
+
+								wait_noinput(true, false, true);
+								wait_input(true, false, true);
+
+								JE_initEpisode(1);
+								constantDie = false;
+								superTyrian = true;
+								onePlayerAction = true;
+								gameLoaded = true;
+								difficultyLevel = initialDifficulty;
+
+								player[0].cash = 0;
+
+								player[0].items.ship = 13;                     // The Stalker 21.126
+								player[0].items.weapon[FRONT_WEAPON].id = 39;  // Atomic RailGun
+							}
+							else
+							{
+								player[0].items.ship = SAShip[i];
+
+								fade_black(10);
+								if (select_episode() && select_difficulty())
+								{
+									// Start special mode!
+									fade_black(10);
+									JE_loadPic(1, false);
+									JE_clr256();
+									JE_dString(JE_fontCenter(superShips[0], FONT_SHAPES), 30, superShips[0], FONT_SHAPES);
+									JE_dString(JE_fontCenter(superShips[i+1], SMALL_FONT_SHAPES), 100, superShips[i+1], SMALL_FONT_SHAPES);
+									tempW = ships[player[0].items.ship].shipgraphic;
+									if (tempW != 1)
+										blit_sprite2x2(VGAScreen, 148, 70, shapes9, tempW);
+
+									JE_showVGA();
+									fade_palette(colors, 50, 0, 255);
+
+									wait_input(true, false, true);
+
+									twoPlayerMode = false;
+									onePlayerAction = true;
+									superArcadeMode = i+1;
+									gameLoaded = true;
+									initialDifficulty = ++difficultyLevel;
+
+									player[0].cash = 0;
+
+									player[0].items.weapon[FRONT_WEAPON].id = SAWeapon[i][0];
+									player[0].items.special = SASpecialWeapon[i];
+									if (superArcadeMode == SA_NORTSHIPZ)
+									{
+										for (uint i = 0; i < COUNTOF(player[0].items.sidekick); ++i)
+											player[0].items.sidekick[i] = 24;  // Companion Ship Quicksilver
+									}
+								}
+								else
+								{
+									redraw = true;
+									fadeIn = true;
+								}
+							}
+							newkey = false;
 						}
 					}
-					newkey = false;
 				}
 			}
-			lastkey_char = '\0';
+			comboPressed = false;
+			//lastkey_char = '\0';
 
 			if (newkey)
 			{

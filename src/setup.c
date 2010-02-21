@@ -43,14 +43,14 @@ void JE_textMenuWait( JE_word *waitTime, JE_boolean doGamma )
 		if (doGamma)
 			JE_gammaCheck();
 		
-		inputDetected = newkey | mousedown;
+		inputDetected = newkey; // | mousedown;
 		
 		if (lastkey_sym == SDLK_SPACE)
 		{
 			lastkey_sym = SDLK_RETURN;
 		}
 		
-		if (mousedown)
+		/*if (mousedown)
 		{
 			newkey = true;
 			lastkey_sym = SDLK_RETURN;
@@ -80,7 +80,7 @@ void JE_textMenuWait( JE_word *waitTime, JE_boolean doGamma )
 				}
 				newkey = true;
 			}
-		}
+		}*/
 		
 		NETWORK_KEEP_ALIVE();
 		
