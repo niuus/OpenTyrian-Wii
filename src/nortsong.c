@@ -95,6 +95,7 @@ void wait_delayorinput( JE_boolean keyboard, JE_boolean mouse, JE_boolean joysti
 		SDL_Delay(SDL_GetTicks() - target > SDL_POLL_INTERVAL ? SDL_POLL_INTERVAL : SDL_GetTicks() - target);
 		push_joysticks_as_keyboard();
 		service_SDL_events(false);
+		joydown = false;
 	}
 }
 
