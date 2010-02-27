@@ -271,15 +271,8 @@ int main( int argc, char *argv[] )
 	if (SDL_Init(0))
 	{
 		printf("Failed to initialize SDL: %s\n", SDL_GetError());
-		//sprintf(errorTemp, "Failed to initialize SDL: %s\n", SDL_GetError());
-		//errorOut(errorTemp);
 		return -1;
 	}
-	//else
-	//{
-	//	sprintf(errorTemp, "SDL successfully initialized.\n");
-	//	errorOut(errorTemp);
-	//}
 	
 	JE_loadConfiguration();
 	
@@ -303,7 +296,6 @@ int main( int argc, char *argv[] )
 	
 	JE_loadPals();
 	JE_loadMainShapeTables(xmas ? "tyrianc.shp" : "tyrian.shp");
-	//errorOut("MainShapeTables loaded.\n");
 	tempScreenSeg = VGAScreen;
 	if (xmas && !xmas_prompt())
 	{

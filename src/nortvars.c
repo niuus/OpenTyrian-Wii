@@ -32,8 +32,8 @@ JE_boolean inputDetected;
 JE_boolean JE_anyButton( void )
 {
 	push_joysticks_as_keyboard();
-	service_SDL_events(false);
-	return (newkey || mousedown);
+	service_SDL_events(true);
+	return (newkey || newmouse);
 }
 
 void JE_dBar3( JE_integer x,  JE_integer y,  JE_integer num,  JE_integer col )
