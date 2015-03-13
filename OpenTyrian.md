@@ -1,0 +1,1 @@
+This page is only here to get rid of the stupid question mark silly Google wiki adds to an unknown camel-cased word.
