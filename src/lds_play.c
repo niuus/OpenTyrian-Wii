@@ -69,9 +69,6 @@ const Uint8 tremtab[] = {
   25, 21, 18, 15, 12, 10, 7, 5, 4, 2, 1, 1, 0
 };
 
-const Uint16 frequency[(13 * 15) - 3];
-const Uint8 vibta[25 + (13 * 3)];
-const Uint8 tremtab[128];
 const Uint16 maxsound, maxpos;
 
 SoundBank *soundbank = NULL;

@@ -41,7 +41,7 @@ LIBS	:=	 -L/mingw/lib -lSDL_ttf -lSDL_gfx -lSDL_mixer -lSDL_image -ljpeg -lpng -
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= 
+LIBDIRS	:= $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional

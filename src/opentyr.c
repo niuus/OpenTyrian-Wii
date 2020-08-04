@@ -56,7 +56,7 @@
 #include <time.h>
 
 const char *opentyrian_str = "OpenTyrian",
-           *opentyrian_version = "Wii (r42)";
+           *opentyrian_version = "Wii (r45)";
 const char *opentyrian_menu_items[] =
 {
 	"About OpenTyrian",
